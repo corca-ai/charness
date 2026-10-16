@@ -45,10 +45,6 @@ identity_binding = IDENTITY.identity_binding
 approval_for = IDENTITY.approval_for
 
 
-def promote_worker_report(root: Path, attempt: str, runtime_report: Path) -> Path | None:
-    return STORAGE.promote_worker_report(root, attempt, runtime_report)
-
-
 def refresh_manifest_integrity(root: Path, manifest_relative: str) -> dict[str, Any]:
     return CARRIER.refresh_manifest_integrity(SUPPORT, STORAGE, root, manifest_relative)
 

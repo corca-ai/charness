@@ -106,6 +106,7 @@ def _build_packet(
     excluded_paths: list[str],
     excluded_prefixes: list[str],
     prepared_targets: list[str] | None,
+    reviewer_tier: str | None = None,
 ) -> dict[str, object]:
     """Run producers with the same narrowed path scope as the identity binder."""
     variable = "CHARNESS_CRITIQUE_REVIEWED_PATHS"
@@ -125,6 +126,7 @@ def _build_packet(
             excluded_reviewed_paths=excluded_paths,
             excluded_reviewed_prefixes=excluded_prefixes,
             prepared_targets=prepared_targets,
+            reviewer_tier=reviewer_tier,
         )
     finally:
         if previous is None:
@@ -143,6 +145,11 @@ def main() -> int:  # noqa: C901, PLR0915
         action="append",
         default=None,
         help="Opaque target covered by this packet; repeat for bundled targets",
+    )
+    parser.add_argument(
+        "--reviewer-tier",
+        choices=("high-leverage", "medium", "standard"),
+        help="Reviewer tier recorded in the prepared packet",
     )
     parser.add_argument("--changed-ref", default=None,
                         help="Git commit or range that script packet sections should inspect")
@@ -293,6 +300,7 @@ def main() -> int:  # noqa: C901, PLR0915
             excluded_paths=excluded_paths,
             excluded_prefixes=excluded_prefixes,
             prepared_targets=args.prepared_target,
+            reviewer_tier=args.reviewer_tier,
         )
         if follow_up_context is not None:
             try:

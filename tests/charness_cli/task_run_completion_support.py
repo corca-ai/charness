@@ -84,6 +84,8 @@ def _complete(
     prelaunch_plan_override: dict[str, Any] | None = None,
     extra_files: dict[str, str] | None = None,
     delete_path: str | None = None,
+    rename_from: str | None = None,
+    rename_to: str | None = None,
 ) -> dict[str, Any]:
     mapped_suite = "tests/test_completion_scope.py"
     surface_manifest = json.dumps(
@@ -125,6 +127,12 @@ def _complete(
         if removed.returncode != 0:
             raise AssertionError(removed.stderr)
         task_run_git._commit_lane_snapshot(target, message="delete mapped file")
+    elif candidate_kind == "rename":
+        if not rename_from or not rename_to:
+            raise AssertionError("rename candidates need source and destination paths")
+        (target / rename_to).parent.mkdir(parents=True, exist_ok=True)
+        (target / rename_from).rename(target / rename_to)
+        task_run_git._commit_lane_snapshot(target, message="rename mapped file")
     elif candidate_kind == "mixed-merge-delete":
         _prepare_mixed_merge_delete_candidate(target)
     elif candidate_kind != "absent":

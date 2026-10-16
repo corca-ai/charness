@@ -31,18 +31,19 @@ when the caller records a one-line reason that the narrow packet is still
 high-risk. This keeps bounded reviewer packets from silently inheriting a
 high-effort parent session just because a fresh context was needed.
 
-The portable contract names only the tier. A host that exposes subagent model
-overrides resolves the tier to concrete spawn fields (model, reasoning effort,
-service tier); a host without that capability ignores the tier and spawns its
-default reviewer. The tier is a request, never a hard requirement, so a host
-that cannot honor it is not blocked for that reason.
+The portable contract names only the tier. The canonical file-backed runner
+resolves it to the configured model and reasoning effort, passing those values
+through the selected backend's supported CLI options. Native-only fields such
+as service tier or fork context are recorded as unsupported by that runner.
+Optional typed-subagent hosts resolve the same tier to their supported spawn
+fields. A field the selected carrier cannot apply is never represented as
+applied.
 
 Do not hardcode provider model names, reasoning-effort values, or service tiers
-in skill prose or in this reference. The tier is host-plural: each host adapter
-maps it to that host's strongest reviewer — for example a Codex host and a
-Claude Code host resolve `high-leverage` to their own top reasoning model and
-their own spawn fields — so the concrete values are host-specific and live in
-the consuming skill's adapter, never here. The mapping is recorded once, under
+in skill prose or in this reference. The tier is host-plural: each repository
+adapter maps it to that repository's reviewer model and supported execution
+fields, so the concrete values live in the consuming repository's adapter,
+never here. The mapping is recorded once, under
 `reviewer_tiers` in
 `<plugin-dir>/skills/critique/adapter.example.yaml`; other skills cite this
 policy and reuse the same tier names instead of repeating the mapping.

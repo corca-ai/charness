@@ -249,24 +249,15 @@ def test_packet_preparation_preserves_followup_range_and_reports_producer_failur
     assert caught.value.details["stderr"] == "producer failed"
 
 
-def test_packet_loader_failures_and_prompt_carrier_mismatch_are_typed(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    monkeypatch.setattr(PACKET.importlib.util, "spec_from_file_location", lambda *_a, **_k: None)
-    with pytest.raises(RuntimeError, match="semantic review input"):
-        PACKET._load_semantic_input()
-    with pytest.raises(RuntimeError, match="follow-up scope"):
-        PACKET._load_followup_scope()
-
+def test_prompt_carrier_mismatch_is_refused(tmp_path: Path) -> None:
     packet = _packet_payload()
     with pytest.raises(ValueError, match="carriers do not exactly match"):
         PACKET.write_prompt(
             tmp_path / "prompt.md",
             packet,
+            semantic_review_paths=RUN_REVIEW.SEMANTIC_INPUT.semantic_review_paths,
             scope="scope",
             lens="lens",
-            packet_sha="p" * 64,
-            input_sha="i" * 64,
             semantic_input={"entries": []},
         )
 
@@ -275,14 +266,14 @@ def test_run_review_helper_boundaries_preserve_typed_semantic_errors(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     assert RUN_REVIEW._adapter_name(tmp_path, {"path": "../outside.yaml"}) == "../outside.yaml"
-    semantic_error = RUN_REVIEW.PACKET.SemanticInputError(
+    semantic_error = RUN_REVIEW.SEMANTIC_INPUT.SemanticInputError(
         "preimage-unavailable", "pre-image unavailable", details={"path": "deleted.txt"}
     )
 
     def fail_materialize(*_args, **_kwargs):  # noqa: ANN002, ANN003
         raise semantic_error
 
-    monkeypatch.setattr(RUN_REVIEW.PACKET, "materialize_semantic_input", fail_materialize)
+    monkeypatch.setattr(RUN_REVIEW.SEMANTIC_INPUT, "materialize_semantic_input", fail_materialize)
     with pytest.raises(SUPPORT.RunReviewError) as caught:
         RUN_REVIEW._materialize_semantic_input(tmp_path, {}, tmp_path / "run")
     assert caught.value.code == "preimage-unavailable"
@@ -475,17 +466,18 @@ def test_carrier_write_and_stream_helpers_fail_closed_on_symlink_escape_and_mism
     tmp_path: Path,
 ) -> None:
     destination = tmp_path / "lifecycle.yaml"
-    CARRIER.write_promoted_yaml(SUPPORT, STORAGE, tmp_path, "lifecycle.yaml", {"state": "failed"})
+    STORAGE.write_promoted_yaml(tmp_path, "lifecycle.yaml", {"state": "failed"})
     assert yaml.safe_load(destination.read_text(encoding="utf-8")) == {"state": "failed"}
 
     outside = tmp_path.parent / "outside-lifecycle.yaml"
     outside.write_text("outside\n", encoding="utf-8")
     escaped = tmp_path / "escaped.yaml"
     escaped.symlink_to(outside)
-    with pytest.raises(SUPPORT.RunReviewError, match="lifecycle symlink"):
-        CARRIER.write_promoted_yaml(SUPPORT, STORAGE, tmp_path, "escaped.yaml", {})
-    with pytest.raises(SUPPORT.RunReviewError, match="escaped repository root"):
-        CARRIER.write_promoted_yaml(SUPPORT, STORAGE, tmp_path, "../outside-lifecycle.yaml", {})
+    storage_error = STORAGE._support().RunReviewError
+    with pytest.raises(storage_error, match="lifecycle symlink"):
+        STORAGE.write_promoted_yaml(tmp_path, "escaped.yaml", {})
+    with pytest.raises(storage_error, match="escaped repository root"):
+        STORAGE.write_promoted_yaml(tmp_path, "../outside-lifecycle.yaml", {})
 
     stream = tmp_path / "runner.stdout"
     report = tmp_path / "report.yaml"
@@ -535,10 +527,19 @@ def test_failure_carrier_projects_details_when_lifecycle_exists() -> None:
 
 
 def test_promoted_paths_remove_scratch_aliases_and_rebind_partial_artifacts() -> None:
+    run_dir = Path("/tmp/charness-runtime/scratch/critique-review/run-a")
+    runtime_paths = {
+        key: str(run_dir / name)
+        for key, name in (
+            ("report", "report.yaml"),
+            ("ledger", "delivery.json"),
+            ("runner_stderr", "runner.stderr"),
+        )
+    }
     context = {
         "paths": {
-            "report": ".charness/scratch/critique-review/report.yaml",
-            "ledger": ".charness/scratch/critique-review/delivery.json",
+            "report": runtime_paths["report"],
+            "ledger": runtime_paths["ledger"],
             "stable": "charness-artifacts/critique/stable.json",
         }
     }
@@ -547,18 +548,18 @@ def test_promoted_paths_remove_scratch_aliases_and_rebind_partial_artifacts() ->
         "delivery.json": "charness-artifacts/critique/workers/a/delivery.json",
         "runner.stderr": "charness-artifacts/critique/workers/a/runner.stderr",
     }
-    bound = CARRIER.bind_promoted_paths(context, promoted, PROMOTION)
+    bound = CARRIER.bind_promoted_paths(context, promoted, PROMOTION, run_dir=run_dir)
     assert bound["report"] == promoted["worker-report.yaml"]
     assert "runtime_report" not in bound
     assert bound["ledger"] == promoted["delivery.json"]
 
     carrier = {
-        "partial_outputs": [None, {"path": ".charness/scratch/critique-review/runner.stderr"}],
-        "output": {"artifacts": [{"path": ".charness/scratch/critique-review/runner.stderr"}]},
+        "partial_outputs": [None, {"path": runtime_paths["runner_stderr"]}],
+        "output": {"artifacts": [{"path": runtime_paths["runner_stderr"]}]},
     }
     CARRIER.rebind_partial_artifacts(
         carrier,
-        {"runner_stderr": ".charness/scratch/critique-review/runner.stderr"},
+        {"runner_stderr": runtime_paths["runner_stderr"]},
         {"runner_stderr": promoted["runner.stderr"]},
         PROMOTION,
     )
@@ -666,22 +667,6 @@ def test_storage_path_replacements_and_symlinked_inputs_are_safe(tmp_path: Path)
     log_link.symlink_to(destination)
     with pytest.raises(ValueError, match="durable reviewer log"):
         STORAGE_DIRECT.promote_log(tmp_path, content, log_link)
-
-
-def test_storage_worker_report_destination_guards_refuse_symlinks_and_escape(
-    tmp_path: Path,
-) -> None:
-    runtime = tmp_path / "runtime-report.yaml"
-    runtime.write_text("status: runner-invalid\n", encoding="utf-8")
-    workers = tmp_path / STORAGE_DIRECT.DURABLE_WORKER_REPORTS
-    workers.mkdir(parents=True)
-    outside = tmp_path.parent / "worker-destination"
-    outside.mkdir()
-    (workers / "linked").symlink_to(outside, target_is_directory=True)
-    with pytest.raises(ValueError, match="worker directory symlink"):
-        STORAGE_DIRECT.promote_worker_report(tmp_path, "linked", runtime)
-    with pytest.raises(ValueError, match="escaped repository root"):
-        STORAGE_DIRECT.promote_worker_report(tmp_path, "../../../../worker-escape", runtime)
 
 
 def test_partial_scanner_finds_nested_result_and_rejects_wrong_identity(

@@ -60,86 +60,7 @@ RESULT_EXIT_CODES = {
     ResultKind.COMPLETED_NEEDS_REVIEW: 5,
 }
 
-SELF_REVIEW_DISPOSITIONS = ("fixed", "deferred", "disputed")
-SELF_REVIEW_STATES = ("not-requested", "findings-received", "unavailable-skip")
-_SELF_REVIEW_KIND = "charness.task_self_review.v1"
 _BOUNDED_REVIEW_KIND = "charness.bounded_review.v1"
-_BOUNDARY_ACTION = re.compile(
-    r"\b(?:push|publish|release)\b.{0,60}\b(?:to|the|branch|remote|package|artifact|release|version|site|registry|main|origin)\b"
-    r"|\bclose\b.{0,60}\b(?:issue|pull request|pr|ticket|provider)\b"
-    r"|\bmerge\b.{0,50}\b(?:pull request|pr|branch|remote)\b"
-    r"|\b(?:write|update|delete|remove|revoke|post)\b.{0,70}\b(?:external|provider|api|github|slack|notion|database|remote|issue|pull request|pr)\b",
-    re.IGNORECASE,
-)
-
-
-def self_review_block(
-    state: str,
-    *,
-    findings: object = (),
-    reason: str | None = None,
-) -> dict[str, Any]:
-    """Normalize self-review findings without turning a skip into a pass."""
-    if state not in SELF_REVIEW_STATES:
-        raise ValueError(f"unknown self-review state: {state}")
-    grouped: dict[str, list[dict[str, Any]]] = {key: [] for key in SELF_REVIEW_DISPOSITIONS}
-    if state == "findings-received":
-        if not isinstance(findings, (list, tuple)):
-            raise ValueError("self-review findings must be a list")
-        for item in findings:
-            if not isinstance(item, Mapping) or item.get("disposition") not in grouped:
-                raise ValueError("self-review finding needs fixed, deferred, or disputed disposition")
-            summary, disposition = item.get("summary"), item["disposition"]
-            if not isinstance(summary, str) or not summary.strip():
-                raise ValueError("self-review finding summary must be non-empty")
-            finding: dict[str, Any] = {"summary": summary.strip(), "disposition": disposition}
-            finding_id = item.get("id")
-            if isinstance(finding_id, str) and finding_id.strip():
-                finding["id"] = finding_id.strip()
-            evidence = item.get("evidence")
-            if evidence is not None:
-                if not isinstance(evidence, list) or not all(isinstance(value, str) for value in evidence):
-                    raise ValueError("self-review finding evidence must be a list of strings")
-                finding["evidence"] = [value for value in evidence if value.strip()]
-            grouped[disposition].append(finding)
-    return {
-        "kind": _SELF_REVIEW_KIND,
-        "state": state,
-        "findings": grouped,
-        **({"reason": reason.strip()} if reason and reason.strip() else {}),
-        "non_claim": "Self-review is not independent review or proof."
-        if state == "findings-received"
-        else "Self-review was not performed; this result is not review-passed.",
-    }
-
-
-def self_review_requested(
-    policy: str, prompt: str, scopes: list[str], paths: list[str], persistence: Mapping[str, Any]
-) -> bool:
-    if policy == "always":
-        return True
-    if policy != "auto":
-        return False
-    if persistence.get("blocking") or persistence.get("findings"):
-        return True
-    prompt = re.sub(r"\b(?:do not|don't|never|avoid)\s+(?:push|publish|release|close|merge|write|update|delete|remove|revoke|post)\b", "", prompt, flags=re.I)
-    if _BOUNDARY_ACTION.search(prompt):
-        return True
-    proof_terms = {"gate", "gates", "proof", "verdict", "claim", "mutation", "release"}
-    return any(any(term in str(path).lower() for term in (*proof_terms, "task_run_state.py")) for path in (*scopes, *paths))
-
-
-def self_review_prompt(prompt: str, base_sha: str, changed_paths: list[str]) -> str:
-    return (
-        f"Fresh-context self-review only. Do not edit or run mutating commands. Inspect diff from {base_sha} "
-        f"for {json.dumps(changed_paths)} against this request:\n{prompt}\n"
-        f'Return only JSON shaped as {{"kind":"{_SELF_REVIEW_KIND}","findings":[]}} . '
-        "Findings contain summary, disposition (fixed/deferred/disputed), and optional string evidence. "
-        "Fixed means addressed, deferred means valid and unresolved, disputed means inapplicable. "
-        "No findings does not claim independent review passed."
-    )
-
-
 def _nested_mappings(value: Any):
     if isinstance(value, dict):
         yield value
@@ -206,28 +127,24 @@ def reviewer_result_carrier(
     }
 
 
-def self_review_result(execution: Mapping[str, Any], text: str) -> dict[str, Any]:
-    if execution.get("timed_out") or execution.get("exec_error") or execution.get("exit_code") != 0:
-        reason = execution.get("exec_error") or ("reviewer timed out" if execution.get("timed_out") else f"reviewer exited with code {execution.get('exit_code')}")
-        return self_review_block("unavailable-skip", reason=f"reviewer did not return findings: {reason}")
-    review = extract_structured_review(text.encode("utf-8"), kind=_SELF_REVIEW_KIND, limit=1024 * 1024)
-    if review is None:
-        return self_review_block("unavailable-skip", reason="reviewer did not return a self-review result")
-    try:
-        return self_review_block("findings-received", findings=review.get("findings"))
-    except ValueError as exc:
-        return self_review_block("unavailable-skip", reason=f"reviewer result was invalid: {exc}")
-
 _RESULT_KIND_BY_STATUS = {
     "completed": ResultKind.SUCCESS,
     "pass": ResultKind.SUCCESS,
     "failed": ResultKind.FAILED,
     "fail": ResultKind.FAILED,
+    "timed-out": ResultKind.FAILED,
+    "interrupted": ResultKind.FAILED,
+    "non-delivery": ResultKind.FAILED,
     "premise-blocked": ResultKind.PREMISE_BLOCKED,
     "validated-partial-result": ResultKind.VALIDATED_PARTIAL,
     "executor-unavailable": ResultKind.EXECUTOR_UNAVAILABLE,
     "completed-needs-review": ResultKind.COMPLETED_NEEDS_REVIEW,
 }
+
+
+def is_known_terminal_status(status: object) -> bool:
+    """Whether a persisted lane status belongs to the canonical result vocabulary."""
+    return isinstance(status, str) and status in _RESULT_KIND_BY_STATUS
 
 
 def result_kind_for_status(status: object) -> ResultKind:

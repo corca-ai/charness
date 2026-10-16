@@ -18,11 +18,11 @@ from pathlib import Path
 import pytest
 import yaml
 
-from .test_managed_install import load_charness_module
-
 
 def _uninstall_module(monkeypatch: pytest.MonkeyPatch, repo_root: Path, home_root: Path):
-    module = load_charness_module("charness_uninstall_native_residue_under_test")
+    from scripts.cli import cmd_meta
+
+    module = cmd_meta
     monkeypatch.setattr(module, "resolve_repo_root", lambda *_args: (repo_root, False))
     monkeypatch.setattr(
         module,
@@ -61,7 +61,9 @@ def test_uninstall_removes_native_core_residue_inside_the_home_root(
     home_root = tmp_path / "home"
     monkeypatch.setenv("CHARNESS_STATE_HOME", str(home_root / ".local" / "state"))
     module = _uninstall_module(monkeypatch, repo_root, home_root)
-    native_root = module.default_state_root(home_root) / "native"
+    from scripts.cli.bootstrap import default_state_root
+
+    native_root = default_state_root(home_root) / "native"
     native_root.mkdir(parents=True)
     (native_root / "repograph").write_text("stale acquisition artifact", encoding="utf-8")
 
@@ -82,7 +84,9 @@ def test_uninstall_refuses_a_native_root_outside_the_home_root(
     # `resolve_state_home` honours CHARNESS_STATE_HOME ahead of the home root.
     monkeypatch.setenv("CHARNESS_STATE_HOME", str(tmp_path / "elsewhere"))
     module = _uninstall_module(monkeypatch, repo_root, home_root)
-    native_root = module.default_state_root(home_root) / "native"
+    from scripts.cli.bootstrap import default_state_root
+
+    native_root = default_state_root(home_root) / "native"
     native_root.mkdir(parents=True)
     (native_root / "repograph").write_text("not ours to delete", encoding="utf-8")
 

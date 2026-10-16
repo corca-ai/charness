@@ -316,7 +316,7 @@ def test_lane_launcher_forwards_explicit_base_to_task_run(
 
 def test_acceptance_flags_missing_verifier_plan(tmp_path: Path) -> None:
     blockers = task_run_prelaunch.acceptance_deficit_blockers(
-        {"prelaunch_plan": {}}, tmp_path, {"changed_paths": []}
+        {"prelaunch_plan": {}}, tmp_path, [], {"changed_paths": []}
     )
 
     assert blockers == [
@@ -324,7 +324,9 @@ def test_acceptance_flags_missing_verifier_plan(tmp_path: Path) -> None:
     ]
 
 
-def test_acceptance_does_not_require_a_directory_scope_to_remain_present(tmp_path: Path) -> None:
+def test_acceptance_does_not_require_a_directory_scope_to_remain_present(
+    tmp_path: Path,
+) -> None:
     payload = {
         "prelaunch_plan": {
             "scope_preflight": {},
@@ -332,7 +334,7 @@ def test_acceptance_does_not_require_a_directory_scope_to_remain_present(tmp_pat
         },
     }
     blockers = task_run_prelaunch.acceptance_deficit_blockers(
-        payload, tmp_path, {"changed_paths": []}
+        payload, tmp_path, [{"path": "adir", "kind": "directory"}], {"changed_paths": []}
     )
 
     assert blockers == []
@@ -498,8 +500,18 @@ def test_coverage_mapping_flags_broken_manifest(
         raise real.SurfaceError("bad manifest")
 
     monkeypatch.setattr(real, "load_surfaces", _raise)
+    payload = _deficit_payload()
+    payload["report_only"] = True
     blockers = task_run_prelaunch.acceptance_deficit_blockers(
-        _deficit_payload(), tmp_path, {"changed_paths": ["a.py"]}
+        payload,
+        tmp_path,
+        [],
+        {
+            "status": "absent",
+            "useful": False,
+            "changed_paths": [],
+            "disallowed_paths": [],
+        },
     )
 
     assert any("selected surfaces manifest is missing" in item for item in blockers)
@@ -516,7 +528,7 @@ def test_coverage_mapping_tolerates_match_failure(
     monkeypatch.setattr(real, "load_surfaces", lambda _t, **_k: {"manifest": True})
     monkeypatch.setattr(real, "match_surfaces", _raise)
     blockers = task_run_prelaunch.acceptance_deficit_blockers(
-        _deficit_payload(), tmp_path, {"changed_paths": ["a.py"]}
+        _deficit_payload(), tmp_path, [], {"changed_paths": ["a.py"]}
     )
 
     assert any("could not be mapped" in item for item in blockers)
@@ -533,7 +545,74 @@ def test_coverage_mapping_flags_unmatched_paths(
     )
     monkeypatch.setattr(real, "bundle_status", lambda _a: ("ok", []))
     blockers = task_run_prelaunch.acceptance_deficit_blockers(
-        _deficit_payload(), tmp_path, {"changed_paths": ["a.py"]}
+        _deficit_payload(), tmp_path, [], {"changed_paths": ["a.py"]}
     )
 
     assert any("no mapped verifier for: x.py" in item for item in blockers)
+
+
+@pytest.mark.parametrize(
+    (
+        "report_only",
+        "candidate_status",
+        "changed_paths",
+        "bundle_status",
+        "unmatched_paths",
+        "expected_scope_mapping_blocker",
+    ),
+    [
+        (True, "absent", [], "repo-owned-bundle", ["outside-surface.py"], False),
+        (False, "validated", ["module.py"], "repo-owned-bundle", ["outside-surface.py"], True),
+        (True, "absent", [], "missing-bundle", [], True),
+        (True, "absent", [], "missing-bundle", ["outside-surface.py"], True),
+    ],
+)
+def test_only_empty_report_only_candidate_omits_unmatched_scope_mapping(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    report_only: bool,
+    candidate_status: str,
+    changed_paths: list[str],
+    bundle_status: str,
+    unmatched_paths: list[str],
+    expected_scope_mapping_blocker: bool,
+) -> None:
+    from scripts.gates_support import select_verifiers
+
+    monkeypatch.setattr(
+        select_verifiers, "load_surfaces", lambda _target, **_kwargs: {"manifest": True}
+    )
+    monkeypatch.setattr(select_verifiers, "match_surfaces", lambda _m, _p: {"unmatched_paths": []})
+    monkeypatch.setattr(
+        select_verifiers, "bundle_status", lambda _mapping: ("repo-owned-bundle", [])
+    )
+    payload = {
+        "report_only": report_only,
+        "prelaunch_plan": {
+            "scope_preflight": {"required_scope_paths": []},
+            "scope_verifiers": {
+                "status": "configured",
+                "bundle_status": bundle_status,
+                "scope_paths": ["outside-surface.py"],
+                "unmatched_paths": unmatched_paths,
+                "mapped_suites": [],
+            },
+        },
+    }
+    candidate = {
+        "status": candidate_status,
+        "useful": bool(changed_paths),
+        "changed_paths": changed_paths,
+        "disallowed_paths": [],
+    }
+
+    blockers = task_run_prelaunch.acceptance_deficit_blockers(
+        payload, tmp_path, [], candidate
+    )
+
+    scope_mapping_blockers = [
+        item for item in blockers if "declared scope has no mapped verifier" in item
+    ]
+    assert bool(scope_mapping_blockers) is expected_scope_mapping_blocker
+    if expected_scope_mapping_blocker:
+        assert "outside-surface.py" in scope_mapping_blockers[0]

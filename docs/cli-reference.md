@@ -256,7 +256,8 @@ options:
 ## `charness task status`
 
 ```text
-usage: charness task status [-h] [--repo-root REPO_ROOT] [task_id]
+usage: charness task status [-h] [--repo-root REPO_ROOT] [--all-repos]
+                            [task_id]
 
 positional arguments:
   task_id
@@ -265,6 +266,8 @@ options:
   -h, --help            show this help message and exit
   --repo-root REPO_ROOT
                         Parent repo whose external task-run runtime is read.
+  --all-repos           Report the compact running-task inventory across this
+                        repo's managed runtime tree.
 ```
 
 ## `charness task report`
@@ -393,8 +396,8 @@ options:
                         delivered stdout report as the terminal artifact, and
                         never classify parent progress as a writer conflict.
                         Cannot be combined with --require-change.
-  --self-review         Run self-review for every lane; irreversible-boundary
-                        lanes are reviewed automatically.
+  --self-review         Run an explicit read-only self-review pass; findings
+                        do not provide approval.
   --critical-lane       Require a committed failing acceptance skeleton before
                         launch and green at completion.
   --acceptance-skeleton ACCEPTANCE_SKELETON

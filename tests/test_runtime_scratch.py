@@ -8,15 +8,15 @@ from pathlib import Path
 
 import pytest
 
+from scripts import runtime_scratch as core
+from scripts import runtime_scratch_registry as registry
 from scripts.runtime_scratch import (
     OWNER_RECEIPT_NAME,
     ScratchError,
     _repo_identity,
     _rmtree_writable,
-    gc_scratch_roots,
-    inspect_scratch_roots,
     owned_scratch,
-    recover_scratch_roots,
+    validate_owned_scratch_reference,
 )
 
 
@@ -29,11 +29,11 @@ def test_foreign_repo_owner_is_never_gc_eligible(tmp_path: Path) -> None:
     owner.retain()
     owner.close()
 
-    report = inspect_scratch_roots(foreign, runtime_root_path=runtime)
+    report = registry.inspect_scratch_roots(core, foreign, runtime_root_path=runtime)
     item = report["roots"][0]
     assert item["repo_matches"] is False
     assert "repo-mismatch" in item["disposition"]
-    gc = gc_scratch_roots(foreign, runtime_root_path=runtime, dry_run=False)
+    gc = registry.gc_scratch_roots(core, foreign, runtime_root_path=runtime, dry_run=False)
     assert gc["roots"][0]["disposition"].startswith("refuse-repo-mismatch")
     assert Path(item["path"]).exists()
 
@@ -47,14 +47,14 @@ def test_worktree_inventory_failure_is_a_safety_stop(tmp_path: Path, monkeypatch
 
     import scripts.runtime_scratch as core
 
-    def fail(_repo):
+    def fail(_core, _repo):
         raise ScratchError("inventory unavailable")
 
-    monkeypatch.setattr(core, "_registered_worktrees", fail)
-    report = inspect_scratch_roots(repo, runtime_root_path=runtime)
+    monkeypatch.setattr(registry, "_registered_worktrees", fail)
+    report = registry.inspect_scratch_roots(core, repo, runtime_root_path=runtime)
     assert report["ok"] is False
     assert report["roots"][0]["disposition"].startswith("refuse-worktree-inventory-error")
-    assert gc_scratch_roots(repo, runtime_root_path=runtime, dry_run=False)["reclaimed_entries"] == 0
+    assert registry.gc_scratch_roots(core, repo, runtime_root_path=runtime, dry_run=False)["reclaimed_entries"] == 0
 
 
 def test_expired_dead_owner_can_be_recovered_without_deleting_evidence(tmp_path: Path) -> None:
@@ -66,11 +66,11 @@ def test_expired_dead_owner_can_be_recovered_without_deleting_evidence(tmp_path:
     receipt.update({"pid": 0, "expires_at": "2020-01-01T00:00:00Z", "state": "active"})
     (path / OWNER_RECEIPT_NAME).write_text(json.dumps(receipt), encoding="utf-8")
 
-    inspected = inspect_scratch_roots(repo, runtime_root_path=runtime)
+    inspected = registry.inspect_scratch_roots(core, repo, runtime_root_path=runtime)
     assert inspected["roots"][0]["orphaned"] is True
-    preview = recover_scratch_roots(repo, runtime_root_path=runtime)
+    preview = registry.recover_scratch_roots(core, repo, runtime_root_path=runtime)
     assert preview["roots"][0]["disposition"] == "would-recover-orphan"
-    recovered = recover_scratch_roots(repo, runtime_root_path=runtime, dry_run=False)
+    recovered = registry.recover_scratch_roots(core, repo, runtime_root_path=runtime, dry_run=False)
     assert recovered["recovered"] == 1
     saved = json.loads((path / OWNER_RECEIPT_NAME).read_text(encoding="utf-8"))
     assert saved["state"] == "failed"
@@ -93,10 +93,10 @@ def test_repo_local_scratch_recovery_is_not_mistaken_for_a_registered_worktree(t
     receipt.update({"pid": 0, "expires_at": "2020-01-01T00:00:00Z", "state": "active"})
     receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
 
-    inspected = inspect_scratch_roots(repo, runtime_root_path=runtime)
+    inspected = registry.inspect_scratch_roots(core, repo, runtime_root_path=runtime)
     assert inspected["roots"][0]["registered_worktree"] is False
     assert inspected["roots"][0]["orphaned"] is True
-    recovered = recover_scratch_roots(repo, runtime_root_path=runtime, dry_run=False)
+    recovered = registry.recover_scratch_roots(core, repo, runtime_root_path=runtime, dry_run=False)
     assert recovered["recovered"] == 1
 
 
@@ -117,7 +117,7 @@ def test_orphan_recovery_restores_a_crashed_hold_out_move(tmp_path: Path) -> Non
     receipt.update({"pid": 0, "expires_at": "2020-01-01T00:00:00Z", "state": "active"})
     receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
 
-    recovered = recover_scratch_roots(repo, runtime_root_path=runtime, dry_run=False)
+    recovered = registry.recover_scratch_roots(core, repo, runtime_root_path=runtime, dry_run=False)
     assert recovered["recovered"] == 1
     assert source.read_text(encoding="utf-8") == "TODO\n"
     saved = json.loads(receipt_path.read_text(encoding="utf-8"))
@@ -196,7 +196,6 @@ def test_owned_scratch_writes_receipt_and_cleans_success_and_failure(tmp_path: P
         assert receipt["state"] == "active"
         assert path.is_relative_to(runtime / "scratch")
     assert not (runtime / "scratch" / "quality-engine" / "success").exists()
-
     failed = owned_scratch(repo, "quality-engine", run_id="failure", runtime_root_path=runtime)
     with pytest.raises(RuntimeError, match="boom"):
         with failed:
@@ -204,12 +203,110 @@ def test_owned_scratch_writes_receipt_and_cleans_success_and_failure(tmp_path: P
     assert not (runtime / "scratch" / "quality-engine" / "failure").exists()
 
 
+def test_live_owner_reference_is_exact_read_only_and_identity_bound(tmp_path: Path, monkeypatch) -> None:
+    repo, runtime = _paths(tmp_path)
+    monkeypatch.setenv("CHARNESS_RUNTIME_ROOT", str(runtime))
+    monkeypatch.delenv("CHARNESS_RUNTIME_ROOT_AUTO", raising=False)
+    monkeypatch.delenv("CHARNESS_RUNTIME_REPO_KEY", raising=False)
+    parent = owned_scratch(repo, "critique-review", run_id="review-live")
+    parent.open()
+    parent.update(
+        attempt_id="attempt-1",
+        plan_sha256="a" * 64,
+        packet_identity="b" * 64,
+        reviewed_input_identity="c" * 64,
+        parent_receipt_identity="parent-1",
+    )
+
+    proof, receipt = validate_owned_scratch_reference(
+        repo,
+        parent.receipt_path,
+        producer="critique-review",
+        run_id="review-live",
+        expected_fields={
+            "attempt_id": "attempt-1",
+            "plan_sha256": "a" * 64,
+            "packet_identity": "b" * 64,
+            "reviewed_input_identity": "c" * 64,
+            "parent_receipt_identity": "parent-1",
+        },
+    )
+    assert proof.path == parent.path
+    assert proof._opened is False
+    assert parent._opened is True
+    assert receipt["pid"] == os.getpid()
+
+    with pytest.raises(ScratchError, match="exact default external"):
+        validate_owned_scratch_reference(
+            repo,
+            parent.receipt_path.parent / "alias.json",
+            producer="critique-review",
+            run_id="review-live",
+            expected_fields={},
+        )
+    with pytest.raises(ScratchError, match="attempt_id"):
+        validate_owned_scratch_reference(
+            repo,
+            parent.receipt_path,
+            producer="critique-review",
+            run_id="review-live",
+            expected_fields={"attempt_id": "another-attempt"},
+        )
+    foreign_repo = tmp_path / "foreign-repo"
+    foreign_repo.mkdir()
+    with pytest.raises(ScratchError, match="identity does not match"):
+        validate_owned_scratch_reference(
+            foreign_repo,
+            parent.receipt_path,
+            producer="critique-review",
+            run_id="review-live",
+            expected_fields={},
+        )
+    parent.close()
+
+
+def test_live_owner_reference_refuses_free_and_unverifiable_lock(tmp_path: Path, monkeypatch) -> None:
+    repo, runtime = _paths(tmp_path)
+    monkeypatch.setenv("CHARNESS_RUNTIME_ROOT", str(runtime))
+    monkeypatch.delenv("CHARNESS_RUNTIME_ROOT_AUTO", raising=False)
+    monkeypatch.delenv("CHARNESS_RUNTIME_REPO_KEY", raising=False)
+    parent = owned_scratch(repo, "critique-review", run_id="review-stale")
+    parent.open()
+    parent.update(
+        attempt_id="attempt-1",
+        plan_sha256="a" * 64,
+        packet_identity="b" * 64,
+        reviewed_input_identity="c" * 64,
+        parent_receipt_identity="parent-1",
+    )
+    fields = {
+        "attempt_id": "attempt-1",
+        "plan_sha256": "a" * 64,
+        "packet_identity": "b" * 64,
+        "reviewed_input_identity": "c" * 64,
+        "parent_receipt_identity": "parent-1",
+    }
+    parent._close_lock()
+    with pytest.raises(ScratchError, match="lock is not held"):
+        validate_owned_scratch_reference(
+            repo, parent.receipt_path, producer="critique-review", run_id="review-stale",
+            expected_fields=dict(fields),
+        )
+    parent.lock_path.unlink()
+    with pytest.raises(ScratchError, match="lock record is missing|lock cannot be verified"):
+        validate_owned_scratch_reference(
+            repo, parent.receipt_path, producer="critique-review", run_id="review-stale",
+            expected_fields=dict(fields),
+        )
+    parent.close()
+
+
 def test_inspection_reports_active_owner_and_exact_inventory(tmp_path: Path) -> None:
     repo, runtime = _paths(tmp_path)
     owner = owned_scratch(repo, "probe", run_id="live", runtime_root_path=runtime)
     path = owner.open()
     (path / "payload.bin").write_bytes(b"1234")
-    report = inspect_scratch_roots(repo, runtime_root_path=runtime)
+    report = registry.inspect_scratch_roots(core, repo, runtime_root_path=runtime)
     item = report["roots"][0]
     assert item["producer"] == "probe"
     assert item["entries"] == 3  # receipt, lock, and payload
@@ -287,10 +384,10 @@ def test_gc_refuses_a_forged_or_mismatched_owner_identity(tmp_path: Path) -> Non
     receipt.update({"owner": "foreign", "producer": "other", "run_id": "other"})
     receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
 
-    report = inspect_scratch_roots(repo, runtime_root_path=runtime)
+    report = registry.inspect_scratch_roots(core, repo, runtime_root_path=runtime)
     assert report["roots"][0]["status"] == "unknown"
     assert report["roots"][0]["disposition"] == "refuse-owner-identity"
-    gc = gc_scratch_roots(repo, runtime_root_path=runtime, dry_run=False)
+    gc = registry.gc_scratch_roots(core, repo, runtime_root_path=runtime, dry_run=False)
     assert gc["reclaimed_entries"] == 0
     assert path.exists()
 
@@ -333,12 +430,12 @@ def test_gc_is_dry_run_by_default_and_removes_only_expired_scratch(tmp_path: Pat
     expected_entries = len(expected_paths)
     expected_bytes = sum(item.stat().st_size for item in expected_paths if item.is_file())
 
-    preview = gc_scratch_roots(repo, runtime_root_path=runtime)
+    preview = registry.gc_scratch_roots(core, repo, runtime_root_path=runtime)
     assert preview["dry_run"] is True
     assert preview["roots"][0]["disposition"] == "would-remove"
     assert path.exists()
 
-    executed = gc_scratch_roots(repo, runtime_root_path=runtime, dry_run=False)
+    executed = registry.gc_scratch_roots(core, repo, runtime_root_path=runtime, dry_run=False)
     assert executed["reclaimed_entries"] == expected_entries
     assert executed["reclaimed_bytes"] == expected_bytes
     assert executed["roots"][0]["disposition"] == "removed"

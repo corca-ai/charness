@@ -257,7 +257,7 @@ def test_scope_and_coverage_mapping_deficits_name_missing_evidence(tmp_path: Pat
             "scope_paths": ["missing.py"],
         },
         tmp_path,
-        ["missing.py"],
+        [],
     )
 
     assert "in-scope file deficit" in scope[0]
@@ -287,7 +287,15 @@ def _fake_codex_setup(tmp_path: Path) -> tuple[Path, Path, list[str]]:
         encoding="utf-8",
     )
     fake.chmod(0o755)
-    command = [str(fake), "--output-last-message", str(runtime / "last-message.txt")]
+    command = task_run_lane_runner.lane_command(
+        executor="codex",
+        executable=str(fake),
+        effort="medium",
+        prompt="exercise the fake executor loop",
+        execution_runtime_path=runtime,
+        writable_dirs=(),
+        worktree=runtime,
+    )
     return runtime, counter, command
 
 

@@ -6,8 +6,10 @@ from pathlib import Path
 import pytest
 import yaml
 
+import scripts.cli.host_codex as host_codex
+
 from .support import build_test_path, clone_seeded_managed_home, make_fake_codex, run_cli
-from .test_managed_install import CURRENT_VERSION, load_charness_module
+from .test_managed_install import CURRENT_VERSION
 
 
 @pytest.mark.release_only
@@ -49,7 +51,6 @@ enabled = true
 
 
 def test_codex_primary_cache_entry_without_stale_enabled_version_prefers_source_version() -> None:
-    module = load_charness_module("charness_doctor_cache_selection_unit_under_test")
     stale_cache = {
         "marketplace": "charness",
         "plugin": "charness",
@@ -67,7 +68,7 @@ def test_codex_primary_cache_entry_without_stale_enabled_version_prefers_source_
         "manifest_version": CURRENT_VERSION,
     }
 
-    primary_cache, plugin_id = module.codex_primary_cache_entry(
+    primary_cache, plugin_id = host_codex.codex_primary_cache_entry(
         [stale_cache, current_cache],
         enabled_plugin_ids=["charness@charness", "charness@local"],
         source_version=CURRENT_VERSION,

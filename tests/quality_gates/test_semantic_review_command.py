@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import hashlib
-import importlib.util
 import json
 import os
 import shutil
@@ -20,6 +19,7 @@ import yaml
 
 from tests.fifo_witness import FifoWitness
 from tests.quality_gates.repo_shapes import install_committed_repo
+from tests.script_loader import load_script_module
 from tests.seed_cache import get_or_build
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -27,7 +27,7 @@ pytestmark = pytest.mark.boundary_contract(
     reason="observe the semantic review command's real backend child and typed process-interruption state"
 )
 WRAPPER = ROOT / "skills/public/critique/scripts/run_review.py"
-PACKET_HELPER = ROOT / "skills/public/critique/scripts/run_review_packet.py"
+SEMANTIC_INPUT_HELPER = ROOT / "skills/public/critique/scripts/semantic_review_input.py"
 
 
 @cache
@@ -168,15 +168,11 @@ if sleep_for:
     child = subprocess.Popen([sys.executable, "-c", child_source])
     time.sleep(sleep_for)
 prompt = sys.stdin.read()
-packet = re.search(r"^Packet identity \\(copy exactly\\): ([0-9a-f]{64})$", prompt, re.MULTILINE).group(1)
-reviewed = re.search(r"^Reviewed input identity \\(copy exactly\\): ([0-9a-f]{64})$", prompt, re.MULTILINE).group(1)
 lens = re.search(r"^Lens: (.+)$", prompt, re.MULTILINE).group(1)
 out = Path(sys.argv[sys.argv.index("-o") + 1])
 payload = {
     "kind": "charness.bounded_review.v1",
     "lens": lens,
-    "packet_sha256": packet,
-    "reviewed_input_identity_sha256": reviewed,
     "verdict": os.environ.get("FAKE_REVIEW_VERDICT", "pass"),
     "target_observations": json.loads(os.environ["FAKE_REVIEW_OBSERVATIONS"])
     if os.environ.get("FAKE_REVIEW_OBSERVATIONS")
@@ -253,7 +249,15 @@ def _run(
     scope: str = "semantic command",
     observations: object | None = None,
 ) -> subprocess.CompletedProcess[str]:
-    env = {**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}", "FAKE_REVIEW_VERDICT": verdict}
+    runtime = repo.parent / f"{repo.name}-external-runtime"
+    env = {
+        **os.environ,
+        "PATH": f"{bin_dir}:{os.environ['PATH']}",
+        "FAKE_REVIEW_VERDICT": verdict,
+        "CHARNESS_RUNTIME_ROOT": str(runtime),
+    }
+    env.pop("CHARNESS_RUNTIME_ROOT_AUTO", None)
+    env.pop("CHARNESS_RUNTIME_REPO_KEY", None)
     if sleep is not None:
         env["FAKE_REVIEW_SLEEP"] = str(sleep)
     if observations is not None:
@@ -289,14 +293,6 @@ def _run(
     if dry_run:
         command.append("--dry-run")
     return subprocess.run(command, cwd=ROOT, env=env, capture_output=True, text=True, check=False)
-
-
-def _packet_helper():
-    spec = importlib.util.spec_from_file_location("test_run_review_packet", PACKET_HELPER)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
 
 
 def _deleted_packet(path: str, content_sha256: str) -> dict:
@@ -479,7 +475,7 @@ def test_present_committed_ref_uses_bound_target_bytes_not_current_workspace(
             ],
         }
     }
-    module = _packet_helper()
+    module = load_script_module("test_semantic_review_input", SEMANTIC_INPUT_HELPER)
     run_dir = tmp_path / ".charness" / "committed-present"
     run_dir.mkdir(parents=True)
 
@@ -500,7 +496,7 @@ def test_committed_deletion_preimage_reaches_carrier_for_commit_and_range(
     _git(tmp_path, "add", "reviewed.txt")
     _git(tmp_path, "commit", "-m", "delete reviewed input")
     target = _git_output(tmp_path, "rev-parse", "HEAD")
-    module = _packet_helper()
+    module = load_script_module("test_semantic_review_input", SEMANTIC_INPUT_HELPER)
     for ref_kind, changed_ref, resolved in (
         ("commit", target, [target]),
         ("range", f"{parent}..{target}", [parent, target]),
@@ -532,7 +528,7 @@ def test_committed_deletion_preimage_reaches_carrier_for_commit_and_range(
 def test_deleted_preimage_refusals_on_one_tree(tmp_path: Path) -> None:
     _repo(tmp_path)
     (tmp_path / "reviewed.txt").unlink()
-    module = _packet_helper()
+    module = load_script_module("test_semantic_review_input", SEMANTIC_INPUT_HELPER)
 
     mismatch_dir = tmp_path / ".charness" / "hash-mismatch"
     mismatch_dir.mkdir(parents=True)
@@ -624,6 +620,7 @@ def test_delivered_pass_and_block_are_distinct_from_runner_failure(tmp_path: Pat
     blocked = _payload(
         _run(tmp_path, bin_dir, "delivered-block", verdict="block", packet_file=packet_file)
     )
+    assert not (tmp_path / ".charness" / "scratch").exists()
 
     assert passed["execution_state"] == "terminal"
     assert passed["reviewer_started"] is True
@@ -649,7 +646,7 @@ def test_worker_timeout_keeps_started_and_non_approval_state(tmp_path: Path) -> 
     result = _run(tmp_path, bin_dir, "backend-timeout", sleep=10)
     payload = _payload(result)
 
-    assert result.returncode == 1, result.stderr
+    assert result.returncode == 1, result.stderr + result.stdout
     assert payload["reviewer_started"] is True
     assert payload["delivery_state"] == "timed-out"
     assert payload["verdict_state"] == "not-applicable"
@@ -668,8 +665,9 @@ def test_worker_timeout_keeps_started_and_non_approval_state(tmp_path: Path) -> 
     assert manifest["use_class"] == "diagnostic-retryable"
     assert (durable / "review-prompt.md").is_file()
     assert (durable / "run-plan.json").is_file()
+    assert not (tmp_path / ".charness" / "scratch").exists()
     assert all(
-        not (isinstance(path, str) and path.startswith(".charness/scratch/"))
+        not (isinstance(path, str) and "/scratch/critique-review/" in path)
         for path in payload["paths"].values()
     )
 
@@ -819,13 +817,23 @@ def test_parent_interrupt_returns_typed_state_and_kills_backend_descendant(tmp_p
     bin_dir.mkdir()
     _fake_codex(bin_dir / "codex")
     packet_file = _install_cached_working_tree_packet(tmp_path)
+    runtime = tmp_path.parent / f"{tmp_path.name}-external-runtime"
+    runtime.mkdir()
+    sentinel = runtime / "keep-user-runtime-file.txt"
+    sentinel.write_text("preserve\n", encoding="utf-8")
+    user_change = tmp_path / "user-change.txt"
+    user_change.write_text("candidate-visible\n", encoding="utf-8")
+    run_id = "review-" + hashlib.sha256(b"parent-interrupt").hexdigest()[:32]
     with FifoWitness(tmp_path / "witness") as witness:
         env = {
             **os.environ,
             "PATH": f"{bin_dir}:{os.environ['PATH']}",
             "FAKE_REVIEW_SLEEP": "30",
             "FAKE_REVIEW_WITNESS": str(witness.path),
+            "CHARNESS_RUNTIME_ROOT": str(runtime),
         }
+        env.pop("CHARNESS_RUNTIME_ROOT_AUTO", None)
+        env.pop("CHARNESS_RUNTIME_REPO_KEY", None)
         command = [
             sys.executable,
             str(WRAPPER),
@@ -859,6 +867,11 @@ def test_parent_interrupt_returns_typed_state_and_kills_backend_descendant(tmp_p
         assert payload["delivery_state"] == "interrupted"
         assert payload["approval_eligible"] is False
         witness.wait_eof()
+        assert not (runtime / "scratch" / "critique-review" / run_id).exists()
+        assert sentinel.read_text(encoding="utf-8") == "preserve\n"
+        assert user_change.read_text(encoding="utf-8") == "candidate-visible\n"
+        assert "?? user-change.txt" in _git_output(tmp_path, "status", "--porcelain")
+        assert not (tmp_path / ".charness" / "scratch").exists()
 
 
 def test_the_deleted_preimage_digest_matches_the_binder_across_the_skill_boundary(
@@ -879,12 +892,7 @@ def test_the_deleted_preimage_digest_matches_the_binder_across_the_skill_boundar
     """
     from scripts.review import reviewed_input_identity as binder
 
-    spec = importlib.util.spec_from_file_location(
-        "semantic_review_input_drift",
-        ROOT / "skills/public/critique/scripts/semantic_review_input.py",
-    )
-    checker = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(checker)
+    checker = load_script_module("semantic_review_input_drift", SEMANTIC_INPUT_HELPER)
 
     repo = install_committed_repo(
         tmp_path / "repo",
@@ -897,12 +905,5 @@ def test_the_deleted_preimage_digest_matches_the_binder_across_the_skill_boundar
         assert worktree_bound in checker.worktree_deleted_digests(blob), path
         assert binder._sha256(blob) in checker.committed_deleted_digests(blob), path
 
-    # The substrate test must actually SELECT between them, or carrying two framings buys
-    # nothing -- this is the branch that was missing.
-    assert checker._preimage_digests({}) is checker.worktree_deleted_digests
-    assert (
-        checker._preimage_digests({"substrate_mode": "committed-ref", "changed_ref": "HEAD~1"})
-        is checker.committed_deleted_digests
-    )
     # The two exec-bit tags must stay distinguishable, or "matches under either" is vacuous.
     assert len(set(checker.worktree_deleted_digests(b"base\n"))) == 2

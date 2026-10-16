@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import errno
 import hashlib
 import json
 import os
@@ -308,7 +309,7 @@ def runner_liveness(record: Mapping[str, Any]) -> dict[str, Any]:
     that record is stale.
     """
     pid = record.get("runner_pid")
-    if not isinstance(pid, int) or pid <= 0:
+    if isinstance(pid, bool) or not isinstance(pid, int) or pid <= 0:
         return {"runner_pid": None, "alive": None}
     try:
         os.kill(pid, 0)
@@ -317,6 +318,12 @@ def runner_liveness(record: Mapping[str, Any]) -> dict[str, Any]:
         alive = False
     except PermissionError:
         alive = True
+    except OverflowError:
+        alive = None
+    except OSError as exc:
+        if exc.errno not in {errno.EINVAL, errno.EOVERFLOW}:
+            raise
+        alive = None
     return {"runner_pid": pid, "alive": alive}
 
 
@@ -342,7 +349,7 @@ def read_task_results(runtime_path: Path) -> list[dict[str, Any]]:
 
 
 def task_status(repo_root: Path, task_id: str | None = None) -> dict[str, Any]:
-    """Read the one external task-run result store without mutation."""
+    """Read this repo's task-run result store without mutation."""
     resolved_repo = _git_owner._require_git_root(repo_root)
     runtime_path = task_runtime_root(resolved_repo)
     if task_id is not None:

@@ -258,6 +258,7 @@ def build_packet(
     excluded_reviewed_paths: list[str] | None = None,
     excluded_reviewed_prefixes: list[str] | None = None,
     prepared_targets: list[str] | None = None,
+    reviewer_tier: str | None = None,
 ) -> dict[str, Any]:
     data = adapter.get("data", {}) or {}
     sections_decl = data.get("packet_sections", []) or []
@@ -302,7 +303,9 @@ def build_packet(
     if prepared_targets is not None:
         packet["prepared_targets"] = list(prepared_targets)
     if include_reviewer_tier:
-        packet["reviewer_tier_evidence"] = reviewer_tier_evidence(data)
+        packet["reviewer_tier_evidence"] = reviewer_tier_evidence(
+            data, requested_tier=reviewer_tier
+        )
     if include_reviewed_input_identity:
         packet["reviewed_input_identity"] = build_reviewed_input_identity(
             repo_root=repo_root,
@@ -330,9 +333,12 @@ def follow_up_scope_receipt(
     )
 
 
-def reviewer_tier_evidence(adapter_data: dict[str, Any]) -> dict[str, object]:
+def reviewer_tier_evidence(
+    adapter_data: dict[str, Any], *, requested_tier: str | None = None
+) -> dict[str, object]:
     reviewer_tiers = adapter_data.get("reviewer_tiers", {}) or {}
-    requested_fields = reviewer_tiers.get(DEFAULT_REVIEWER_TIER, {}) or {}
+    tier = requested_tier or DEFAULT_REVIEWER_TIER
+    requested_fields = reviewer_tiers.get(tier, {}) or {}
     runner = adapter_data.get("reviewer_runner")
     if not isinstance(runner, dict):
         runner = {
@@ -344,7 +350,7 @@ def reviewer_tier_evidence(adapter_data: dict[str, Any]) -> dict[str, object]:
     if execution_mode not in REVIEWER_EXECUTION_MODE_VALUES:
         execution_mode = DEFAULT_REVIEWER_EXECUTION_MODE
     return {
-        "requested_tier": DEFAULT_REVIEWER_TIER,
+        "requested_tier": tier,
         "requested_spawn_fields": dict(requested_fields),
         "host_exposure_state": "pending-parent-spawn",
         "application_state": "unverified-by-packet",

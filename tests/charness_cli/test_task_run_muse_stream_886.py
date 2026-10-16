@@ -14,6 +14,7 @@ import json
 import sys
 from pathlib import Path
 
+from scripts.task_run import task_run_evidence as evidence
 from scripts.task_run import task_run_execution as execution
 from scripts.task_run import task_run_muse_events as muse_events
 from scripts.task_run import task_run_progress as prog
@@ -335,7 +336,8 @@ def test_stream_diagnostics_reads_past_old_tail_cuts(tmp_path: Path) -> None:
     stdout_log.write_text("late report\n", encoding="utf-8")
     stderr_log.write_text("", encoding="utf-8")
     result: dict = {}
-    execution._muse_stream_diagnostics(result, stdout_log, stderr_log, "muse")
+    event_window = evidence._log_window(event_log, 0)
+    muse_events._muse_stream_diagnostics(result, stdout_log, stderr_log, "muse", event_window)
     diagnostics = result["stream_diagnostics"]
     assert diagnostics["retries"] == 1
     assert diagnostics["last_error_kind"] == "transport"
@@ -563,13 +565,13 @@ def test_retain_muse_events_keeps_report_and_terminates_log(tmp_path: Path) -> N
         json.dumps(_delta("EDITING\n")) + "\n" + json.dumps(_terminal("done\n")),
         encoding="utf-8",
     )
-    execution._retain_muse_events(stdout_log, event_log)
+    muse_events._retain_muse_events(stdout_log, event_log)
     assert stdout_log.read_text(encoding="utf-8") == "done\n"
     assert event_log.read_text(encoding="utf-8").endswith("\n")
 
     plain_log = tmp_path / "plain.stdout.log"
     plain_log.write_text("task complete\n", encoding="utf-8")
-    execution._retain_muse_events(plain_log, tmp_path / "plain.events.log")
+    muse_events._retain_muse_events(plain_log, tmp_path / "plain.events.log")
     assert plain_log.read_text(encoding="utf-8") == "task complete\n"
     assert not (tmp_path / "plain.events.log").exists()
 
@@ -583,13 +585,98 @@ def test_muse_stream_diagnostics_attaches_for_muse_only(tmp_path: Path) -> None:
         "muse: retrying meta model stream in 1000ms (attempt 2/10)\n",
         encoding="utf-8",
     )
+    event_window = evidence._log_window(stdout_log.with_name("muse.events.log"), 0)
     result: dict = {}
-    execution._muse_stream_diagnostics(result, stdout_log, stderr_log, "muse")
+    muse_events._muse_stream_diagnostics(result, stdout_log, stderr_log, "muse", event_window)
     assert result["stream_diagnostics"]["source"] == "stderr"
     assert result["stream_diagnostics"]["retries"] == 1
     codex_result: dict = {}
-    execution._muse_stream_diagnostics(codex_result, stdout_log, stderr_log, "codex")
+    muse_events._muse_stream_diagnostics(codex_result, stdout_log, stderr_log, "codex", event_window)
     assert "stream_diagnostics" not in codex_result
+
+
+def test_execution_diagnostics_are_scoped_to_this_events_log_window(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """A reused task log keeps old evidence without reusing it for this run."""
+    stdout_log = tmp_path / "muse.stdout.log"
+    stderr_log = tmp_path / "muse.stderr.log"
+    event_log = tmp_path / "muse.events.log"
+    event_log.parent.mkdir(parents=True, exist_ok=True)
+
+    previous_bytes = (
+        json.dumps(
+            _status(
+                "retrying meta model stream in 250ms (attempt 2/4)",
+                "retry_scheduled",
+                {"kind": "external_attempt", "error_kind": "quota"},
+            )
+        )
+        + "\n"
+        + json.dumps(_terminal("", terminal="failed", reason="usage limit exceeded; retry after 30 minutes"))
+        + "\n"
+    ).encode("utf-8")
+    current_bytes = (
+        json.dumps(
+            _status(
+                "retrying meta model stream in 1000ms (attempt 2/10)",
+                "retry_scheduled",
+                {"kind": "external_attempt", "error_kind": "transport"},
+            )
+        )
+        + "\n"
+        + json.dumps(_terminal("", terminal="failed", reason="transport error: refused"))
+        + "\n"
+    ).encode("utf-8")
+    transcripts = iter((previous_bytes, current_bytes))
+
+    def write_fake_execution(_command, _prompt, **kwargs):
+        kwargs["stdout_log"].write_bytes(next(transcripts))
+        kwargs["stderr_log"].write_bytes(b"")
+        return {"exit_code": 1, "timed_out": False, "interrupted": False}
+
+    monkeypatch.setattr(execution, "_run_executor_invocation", write_fake_execution)
+
+    def execute_once() -> dict:
+        return execution._execute_codex(
+            ["muse"],
+            prompt="diagnose one bounded run",
+            target_path=tmp_path,
+            configured_env={},
+            stdout_log=stdout_log,
+            stderr_log=stderr_log,
+            timeout_seconds=30,
+            executor="muse",
+        )
+
+    first = execute_once()
+    second = execute_once()
+
+    first_window = first["event_log_window"]
+    second_window = second["event_log_window"]
+    raw_events = event_log.read_bytes()
+    assert raw_events[: len(previous_bytes)] == previous_bytes
+    assert first_window == {
+        "path": str(event_log),
+        "offset_bytes": 0,
+        "byte_count": len(previous_bytes),
+    }
+    assert raw_events[
+        first_window["offset_bytes"] : first_window["offset_bytes"] + first_window["byte_count"]
+    ] == previous_bytes
+    assert second_window == {
+        "path": str(event_log),
+        "offset_bytes": len(previous_bytes),
+        "byte_count": len(current_bytes),
+    }
+    assert raw_events[
+        second_window["offset_bytes"] : second_window["offset_bytes"] + second_window["byte_count"]
+    ] == current_bytes
+    assert len(raw_events) == len(previous_bytes) + len(current_bytes)
+    assert first["stream_diagnostics"]["retries"] == 1
+    assert second["stream_diagnostics"]["retries"] == 1
+    assert "usage limit exceeded; retry after 30 minutes" in first["executor_unavailable"]["message"]
+    assert "executor_unavailable" not in second
 
 
 def test_classify_failure_prefers_muse_terminal_reason() -> None:

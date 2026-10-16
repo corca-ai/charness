@@ -79,6 +79,12 @@ def validate_retained_inputs(  # noqa: C901, PLR0915
     checks["plan_sha256"] = {"expected": owner.get("plan_sha256"), "actual": actual_plan}
     if not isinstance(owner.get("plan_sha256"), str) or owner.get("plan_sha256") != actual_plan:
         return invalid("retained run plan bytes do not match the owner receipt")
+    expected_prompt = plan.get("prompt_sha256")
+    prompt_path = paths.get("prompt")
+    actual_prompt = support.sha256(prompt_path) if prompt_path is not None and prompt_path.is_file() else None
+    checks["prompt_sha256"] = {"expected": expected_prompt, "actual": actual_prompt}
+    if not isinstance(expected_prompt, str) or actual_prompt != expected_prompt:
+        return invalid("retained prompt bytes do not match the run plan")
 
     retained_paths = {
         "receipt": "receipt",
@@ -181,7 +187,20 @@ def validate_retained_inputs(  # noqa: C901, PLR0915
         if not isinstance(value, str) or not isinstance(entry.get("path"), str):
             return invalid("retained semantic-input manifest entry has no carrier path")
         try:
-            carrier = support.repo_path(root, value, label="retained semantic carrier", require_file=True)
+            raw_carrier = Path(value)
+            if raw_carrier.is_absolute():
+                carrier = raw_carrier
+                relative = carrier.relative_to(paths["run_dir"])
+                current = paths["run_dir"]
+                for part in relative.parts:
+                    current = current / part
+                    if current.is_symlink():
+                        return invalid("retained semantic carrier crosses a symlink")
+                carrier = carrier.resolve()
+            else:
+                carrier = support.repo_path(root, value, label="retained semantic carrier", require_file=True)
+            if not carrier.is_file():
+                return invalid("retained semantic carrier is missing")
             carrier.resolve().relative_to(semantic_root)
         except (support.RunReviewError, ValueError):
             return invalid("retained semantic carrier escaped its run")
@@ -202,7 +221,7 @@ def validate_retained_inputs(  # noqa: C901, PLR0915
     return {"status": "verified", "ok": True, "checks": checks}
 
 
-def validate_promoted_chain(
+def validate_promoted_chain_integrity(
     root: Path,
     paths: dict[str, str],
     final_carrier: dict[str, Any],
@@ -301,13 +320,6 @@ def validate_promoted_chain(
             "reason": "promoted worker report identity does not match the requested attempt",
             "identity_binding": binding,
         }
-    expected_approval = final_carrier.get("approval_eligible") is True
-    if manifest.get("approval_eligible") is not expected_approval:
-        return {
-            "status": "invalid",
-            "ok": False,
-            "reason": "promoted attempt manifest disagrees with the final lifecycle carrier",
-        }
     return {
         "status": "verified",
         "ok": True,
@@ -315,4 +327,38 @@ def validate_promoted_chain(
         "attempt_manifest": support.relative(root, manifest_path),
         "identity_binding": binding,
         "file_integrity": {"status": "verified", "files": len(files)},
+        "_manifest_approval_eligible": manifest.get("approval_eligible"),
     }
+
+
+def validate_promoted_chain(
+    root: Path,
+    paths: dict[str, str],
+    final_carrier: dict[str, Any],
+    expected: dict[str, Any],
+    *,
+    support: Any,
+    carrier_validation: Any,
+    promotion: Any,
+) -> dict[str, Any]:
+    """Validate the promoted chain as a consumer, including approval state."""
+    result = validate_promoted_chain_integrity(
+        root,
+        paths,
+        final_carrier,
+        expected,
+        support=support,
+        carrier_validation=carrier_validation,
+        promotion=promotion,
+    )
+    if not result.get("ok"):
+        return result
+    if result.pop("_manifest_approval_eligible", None) is not (
+        final_carrier.get("approval_eligible") is True
+    ):
+        return {
+            "status": "invalid",
+            "ok": False,
+            "reason": "promoted attempt manifest disagrees with the final lifecycle carrier",
+        }
+    return result

@@ -7,6 +7,11 @@ from pathlib import Path
 import pytest
 import yaml
 
+import scripts.cli.bootstrap_probe as cli_bootstrap_probe
+import scripts.cli.cmd_update as cli_cmd_update
+import scripts.cli.tool_next_steps as cli_tool_next_steps
+import scripts.cli.tool_response as cli_tool_response
+import scripts.cli.tool_update as cli_tool_update
 from tests.repo_copy import clone_seeded_charness_repo
 
 from .support import (
@@ -16,7 +21,7 @@ from .support import (
     make_support_sync_fixture,
     run_cli_path,
 )
-from .test_managed_install import init_managed_home_from_repo, load_charness_module
+from .test_managed_install import init_managed_home_from_repo
 from .tool_fakes import make_fake_nose
 
 
@@ -109,9 +114,7 @@ def test_probe_self_release_defaults_to_the_declared_repo(tmp_path: Path, monkey
     Every existing probe test supplies a repo explicitly, so a wrong default would
     have surfaced first as a version check pointed at the wrong repository.
     """
-
-    module = load_charness_module("charness_probe_self_release_default_under_test")
-    repo = module.self_release_repo()
+    repo = cli_bootstrap_probe.self_release_repo()
     fixture = tmp_path / "releases.json"
     fixture.write_text(
         json.dumps({repo: {"tag_name": "v9.9.9", "html_url": "https://example.invalid/r"}}),
@@ -119,7 +122,7 @@ def test_probe_self_release_defaults_to_the_declared_repo(tmp_path: Path, monkey
     )
     monkeypatch.setenv("CHARNESS_RELEASE_PROBE_FIXTURES", str(fixture))
 
-    release = module.probe_self_release()
+    release = cli_bootstrap_probe.probe_self_release()
 
     assert release["repo"] == repo
     assert release["latest_tag"] == "v9.9.9"
@@ -127,9 +130,8 @@ def test_probe_self_release_defaults_to_the_declared_repo(tmp_path: Path, monkey
 
 
 def test_update_human_summary_without_version_none_prints_tool_statuses(capsys) -> None:
-    module = load_charness_module("charness_update_output_unit_under_test")
 
-    module.print_update_human_summary(
+    cli_cmd_update.print_update_human_summary(
         {
             "package_id": "charness",
             "checkout": {"pulled": False, "repo_root": "/tmp/charness"},
@@ -182,12 +184,11 @@ def test_update_human_summary_without_version_none_prints_tool_statuses(capsys) 
 
 
 def test_tool_update_lines_empty_results_render_nothing(capsys) -> None:
-    module = load_charness_module("charness_tool_update_lines_empty_under_test")
 
-    assert module._tool_update_lines({"results": {}}) == []
-    assert module._tool_update_lines({}) == []
+    assert cli_tool_update._tool_update_lines({"results": {}}) == []
+    assert cli_tool_update._tool_update_lines({}) == []
 
-    module.print_update_human_summary(
+    cli_cmd_update.print_update_human_summary(
         {
             "package_id": "charness",
             "checkout": {"pulled": False, "repo_root": "/tmp/charness"},
@@ -201,7 +202,6 @@ def test_tool_update_lines_empty_results_render_nothing(capsys) -> None:
 
 
 def test_tool_response_projection_hides_raw_probe_evidence_by_default() -> None:
-    module = load_charness_module("charness_tool_response_projection_under_test")
     payload = {
         "repo_root": "/tmp/charness",
         "managed_checkout": True,
@@ -226,7 +226,7 @@ def test_tool_response_projection_hides_raw_probe_evidence_by_default() -> None:
         },
     }
 
-    projected = module.project_tool_response(payload, event="tool-update")
+    projected = cli_tool_response.project_tool_response(payload, event="tool-update")
 
     result = projected["results"]["demo"]
     assert projected["response_level"] == "summary"
@@ -248,7 +248,6 @@ def test_tool_response_projection_hides_raw_probe_evidence_by_default() -> None:
 
 
 def test_aggregate_tool_response_hides_per_tool_records_but_names_attention() -> None:
-    module = load_charness_module("charness_aggregate_tool_response_projection_under_test")
     payload = {
         "repo_root": "/tmp/charness",
         "managed_checkout": True,
@@ -282,7 +281,7 @@ def test_aggregate_tool_response_hides_per_tool_records_but_names_attention() ->
         },
     }
 
-    projected = module.project_tool_response(payload, event="tool-update")
+    projected = cli_tool_response.project_tool_response(payload, event="tool-update")
 
     assert projected["summary"] == {
         "tool_count": 4,
@@ -303,7 +302,6 @@ def test_aggregate_tool_response_hides_per_tool_records_but_names_attention() ->
 
 
 def test_mutating_aggregate_next_action_points_at_locks_and_readonly_doctor_stays_detail() -> None:
-    module = load_charness_module("charness_next_action_event_split_under_test")
     payload = {
         "results": {
             "manual-tool": {"update": {"status": "manual", "mode": "manual"}},
@@ -311,13 +309,13 @@ def test_mutating_aggregate_next_action_points_at_locks_and_readonly_doctor_stay
         }
     }
     for event in ("tool-update", "tool-install", "tool-repair", "tool-sync-support"):
-        projected = module.project_tool_response(payload, event=event)
+        projected = cli_tool_response.project_tool_response(payload, event=event)
         assert "integrations/locks/" in projected["next_step"], event
         assert "execute the operation again" in projected["next_step"], event
 
     # an explicit dry-run / preview (execute=False) keeps the plain message —
     # nothing was executed, so a --detail re-run is safe inspection
-    preview = module.project_tool_response(dict(payload, execute=False), event="tool-repair")
+    preview = cli_tool_response.project_tool_response(dict(payload, execute=False), event="tool-repair")
     assert preview["next_step"] == "Use --detail to inspect the listed tool records."
 
     doctor_payload = {
@@ -326,12 +324,11 @@ def test_mutating_aggregate_next_action_points_at_locks_and_readonly_doctor_stay
             "ok-tool": {"doctor": {"doctor_status": "missing", "doctor_disposition": "blocking-install-needed"}},
         }
     }
-    projected = module.project_tool_response(doctor_payload, event="tool-doctor")
+    projected = cli_tool_response.project_tool_response(doctor_payload, event="tool-doctor")
     assert projected["next_step"] == "Use --detail to inspect the listed tool records."
 
 
 def test_compact_doctor_projection_carries_the_detected_version() -> None:
-    module = load_charness_module("charness_compact_doctor_version_under_test")
     payload = {
         "results": {
             "demo": {
@@ -344,14 +341,14 @@ def test_compact_doctor_projection_carries_the_detected_version() -> None:
         }
     }
 
-    projected = module.project_tool_response(payload, event="tool-doctor")
+    projected = cli_tool_response.project_tool_response(payload, event="tool-doctor")
 
     assert projected["results"]["demo"]["doctor"]["observed_version"] == "0.31.2"
     # the rest of the version block stays detail-only
     assert "policy" not in str(projected["results"]["demo"]["doctor"])
 
     # a doctor result without a version block projects without the key
-    bare = module.project_tool_response(
+    bare = cli_tool_response.project_tool_response(
         {"results": {"demo": {"doctor": {"doctor_status": "ok", "doctor_disposition": "ready"}}}},
         event="tool-doctor",
     )
@@ -359,13 +356,12 @@ def test_compact_doctor_projection_carries_the_detected_version() -> None:
 
 
 def test_tool_response_projection_tolerates_malformed_result_entries() -> None:
-    module = load_charness_module("charness_tool_response_projection_malformed_entries_under_test")
 
-    empty = module.project_tool_response({"results": ["not-a-mapping"]}, event="tool-update")
+    empty = cli_tool_response.project_tool_response({"results": ["not-a-mapping"]}, event="tool-update")
     assert empty["summary"] == {"tool_count": 0, "status_counts": {}}
     assert empty["results"] == {}
 
-    projected = module.project_tool_response(
+    projected = cli_tool_response.project_tool_response(
         {
             "results": {
                 "manual-tool": {"update": {"status": "manual", "mode": "manual"}},
@@ -382,9 +378,8 @@ def test_tool_response_projection_tolerates_malformed_result_entries() -> None:
 
 
 def test_package_manager_tool_next_step_includes_version_transition() -> None:
-    module = load_charness_module("charness_package_manager_next_step_under_test")
 
-    next_step = module._package_manager_tool_next_step(
+    next_step = cli_tool_next_steps._package_manager_tool_next_step(
         "nose",
         {
             "mode": "package_manager",
@@ -397,7 +392,7 @@ def test_package_manager_tool_next_step_includes_version_transition() -> None:
 
     assert next_step == "`nose` was updated via `cargo` package `nose-cli` (0.17.0 -> 0.18.0)."
 
-    refreshed_next_step = module._package_manager_tool_next_step(
+    refreshed_next_step = cli_tool_next_steps._package_manager_tool_next_step(
         "nose",
         {
             "mode": "package_manager",
@@ -412,9 +407,8 @@ def test_package_manager_tool_next_step_includes_version_transition() -> None:
 
 
 def test_print_next_actions_labels_repo_onboarding_primary_and_merges(capsys) -> None:
-    module = load_charness_module("charness_next_actions_unit_under_test")
 
-    module._print_next_actions(
+    cli_cmd_update._print_next_actions(
         {
             "next_action": {
                 "kind": "repo-init",

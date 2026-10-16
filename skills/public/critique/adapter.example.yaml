@@ -2,20 +2,21 @@ version: 1
 repo: CHANGE_ME
 language: en
 output_dir: charness-artifacts/critique
-# Host-specific translation of the portable reviewer tiers defined in
-# skills/shared/references/fresh-eye-subagent-review.md. The portable policy
-# names only the tier; each host maps it to that host's reviewer fields.
-# Set the values for the host this repo runs on. Known host defaults:
+# Translation of portable reviewer tiers in
+# skills/shared/references/fresh-eye-subagent-review.md. Select a tier with
+# `run_review.py --reviewer-tier`; otherwise the prepared packet's tier applies.
+# File-backed workers apply configured model/reasoning_effort through supported
+# backend options and report service_tier/fork_turns as unsupported. Typed
+# subagent hosts may apply their supported spawn fields. Example mappings:
 #   Codex host:        high-leverage -> model: gpt-6-luna,
 #                        reasoning_effort: xhigh, service_tier: priority,
 #                        fork_turns: none
 #                      medium -> model: gpt-6-luna, reasoning_effort: xhigh,
 #                        fork_turns: none
 #   Claude Code host:  high-leverage -> model: sonnet-4.6
-# reasoning_effort / service_tier only apply where the host exposes them.
-# These are requested spawn fields. Host acceptance or sending does not prove the
-# provider applied them; record application only when the host confirms it. A
-# Codex role / `agent_type` may override caller-selected model or effort.
+# Host acceptance or sending does not prove provider application; record that
+# only when the provider confirms it. A Codex role / `agent_type` may override
+# caller-selected model or effort in typed-subagent mode.
 reviewer_tiers:
   high-leverage:
     model: gpt-6-luna

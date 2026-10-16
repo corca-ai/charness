@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
 from skills.shared.scripts import reviewer_worker_backend as backend
+from skills.shared.scripts import reviewer_worker_runner_support as runner_support
 from skills.shared.scripts import reviewer_worker_runtime as runtime
 from skills.shared.scripts.reviewer_process import ReviewerProcessError
 
@@ -169,6 +172,125 @@ def test_claude_command_drops_top_level_schema_key(tmp_path: Path) -> None:
     assert payload["properties"] == {"kind": {"type": "string"}}
 
 
+@pytest.mark.parametrize(
+    ("backend_name", "expected"),
+    [
+        (
+            "codex_exec",
+            ["-m", "gpt-5.6-luna", "-c", "model_reasoning_effort=xhigh"],
+        ),
+        ("claude_p", ["--model", "gpt-5.6-luna", "--effort", "xhigh"]),
+    ],
+)
+def test_configured_model_and_effort_reach_backend_argv(
+    tmp_path: Path, backend_name: str, expected: list[str]
+) -> None:
+    paths = _inputs(tmp_path)
+    command = backend._command(
+        backend_name,
+        paths["workspace"],
+        paths["schema"],
+        paths["raw"],
+        model="gpt-5.6-luna",
+        reasoning_effort="xhigh",
+    )
+    expected_pairs = [
+        (expected[index], expected[index + 1])
+        for index, token in enumerate(expected[:-1])
+        if token in {"-m", "-c", "--model", "--effort"}
+    ]
+    assert all(
+        command[command.index(flag) : command.index(flag) + 2] == [flag, value]
+        for flag, value in expected_pairs
+    )
+    assert "--service-tier" not in command
+    assert "--fork-turns" not in command
+
+
+def test_backend_defaults_are_inherited_only_without_an_override(tmp_path: Path) -> None:
+    paths = _inputs(tmp_path)
+    command = backend._command("codex_exec", paths["workspace"], paths["schema"], paths["raw"])
+    assert "-m" not in command
+    assert "model_reasoning_effort=" not in " ".join(command)
+
+
+def test_selected_adapter_tier_supplies_supported_and_unsupported_fields(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        runner_support,
+        "adapter",
+        lambda _root: {
+            "data": {
+                "reviewer_runner": {"mode": "file-backed-worker", "backend": "codex_exec"},
+                "reviewer_tiers": {
+                    "medium": {
+                        "model": "gpt-5.6-luna",
+                        "reasoning_effort": "xhigh",
+                        "service_tier": "priority",
+                        "fork_turns": "none",
+                    }
+                },
+            }
+        },
+    )
+    args = SimpleNamespace(
+        execution_mode=None,
+        backend=None,
+        timeout_seconds=None,
+        reviewer_tier="medium",
+    )
+    mode, selected_backend, timeout, reviewer = runner_support.select_runner(args, tmp_path)
+    assert (mode, selected_backend) == ("file-backed-worker", "codex_exec")
+    assert timeout == 900
+    assert reviewer == {
+        "tier": "medium",
+        "model": "gpt-5.6-luna",
+        "reasoning_effort": "xhigh",
+        "unsupported_fields": {"service_tier": "priority", "fork_turns": "none"},
+    }
+
+
+def test_reviewer_worker_arguments_include_resolved_reviewer_fields() -> None:
+    command = runner_support.reviewer_worker_arguments(
+        tier="medium",
+        model="gpt-5.6-luna",
+        reasoning_effort="xhigh",
+        unsupported_fields={"service_tier": "priority", "fork_turns": "none"},
+    )
+    assert command[command.index("--reviewer-tier") + 1] == "medium"
+    assert command[command.index("--reviewer-model") + 1] == "gpt-5.6-luna"
+    assert command[command.index("--reviewer-reasoning-effort") + 1] == "xhigh"
+    assert command.count("--unsupported-reviewer-field") == 2
+    assert command[-4:] == [
+        "--unsupported-reviewer-field",
+        "service_tier=priority",
+        "--unsupported-reviewer-field",
+        "fork_turns=none",
+    ]
+
+
+def test_requested_empty_model_is_rejected(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        runner_support,
+        "adapter",
+        lambda _root: {
+            "data": {
+                "reviewer_runner": {"mode": "file-backed-worker", "backend": "codex_exec"},
+                "reviewer_tiers": {"medium": {"model": " "}},
+            }
+        },
+    )
+    args = SimpleNamespace(
+        execution_mode=None,
+        backend=None,
+        timeout_seconds=None,
+        reviewer_tier="medium",
+    )
+    with pytest.raises(ValueError, match="reviewer_tiers.medium.model"):
+        runner_support.select_runner(args, tmp_path)
+
+
 def test_nonzero_exit_surfaces_the_backend_stderr_line(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -263,3 +385,24 @@ def test_runtime_delegates_backend_construction_execution_and_normalization() ->
         assert f"def {symbol}" not in runtime_source
         assert f"def {symbol}" in backend_source
     assert "execute_backend(" in runtime_source
+
+
+def test_owned_runner_refuses_hardlinked_input_and_inode_aliasing(tmp_path: Path) -> None:
+    owner_dir = tmp_path / "owner"
+    owner_dir.mkdir()
+    outside = tmp_path / "outside.txt"
+    outside.write_text("outside bytes\n", encoding="utf-8")
+    linked = owner_dir / "prompt.md"
+    os.link(outside, linked)
+    owner = SimpleNamespace(path=owner_dir.resolve())
+    with pytest.raises(ValueError, match="hardlinked"):
+        runner_support.resolve_runner_path(tmp_path, linked, label="prompt file", owner=owner)
+    first = owner_dir / "a.txt"
+    second = owner_dir / "b.txt"
+    first.write_text("shared\n", encoding="utf-8")
+    os.link(first, second)
+    with pytest.raises(ValueError, match="distinct files"):
+        runner_support.require_distinct_runner_paths((first.resolve(), second.resolve()))
+    third = owner_dir / "c.txt"
+    third.write_text("other\n", encoding="utf-8")
+    runner_support.require_distinct_runner_paths((first.resolve(), third.resolve()))

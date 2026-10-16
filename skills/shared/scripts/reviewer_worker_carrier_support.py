@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -23,24 +24,23 @@ def _load_delivery_fields():
         raise ImportError(f"unable to load package-local helper: {candidate}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    return module.PARENT_RECEIPT_ID_RE
+    return module.PARENT_RECEIPT_ID_RE, module.validate_joined_fields
 
 
-PARENT_RECEIPT_ID_RE = _load_delivery_fields()
+PARENT_RECEIPT_ID_RE, _validate_joined_fields = _load_delivery_fields()
 EXPECTED_PACKET_KIND = "charness.critique_prepare_packet"
 
 
 def _load_result_contract():
-    here = Path(__file__).resolve()
-    for ancestor in (here.parent, *here.parents):
-        candidate = ancestor / "reviewer_result_contract.py"
-        if candidate.is_file():
-            spec = importlib.util.spec_from_file_location("charness_reviewer_result_contract", candidate)
-            if spec is not None and spec.loader is not None:
-                module = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(module)
-                return module
-    raise ImportError("package reviewer_result_contract.py not found")
+    candidate = Path(__file__).resolve().with_name("reviewer_result_contract.py")
+    if not candidate.is_file():
+        raise ImportError(f"package-local reviewer_result_contract.py not found: {candidate}")
+    spec = importlib.util.spec_from_file_location("charness_reviewer_result_contract", candidate)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"unable to load package-local reviewer_result_contract.py: {candidate}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def _load_capability_contract():
@@ -113,16 +113,60 @@ def _hidden_runtime_relative(rel: Path) -> bool:
     return bool(rel.parts) and rel.parts[0] in HIDDEN_RUNTIME_ROOTS
 
 
-def _report_path(repo_root: Path, value: str, *, allow_hidden: bool = False) -> Path:
+def _report_path(
+    repo_root: Path,
+    value: str,
+    *,
+    allow_hidden: bool = False,
+    owned_root: Path | None = None,
+) -> Path:
     report_path = Path(value.strip().strip("`"))
     if not report_path.is_absolute() and ".." in report_path.parts:
         raise WorkerCarrierError("worker report path must be a safe repo-relative path without traversal, or an absolute path resolved inside the repository")
+    if owned_root is not None and report_path.is_absolute():
+        resolved_owner = owned_root.resolve()
+        lexical = Path(os.path.abspath(report_path))
+        try:
+            relative = lexical.relative_to(resolved_owner)
+        except ValueError:
+            relative = None
+        if relative is not None:
+            current = resolved_owner
+            for part in relative.parts:
+                current = current / part
+                if current.is_symlink():
+                    raise WorkerCarrierError(
+                        f"worker report carrier crosses an owned scratch symlink: {value}"
+                    )
+            report_file = report_path.resolve()
+            try:
+                report_file.relative_to(resolved_owner)
+            except ValueError as exc:
+                raise WorkerCarrierError(
+                    f"worker report carrier resolves outside the exact owned scratch root: {value}"
+                ) from exc
+            if not report_file.is_file():
+                raise WorkerCarrierError(
+                    f"worker report carrier does not exist in its authorized root: {value}"
+                )
+            try:
+                if report_file.stat().st_nlink > 1:
+                    raise WorkerCarrierError(
+                        f"worker report carrier is hardlinked outside private ownership: {value}"
+                    )
+            except OSError as exc:
+                raise WorkerCarrierError(
+                    f"worker report carrier cannot be verified inside the owned root: {value}: {exc}"
+                ) from exc
+            return report_file
     resolved_root = repo_root.resolve()
     report_file = (report_path if report_path.is_absolute() else resolved_root / report_path).resolve()
     try:
         rel = report_file.relative_to(resolved_root)
     except ValueError as exc:
-        raise WorkerCarrierError(f"worker report carrier path resolves outside the repository: {value}") from exc
+        raise WorkerCarrierError(
+            f"worker report carrier is outside the exact owned scratch root: {value}"
+        ) from exc
     cited_hidden = (not report_path.is_absolute() and _hidden_runtime_relative(report_path)) or _hidden_runtime_relative(rel)
     if cited_hidden and not allow_hidden:
         raise WorkerCarrierError(
@@ -130,7 +174,7 @@ def _report_path(repo_root: Path, value: str, *, allow_hidden: bool = False) -> 
             "Promote worker-report.yaml under charness-artifacts/critique/workers/<attempt>/ and cite that path."
         )
     if not report_file.is_file():
-        raise WorkerCarrierError(f"worker report carrier does not exist inside the repository: {value}")
+        raise WorkerCarrierError(f"worker report carrier does not exist in its authorized root: {value}")
     return report_file
 
 
@@ -149,6 +193,7 @@ def _validate_receipt_and_result(
     repo_root: Path,
     report: dict[str, Any],
     require_pass: bool = True,
+    owned_root: Path | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any], str]:
     # Coverage enforcement lives in the ledger join below, which verifies the
     # declared set against the attempt and provenance before enforcing it.
@@ -160,7 +205,7 @@ def _validate_receipt_and_result(
     receipt_value = report.get("receipt_path")
     if not isinstance(receipt_value, str):
         raise WorkerCarrierError("worker report has no repo-readable receipt path")
-    receipt = _read_json(_report_path(repo_root, receipt_value, allow_hidden=True), "worker receipt")
+    receipt = _read_json(_report_path(repo_root, receipt_value, allow_hidden=True, owned_root=owned_root), "worker receipt")
     if receipt.get("schema_version") != "charness.reviewer_worker.v1":
         raise WorkerCarrierError("worker receipt has the wrong schema")
     if receipt.get("status") != "succeeded" or receipt.get("terminal") is not True:
@@ -177,7 +222,7 @@ def _validate_receipt_and_result(
     output_value = receipt.get("output_file")
     if not isinstance(output_value, str):
         raise WorkerCarrierError("worker receipt has no output file")
-    output = _report_path(repo_root, output_value, allow_hidden=True)
+    output = _report_path(repo_root, output_value, allow_hidden=True, owned_root=owned_root)
     output_hash = _sha256(output)
     if output_hash != receipt.get("output_sha256") or output.stat().st_size != receipt.get("output_size"):
         raise WorkerCarrierError("worker output does not match the typed receipt hash/size")
@@ -202,37 +247,6 @@ def _validate_receipt_and_result(
     return receipt, result, output_hash
 
 
-def _validate_joined_fields(
-    *, attempt: Any, report: dict[str, Any], receipt: dict[str, Any], provenance: dict[str, Any]
-) -> None:
-    joined_fields = (
-        "attempt_id", "scope", "packet_identity", "reviewed_input_identity",
-        "parent_receipt_identity", "boundary_mode", "boundary_fingerprint", "execution_mode",
-        "backend", "prompt_sha256", "schema_sha256",
-        "capability_launch_envelope_sha256",
-    )
-    if report.get("attempt_id") != provenance.get("attempt_id"):
-        raise WorkerCarrierError("delivery chain attempt_id does not match report provenance")
-    if provenance.get("capability_non_claims_sha256") != report.get("capability_non_claims_sha256"):
-        raise WorkerCarrierError("delivery chain capability non-claim digest does not match report provenance")
-    for field in joined_fields:
-        expected = provenance.get(field) if field == "attempt_id" else report.get(field)
-        actual = getattr(attempt, field, None)
-        if field == "boundary_fingerprint" and expected is None:
-            if actual is not None or receipt.get(field) is not None or provenance.get(field) is not None:
-                raise WorkerCarrierError(
-                    "delivery chain boundary_fingerprint is present for a boundary mode that does not require it"
-                )
-            continue
-        observed_receipt = receipt.get(field)
-        if field == "boundary_mode" and observed_receipt is None and receipt.get("boundary_fingerprint") is not None:
-            observed_receipt = "shared-tree-fingerprint"
-        if expected is None or actual != expected or observed_receipt != expected:
-            raise WorkerCarrierError(f"delivery chain {field} does not match report, receipt, and ledger attempt")
-        if field != "attempt_id" and provenance.get(field) != expected:
-            raise WorkerCarrierError(f"delivery chain {field} does not match report provenance")
-
-
 def _validate_ledger(
     *,
     repo_root: Path,
@@ -240,6 +254,7 @@ def _validate_ledger(
     receipt: dict[str, Any],
     output_hash: str,
     require_pass: bool = True,
+    owned_root: Path | None = None,
 ) -> None:
     ledger_value = report.get("ledger_path")
     provenance = report.get("provenance")
@@ -247,7 +262,7 @@ def _validate_ledger(
         raise WorkerCarrierError("worker report has no repo-readable ledger path")
     if not isinstance(provenance, dict) or not provenance.get("attempt_id"):
         raise WorkerCarrierError("worker report has no typed attempt provenance")
-    ledger = _read_json(_report_path(repo_root, ledger_value, allow_hidden=True), "delivery ledger")
+    ledger = _read_json(_report_path(repo_root, ledger_value, allow_hidden=True, owned_root=owned_root), "delivery ledger")
     if ledger.get("schema_version") != "charness.reviewer_delivery.v1":
         raise WorkerCarrierError("delivery ledger has the wrong schema")
     attempts = ledger.get("attempts")
@@ -260,17 +275,10 @@ def _validate_ledger(
         attempt = _load_delivery_attempt_parser().from_dict(raw_attempt)
     except (ImportError, ValueError, TypeError, KeyError) as exc:
         raise WorkerCarrierError(f"delivery ledger canonical history is invalid: {exc}") from exc
-    _validate_joined_fields(attempt=attempt, report=report, receipt=receipt, provenance=provenance)
-    aliases = {
-        "attempt_scope": report.get("scope"),
-        "attempt_packet_identity": report.get("packet_identity"),
-        "attempt_parent_receipt_identity": report.get("parent_receipt_identity"),
-        "result_packet_identity": report.get("packet_identity"),
-        "result_reviewed_input_identity": report.get("reviewed_input_identity"),
-    }
-    mismatches = [key for key, expected in aliases.items() if provenance.get(key) != expected]
-    if mismatches:
-        raise WorkerCarrierError(f"delivery chain provenance aliases do not match the report: {mismatches}")
+    try:
+        _validate_joined_fields(attempt=attempt, report=report, receipt=receipt, provenance=provenance)
+    except ValueError as exc:
+        raise WorkerCarrierError(str(exc)) from exc
     if attempt.state != "findings-received" or attempt.terminal is not True or not attempt.findings_identity:
         raise WorkerCarrierError("delivery ledger does not prove findings-received completion")
     if attempt.findings_identity != output_hash:
@@ -278,6 +286,7 @@ def _validate_ledger(
     _require_coverage_declaration_join(
         repo_root=repo_root, report=report, receipt=receipt,
         attempt=attempt, provenance=provenance, require_pass=require_pass,
+        owned_root=owned_root,
     )
 
 
@@ -289,6 +298,7 @@ def _require_coverage_declaration_join(
     attempt: Any,
     provenance: dict[str, Any],
     require_pass: bool,
+    owned_root: Path | None = None,
 ) -> None:
     """Enforce the joined coverage floor; the contract owns the policy."""
     try:
@@ -297,7 +307,7 @@ def _require_coverage_declaration_join(
             report=report,
             attempt_digest=attempt.expected_targets_sha256,
             provenance=provenance,
-            output=_report_path(repo_root, receipt["output_file"], allow_hidden=True),
+            output=_report_path(repo_root, receipt["output_file"], allow_hidden=True, owned_root=owned_root),
             packet_identity=str(report.get("packet_identity", "")),
             reviewed_input_identity=str(report.get("reviewed_input_identity", "")),
             require_pass=require_pass,
@@ -307,24 +317,25 @@ def _require_coverage_declaration_join(
 
 
 def _validate_delivery_chain(
-    *, repo_root: Path, report: dict[str, Any], require_pass: bool = True
+    *, repo_root: Path, report: dict[str, Any], require_pass: bool = True,
+    owned_root: Path | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any], str]:
     receipt, result, output_hash = _validate_receipt_and_result(
-        repo_root=repo_root, report=report, require_pass=require_pass
+        repo_root=repo_root, report=report, require_pass=require_pass, owned_root=owned_root
     )
     _validate_ledger(
         repo_root=repo_root, report=report, receipt=receipt,
-        output_hash=output_hash, require_pass=require_pass,
+        output_hash=output_hash, require_pass=require_pass, owned_root=owned_root,
     )
     return receipt, result, output_hash
 
 
 def _assert_expected_path(
-    repo_root: Path, value: object, expected: Path, label: str
+    repo_root: Path, value: object, expected: Path, label: str, *, owned_root: Path | None = None
 ) -> None:
     if not isinstance(value, str):
         raise WorkerCarrierError(f"worker report has no {label} path")
-    actual = _report_path(repo_root, value, allow_hidden=True)
+    actual = _report_path(repo_root, value, allow_hidden=True, owned_root=owned_root)
     if actual != expected.resolve():
         raise WorkerCarrierError(f"worker {label} path is not bound to the retained attempt")
 
@@ -335,6 +346,7 @@ def validate_delivered_worker_report(
     report: dict[str, Any],
     expected_attempt_id: str | None = None,
     expected_paths: dict[str, Path] | None = None,
+    owned_root: Path | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any], str]:
     """Validate a delivered typed result without converting it into approval.
 
@@ -347,11 +359,6 @@ def validate_delivered_worker_report(
     expected = {
         "schema_version": "charness.reviewer_worker_report.v1",
         "delivery_state": "findings-received",
-        "collection_ready": True,
-        "provenance_ok": True,
-        "receipt_ok": True,
-        "ledger_ok": True,
-        "result_schema_ok": True,
     }
     mismatches = [
         f"{field}={report.get(field)!r} (expected {value!r})"
@@ -379,11 +386,13 @@ def validate_delivered_worker_report(
     ):
         if not isinstance(report.get(field), str) or not report[field].strip():
             raise WorkerCarrierError(f"worker report has no explicit {field}")
+    # These report flags remain useful diagnostics, but the retained receipt,
+    # result, and ledger bytes below are the authority for this consumer.
     receipt, result, output_hash = _validate_delivery_chain(
-        repo_root=repo_root, report=report, require_pass=False
+        repo_root=repo_root, report=report, require_pass=False, owned_root=owned_root
     )
     if expected_paths is not None:
-        _assert_expected_path(repo_root, report.get("receipt_path"), expected_paths["receipt"], "receipt")
-        _assert_expected_path(repo_root, report.get("ledger_path"), expected_paths["delivery"], "ledger")
-        _assert_expected_path(repo_root, receipt.get("output_file"), expected_paths["result"], "result")
+        _assert_expected_path(repo_root, report.get("receipt_path"), expected_paths["receipt"], "receipt", owned_root=owned_root)
+        _assert_expected_path(repo_root, report.get("ledger_path"), expected_paths["delivery"], "ledger", owned_root=owned_root)
+        _assert_expected_path(repo_root, receipt.get("output_file"), expected_paths["result"], "result", owned_root=owned_root)
     return receipt, result, output_hash

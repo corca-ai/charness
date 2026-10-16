@@ -203,7 +203,7 @@ def run_task(
     dry_run: bool = False,
     report_only: bool = False,
     no_progress_seconds: float | None = None,
-    self_review_policy: str = "auto",
+    self_review_policy: str = "never",
     prelaunch: Mapping[str, Any] | None = None,
     rules_files: Sequence[str | Path] = (),
     grant_writable: Sequence[str | Path] = (),
@@ -212,8 +212,8 @@ def run_task(
     resolved_repo: Path | None = None
     resolved_target: Path | None = None
     try:
-        if self_review_policy not in ("auto", "always"):
-            raise TaskRunError("self_review_policy must be auto or always")
+        if self_review_policy not in ("never", "always"):
+            raise TaskRunError("self_review_policy must be never or always")
         repo_snapshot = _repo_snapshot(repo_root)
         resolved_repo = repo_snapshot["repo_root"]
         parent_before = _collect_populations(resolved_repo)

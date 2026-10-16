@@ -538,6 +538,31 @@ def test_provenance_handles_partial_only_carriers_and_safe_source_parsing(tmp_pa
         _verify_provenance(case)
 
 
+def test_provenance_rejects_tampered_full_result_integrity_record(tmp_path: Path) -> None:
+    case = _provenance_fixture(tmp_path / "full-result")
+    source = case["source"].parent / "result.json"
+    source_relative = source.relative_to(case["repo"]).as_posix()
+    manifest = case["manifest"]
+    manifest["reusable"] = True
+    manifest["files"]["result.json"] = source_relative
+    manifest["file_integrity"] = {
+        "result.json": {
+            "path": source_relative,
+            "bytes": source.stat().st_size,
+            "sha256": FOLLOWUP._sha256(source),
+        }
+    }
+    case["manifest"] = manifest
+    case["source_value"] = source_relative
+    case["source"] = source
+    case["raw"] = json.loads(source.read_text(encoding="utf-8"))
+    case["manifest"]["file_integrity"]["result.json"]["sha256"] = "0" * 64
+    _write_json(case["manifest_path"], case["manifest"])
+
+    with pytest.raises(FOLLOWUP.FollowupError, match="do not match the retained attempt integrity record"):
+        _verify_provenance(case)
+
+
 def test_build_followup_reuses_a_valid_carrier_and_binds_the_new_identity(tmp_path: Path) -> None:
     repo = install_committed_repo(tmp_path / "repo", {"a.py": "VALUE = 1\n", "b.py": "VALUE = 2\n"})
     source_value, _source = _prior_review(repo)

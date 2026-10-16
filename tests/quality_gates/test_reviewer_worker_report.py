@@ -11,7 +11,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from skills.shared.scripts import reviewer_delivery
+from skills.shared.scripts import reviewer_delivery, reviewer_worker_report
 from tests.quality_gates.reviewer_capability_support import (
     non_claims_sha256,
     receipt_capability_fields,
@@ -57,6 +57,7 @@ def _receipt(tmp_path: Path, *, status: str = "succeeded", capability: dict | No
         "packet_identity": "a" * 64,
         "reviewed_input_identity": "a" * 64,
         "parent_receipt_identity": "parent-1",
+        "boundary_mode": "shared-tree-fingerprint",
         "boundary_fingerprint": "boundary-1",
         "execution_mode": "file-backed-worker",
         "prompt_sha256": "b" * 64,
@@ -140,6 +141,27 @@ def test_matching_typed_receipt_and_findings_ledger_is_approval_eligible(tmp_pat
         "receipt_file": str((tmp_path / "receipt.json").resolve()),
         "producer_run_id": "worker-1",
     }
+
+
+def test_receipt_without_boundary_mode_is_not_approval_eligible(tmp_path: Path) -> None:
+    receipt = _receipt(tmp_path)
+    ledger, _ = _ledger(tmp_path)
+    payload = json.loads(receipt.read_text(encoding="utf-8"))
+    payload.pop("boundary_mode")
+    receipt.write_text(json.dumps(payload), encoding="utf-8")
+
+    report = reviewer_worker_report.build_report(
+        receipt_path=str(receipt),
+        ledger_path=str(ledger),
+        attempt_id="attempt-1",
+        scope="scope-1",
+        packet_identity="a" * 64,
+        reviewed_input_identity="a" * 64,
+        parent_receipt_identity="parent-1",
+    )
+    assert report["approval_eligible"] is False
+    assert report["receipt_ok"] is False
+    assert "boundary_mode" in report["reason"]
 
 
 def test_timed_out_partial_output_is_reported_without_approval(tmp_path: Path) -> None:

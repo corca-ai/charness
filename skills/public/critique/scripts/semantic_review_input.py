@@ -260,7 +260,9 @@ def _prompt_content(content: bytes) -> tuple[str, str]:
         return "base64", base64.b64encode(content).decode("ascii")
 
 
-def materialize_semantic_input(root: Path, packet: dict[str, Any], run_dir: Path) -> dict[str, Any]:
+def materialize_semantic_input(
+    root: Path, packet: dict[str, Any], run_dir: Path, *, owner: Any = None
+) -> dict[str, Any]:
     """Carry all reviewed bytes into backend-independent semantic input."""
     identity = packet.get("reviewed_input_identity")
     if not isinstance(identity, dict):
@@ -269,9 +271,10 @@ def materialize_semantic_input(root: Path, packet: dict[str, Any], run_dir: Path
     try:
         run_dir.resolve().relative_to(root.resolve())
     except ValueError as exc:
-        raise SemanticInputError(
-            "carrier-path-invalid", "semantic input carrier escaped the repository root"
-        ) from exc
+        if owner is None or Path(getattr(owner, "path", "")).resolve() != run_dir.resolve():
+            raise SemanticInputError(
+                "carrier-path-invalid", "semantic input carrier has no exact owned scratch reference"
+            ) from exc
     content_by_path = _expected_content(identity)
     staged: list[tuple[str, bytes, str, str, str]] = []
     for path in readable_paths + deleted_paths:
@@ -322,7 +325,7 @@ def materialize_semantic_input(root: Path, packet: dict[str, Any], run_dir: Path
             {
                 "path": path,
                 "disposition": disposition,
-                "carrier_path": carrier.relative_to(root).as_posix(),
+                "carrier_path": _carrier_reference(root, carrier),
                 "content_sha256": expected,
                 "carrier_sha256": carrier_sha256,
                 "source": source,
@@ -350,6 +353,13 @@ def materialize_semantic_input(root: Path, packet: dict[str, Any], run_dir: Path
     carrier_dir.chmod(0o555)
     return {
         "entries": entries,
-        "manifest": manifest.relative_to(root).as_posix(),
+        "manifest": _carrier_reference(root, manifest),
         "size_bytes": total_bytes,
     }
+
+
+def _carrier_reference(root: Path, path: Path) -> str:
+    try:
+        return path.relative_to(root.resolve()).as_posix()
+    except ValueError:
+        return str(path.resolve())

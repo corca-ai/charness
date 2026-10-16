@@ -138,11 +138,6 @@ def _receipt_join_error(receipt: dict[str, Any], attempt: Any) -> str | None:
     }
     for field, expected in joins.items():
         observed = receipt.get(field)
-        if field == "boundary_mode" and observed is None and receipt.get("boundary_fingerprint") is not None:
-            # Receipts emitted before boundary_mode was introduced remain
-            # readable; their non-empty fingerprint unambiguously identifies
-            # the old shared-tree path.
-            observed = "shared-tree-fingerprint"
         if expected is None:
             if field == "boundary_fingerprint" and observed is None:
                 continue
@@ -254,11 +249,6 @@ def build_report(
         "parent_receipt_identity": parent_receipt_identity,
         "expected_targets_sha256": targets_digest,
         "attempt_id": attempt.attempt_id,
-        "attempt_scope": attempt.scope,
-        "attempt_packet_identity": attempt.packet_identity,
-        "attempt_parent_receipt_identity": attempt.parent_receipt_identity,
-        "result_packet_identity": packet_identity,
-        "result_reviewed_input_identity": reviewed_input_identity,
         "boundary_mode": attempt.boundary_mode,
         "boundary_fingerprint": attempt.boundary_fingerprint,
         "execution_mode": attempt.execution_mode,
@@ -304,6 +294,11 @@ def build_report(
         "schema_version": REPORT_SCHEMA_VERSION,
         "execution_mode": attempt.execution_mode,
         "backend": receipt.get("backend"),
+        "reviewer_tier": receipt.get("reviewer_tier"),
+        "requested_model": receipt.get("requested_model"),
+        "requested_reasoning_effort": receipt.get("requested_reasoning_effort"),
+        "unsupported_reviewer_fields": receipt.get("unsupported_reviewer_fields", []),
+        "model_application_state": receipt.get("model_application_state"),
         "capability_status": receipt.get("capability_status"),
         "capability_envelope_sha256": receipt.get("capability_envelope_sha256"),
         "capability_launch_envelope_sha256": receipt.get("capability_launch_envelope_sha256"),

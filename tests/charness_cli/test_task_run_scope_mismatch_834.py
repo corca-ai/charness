@@ -1,10 +1,4 @@
-"""Post-edit scope-mismatch handling for task-run lanes (#834).
-
-After EDITING the worker must keep its candidate and emit the typed scope-
-extension request instead of restoring scoped files; a lane that emitted
-EDITING and ends BLOCKED with an unchanged worktree is recorded as
-`candidate-self-reverted` with the guard snapshot as recovery pointer.
-"""
+"""Preserve scope mismatch facts without inferring edits from phase declarations."""
 
 from __future__ import annotations
 
@@ -25,68 +19,23 @@ def test_post_edit_scope_mismatch_keeps_candidate_and_types_request() -> None:
     assert "scope_extension_request" in shaped
 
 
-def test_self_revert_backstop_flags_editing_blocked_unchanged() -> None:
-    from scripts.task_run import task_run_completion
+def test_declared_editing_without_a_diff_does_not_prove_candidate_reversal(tmp_path) -> None:
+    from tests.charness_cli.test_task_run_fixtures import _codex, _repo, _run
 
-    payload = {
-        "lane_progress": {
-            "phases": ["CONTRACT-READ", "EDITING", "TESTING"],
-            "blocker": "scope mismatch - real owner other.py is outside declared scope",
-        },
-        "candidate": {"status": "absent"},
-        "target_sha": "base-sha",
-        "progress_guard": {"first_scoped_diff": {"observed": False}},
-    }
-    scope = {"changed_paths": [], "disallowed_paths": []}
-    blockers: list[str] = []
-    assert (
-        task_run_completion._apply_self_revert_backstop(
-            payload, scope, blockers, base_sha="base-sha", require_change=True
-        )
-        is True
+    repo = _repo(tmp_path)
+    executable = _codex(
+        tmp_path,
+        'echo "CONTRACT-READ"\necho "EDITING"\necho "TESTING"\n'
+        'echo "BLOCKED: scope mismatch - real owner other.py is outside declared scope"',
+        capture_last_message=True,
     )
-    assert payload["candidate_self_reverted"] is True
-    assert payload["candidate"]["self_reverted"] is True
-    assert any("self-reverted" in blocker for blocker in blockers)
-    assert payload["recovered_scoped_snapshot"]["unobserved"] is True
+    payload = _run(repo, tmp_path, executable)
 
-    observed = {
-        "lane_progress": {
-            "phases": ["EDITING"],
-            "blocker": "scope mismatch - real owner other.py is outside declared scope",
-        },
-        "candidate": {"status": "absent"},
-        "target_sha": "base-sha",
-        "progress_guard": {
-            "first_scoped_diff": {
-                "observed": True,
-                "changed_paths": ["module.py"],
-                "diff": "diff --git a/module.py",
-                "truncated": False,
-            }
-        },
-    }
-    observed_blockers: list[str] = []
-    assert (
-        task_run_completion._apply_self_revert_backstop(
-            observed, scope, observed_blockers, base_sha="base-sha", require_change=True
-        )
-        is True
-    )
-    snapshot = observed["recovered_scoped_snapshot"]
-    assert snapshot["changed_paths"] == ["module.py"]
-    assert snapshot["diff_ref"] == "progress_guard.first_scoped_diff.diff"
-    assert "diff" not in snapshot
-
-    pre_edit = {
-        "lane_progress": {"phases": ["CONTRACT-READ"], "blocker": "premise/scope mismatch"},
-        "candidate": {"status": "absent"},
-        "target_sha": "base-sha",
-    }
-    assert (
-        task_run_completion._apply_self_revert_backstop(
-            pre_edit, scope, [], base_sha="base-sha", require_change=True
-        )
-        is False
-    )
-    assert "candidate_self_reverted" not in pre_edit
+    assert payload["status"] == "failed"
+    assert payload["scope"]["changed_paths"] == []
+    assert "required a change" in payload["scope"]["reason"]
+    assert payload["lane_progress"]["phases"] == ["CONTRACT-READ", "EDITING", "TESTING"]
+    assert "scope mismatch" in payload["lane_progress"]["blocker"]
+    assert "candidate_self_reverted" not in payload
+    assert "self_reverted" not in payload["candidate"]
+    assert "recovered_scoped_snapshot" not in payload

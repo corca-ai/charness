@@ -74,18 +74,21 @@ def test_live_runner_disposes_terminal_failure_without_losing_retry_inputs(tmp_p
         emit=emitted.append, load_goal_lineage=lineage,
         package_paths=lambda path: {"schema": canonical, "partial_output": canonical, "resolve_adapter": canonical},
         load_runtime=lambda package: (lifecycle, NS(validate_capability_envelope=lambda *a, **k: NS(envelope_sha256="cap"))),
-        load_module=lambda *args: NS(collect_run_logs=lambda *args: []),
+        load_module=lambda *args: NS(collect_run_logs=lambda *args, **kwargs: []),
         resolve_adapter=lambda *args: {"data": {"packet_sections": [{}]}},
         select_backend=lambda *a, **k: (None if fault == "backend" else "codex_exec", 1),
         new_run_owner=lambda *args: owner, sha256=sha,
         run_runner_held_out=lambda *a, **k: (0, "runner-completed", True, None),
         classify_runner_output=lambda *a, **k: (0, "runner-completed", True, None),
     )
+    def _write_prompt(path, *args, **kwargs):
+        Path(path).write_text("terminal prompt\n", encoding="utf-8")
+
     packet = NS(
         manifest_paths=lambda *args: [],
         select_packet=lambda *args: (packet_path, {}, "packet", "input", {}),
         run_paths=PACKET.run_paths, default_capability=lambda root: {},
-        write_prompt=lambda *a, **k: None,
+        write_prompt=_write_prompt,
     )
     carrier = NS(
         failure_carrier=lambda *a, **k: {"approval_eligible": False, "reason_code": k["code"]},
@@ -100,7 +103,9 @@ def test_live_runner_disposes_terminal_failure_without_losing_retry_inputs(tmp_p
         promotion=NS(DURABLE_WORKER_REPORTS="durable", load_and_promote_report=lambda *a: {"delivery_state": "findings-received"},
                      identity_binding=lambda *a: {"matches": False}),
         carrier_module=carrier, script_dir=SCRIPT_ROOT, read_only_boundary_mode="read-only",
-        lifecycle_semantic_input=lambda x: x, materialize_semantic_input=lambda *args: {},
+        lifecycle_semantic_input=lambda x: x,
+        materialize_semantic_input=lambda *args, **kwargs: {},
+        semantic_review_paths=lambda _packet: ([], []),
         adapter_name=lambda *args: "adapter.yaml",
     )
     assert result == (1 if fault == "identity" else 2)
@@ -119,7 +124,7 @@ def test_live_runner_disposes_terminal_failure_without_losing_retry_inputs(tmp_p
 
 
 @pytest.mark.parametrize("fault", ["plan", "packet", "report", "validator", "identity", "stream", "chain", "promotion", "pass", "partial"])
-def test_recovery_only_removes_retained_inputs_after_promoted_readback(tmp_path, fault):
+def test_recovery_only_removes_retained_inputs_after_promoted_readback(tmp_path, fault, monkeypatch):
     run = tmp_path / "run"
     run.mkdir()
     owner = Owner(run)
@@ -131,7 +136,7 @@ def test_recovery_only_removes_retained_inputs_after_promoted_readback(tmp_path,
         SUPPORT.write_json(run / "worker-report.yaml", {"delivery_state": "findings-received"})
     emitted, events = [], []
     manifest = tmp_path / "attempt-manifest.json"
-    SUPPORT.write_json(manifest, {"approval_eligible": fault == "pass", "identity_binding": {"matches": True}})
+    SUPPORT.write_json(manifest, {"approval_eligible": False, "identity_binding": {"matches": True}})
     def validate(**kwargs):
         if fault == "validator":
             raise ValueError("unbound worker receipt")
@@ -139,14 +144,33 @@ def test_recovery_only_removes_retained_inputs_after_promoted_readback(tmp_path,
         events.append("promote")
         if fault == "promotion":
             raise OSError("promotion unavailable")
+        promoted_chain = chain(*args)
+        saved = SUPPORT.load_mapping(manifest)
+        if promoted_chain["ok"]:
+            saved.update(
+                approval_eligible=fault == "pass",
+                use_class="approval" if fault == "pass" else "diagnostic-retryable",
+                identity_binding={"matches": True},
+            )
+            SUPPORT.write_json(manifest, saved)
+        real_read_text = Path.read_text
+
+        def fail_postcommit_manifest_read(path, *read_args, **read_kwargs):
+            if path == manifest:
+                raise OSError("manifest acknowledgement read unavailable")
+            return real_read_text(path, *read_args, **read_kwargs)
+
+        monkeypatch.setattr(Path, "read_text", fail_postcommit_manifest_read)
+        return {"promoted_chain": promoted_chain, "manifest": saved}
     def chain(*args, **kwargs):
         events.append("readback")
+        assert SUPPORT.load_mapping(manifest)["approval_eligible"] is False
         return {"ok": fault != "chain", "reason": "bad durable chain", "attempt_manifest": manifest.name}
     modules = {
         "carrier": NS(validate_delivered_worker_report=validate),
         "identity": NS(),
         "lifecycle": NS(build_lifecycle=lambda **kwargs: {"approval_eligible": False}),
-        "run_review_recovery_inputs.py": NS(validate_retained_inputs=lambda *a, **k: {"ok": True}, validate_promoted_chain=chain),
+        "run_review_recovery_inputs.py": NS(validate_retained_inputs=lambda *a, **k: {"ok": True}),
         "run_review_carrier.py": NS(compare_report_stream=lambda *a: {"consistent": fault != "stream"}, finalize_carrier=finalize),
     }
     support = _support(
@@ -167,5 +191,7 @@ def test_recovery_only_removes_retained_inputs_after_promoted_readback(tmp_path,
         recovered = fault in {"pass", "partial"}
         assert emitted[-1]["status"] == ("recovered" if recovered else "refused")
         assert emitted[-1]["approval_eligible"] is (fault == "pass")
+        if recovered:
+            assert emitted[-1]["identity_binding"] == {"matches": True}
         assert owner.closed == ([{"state": "succeeded", "remove_retained": True}] if recovered else [{"state": "failed"}])
         assert events == (["promote", "readback"] if recovered or fault == "chain" else [])

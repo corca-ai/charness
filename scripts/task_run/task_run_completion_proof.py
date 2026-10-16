@@ -123,7 +123,9 @@ def _reclassify_persisted_candidate(
         reason = str(scope.get("reason") or "persisted candidate failed scope classification")
         if reason not in blockers:
             blockers.append(reason)
-    for blocker in _prelaunch.acceptance_deficit_blockers(payload, resolved_target, candidate):
+    for blocker in _prelaunch.acceptance_deficit_blockers(
+        payload, resolved_target, specs, candidate
+    ):
         if blocker not in blockers:
             blockers.append(blocker)
 

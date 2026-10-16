@@ -71,6 +71,15 @@ def _failure_receipt(
         "boundary_fingerprint": args.boundary_fingerprint,
         "execution_mode": args.execution_mode,
         "timeout_seconds": args.timeout_seconds,
+        "reviewer_tier": args.reviewer_tier,
+        "requested_model": args.reviewer_model,
+        "requested_reasoning_effort": args.reviewer_reasoning_effort,
+        "unsupported_reviewer_fields": args.unsupported_reviewer_field,
+        "model_application_state": (
+            "unverified-by-provider"
+            if args.reviewer_model is not None or args.reviewer_reasoning_effort is not None
+            else "not-requested"
+        ),
         "error": error,
     }
     if capability is not None:
@@ -125,6 +134,10 @@ def _parser() -> argparse.ArgumentParser:
         default="file-backed-worker",
     )
     parser.add_argument("--run-id", default=None)
+    parser.add_argument("--reviewer-tier", choices=("high-leverage", "medium", "standard"))
+    parser.add_argument("--reviewer-model")
+    parser.add_argument("--reviewer-reasoning-effort")
+    parser.add_argument("--unsupported-reviewer-field", action="append", default=[])
     return parser
 
 

@@ -14,6 +14,7 @@ from pathlib import Path
 
 import pytest
 
+from scripts.runtime_bootstrap import runtime_root
 from tests.module_eviction import evict_module
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -110,12 +111,12 @@ def test_hold_out_retains_both_copies_when_the_worker_recreates_source(tmp_path:
     assert staged[0].read_text(encoding="utf-8") == "original\n"
 
 
-def test_new_run_owner_is_repo_relative_and_cleans_terminal_scratch(tmp_path: Path) -> None:
+def test_new_run_owner_uses_external_runtime_and_cleans_terminal_scratch(tmp_path: Path) -> None:
     support = _support()
     owner = support.new_run_owner(tmp_path, "attempt:with-colon")
 
     assert owner.path.is_dir()
-    assert owner.path.is_relative_to(tmp_path / ".charness" / "scratch")
+    assert owner.path.is_relative_to(runtime_root(tmp_path) / "scratch")
     assert (owner.path / ".charness-owner.json").is_file()
     owner.close(state="failed")
 
@@ -185,28 +186,23 @@ def test_final_promotion_failure_never_approves_and_can_retry(tmp_path: Path, mo
     manifest_path = tmp_path / promotion.DURABLE_WORKER_REPORTS / "retry" / "attempt-manifest.json"
     assert json.loads(manifest_path.read_text())["approval_eligible"] is False
     monkeypatch.setattr(carrier_module, "refresh_manifest_integrity", refresh)
-    carrier_module.finalize_carrier(support, promotion, tmp_path, "retry", paths, context, final, report)
+    monkeypatch.setattr(
+        carrier_module,
+        "validate_promoted_chain",
+        lambda *_args, **_kwargs: {
+            "status": "verified",
+            "ok": True,
+            "attempt_manifest": support.relative(tmp_path, manifest_path),
+        },
+    )
+    finalization = carrier_module.finalize_carrier(
+        support, promotion, tmp_path, "retry", paths, context, final, report
+    )
     manifest = json.loads(manifest_path.read_text())
     assert manifest["approval_eligible"] is True
+    assert finalization["manifest"]["approval_eligible"] is True
     for name, descriptor in manifest["file_integrity"].items():
         assert descriptor["sha256"] == support.sha256(tmp_path / manifest["files"][name])
-
-
-def test_promote_worker_report_copies_the_combined_report_atomically(tmp_path: Path) -> None:
-    promotion = _promotion()
-    runtime = tmp_path / ".charness" / "reviewer-round-attempt-1"
-    runtime.mkdir(parents=True)
-    (runtime / "worker-report.yaml").write_text("schema_version: charness.reviewer_worker_report.v1\n", encoding="utf-8")
-    (runtime / "runner.stderr").write_text("noise\n", encoding="utf-8")
-
-    dest = promotion.promote_worker_report(tmp_path, "attempt-1", runtime / "worker-report.yaml")
-
-    assert dest == tmp_path / "charness-artifacts" / "critique" / "workers" / "attempt-1" / "worker-report.yaml"
-    assert dest.read_text(encoding="utf-8") == "schema_version: charness.reviewer_worker_report.v1\n"
-    assert not (dest.parent / "runner.stderr").exists()
-    assert promotion.promote_worker_report(tmp_path, "attempt-1", runtime / "missing.yaml") is None
-    with pytest.raises(ValueError, match="overwrite existing durable worker report"):
-        promotion.promote_worker_report(tmp_path, "attempt-1", runtime / "worker-report.yaml")
 
 
 def test_load_and_promote_report_rewrites_the_emitted_report_path(tmp_path: Path) -> None:
@@ -483,15 +479,6 @@ def test_promotion_never_approves_a_report_bound_to_foreign_run_plan(tmp_path: P
     assert manifest["approval_eligible"] is False
     assert manifest["identity_binding"] == "consumer-required"
     assert manifest["identity_check"]["status"] == "mismatch"
-
-
-def test_promote_worker_report_refuses_a_destination_outside_the_repo(tmp_path: Path) -> None:
-    promotion = _promotion()
-    runtime = tmp_path / "worker-report.yaml"
-    runtime.write_text("schema_version: v1\n", encoding="utf-8")
-
-    with pytest.raises(ValueError, match="escaped repository root"):
-        promotion.promote_worker_report(tmp_path, "/tmp/outside-attempt", runtime)
 
 
 def test_promotion_reuses_an_already_loaded_support_module() -> None:

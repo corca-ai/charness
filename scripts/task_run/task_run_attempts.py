@@ -29,6 +29,7 @@ def _load_repo_runtime_bootstrap():
 _load_repo_runtime_bootstrap()
 
 from scripts.runtime_bootstrap import import_repo_module  # noqa: E402
+from scripts.task_run import task_run_evidence as _evidence  # noqa: E402
 from scripts.task_run import task_run_execution as _execution  # noqa: E402
 from scripts.task_run import task_run_lane_runner as _lane_runner  # noqa: E402
 from scripts.task_run import task_run_progress as _progress  # noqa: E402
@@ -163,7 +164,7 @@ def _execute_watched_lane(
         if lane_watch is not None:
             payload["progress_guard"] = lane_watch.receipt()
         failure = _state.classify_failure(
-            execution, stderr_text=_progress._lane_stderr_text(stdout_log, stderr_log)
+            execution, stderr_text=_evidence._lane_stderr_text(stdout_log, stderr_log)
         )
         record: dict[str, Any] = {
             "attempt": attempt,
@@ -312,7 +313,7 @@ def _execute_ordered_lane(
         payload["attempts"] = attempt_history
         failure = _state.classify_failure(
             execution,
-            stderr_text=_progress._lane_stderr_text(current_stdout, current_stderr),
+            stderr_text=_evidence._lane_stderr_text(current_stdout, current_stderr),
         )
         if failure["kind"] != "executor-unavailable":
             break

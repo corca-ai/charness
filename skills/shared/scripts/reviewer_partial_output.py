@@ -41,7 +41,9 @@ def descriptor(path: Path, *, kind: str = "backend-output") -> dict[str, Any]:
     }
 
 
-def collect_run_logs(root: Path, paths: dict[str, Path]) -> list[dict[str, Any]]:
+def collect_run_logs(
+    root: Path, paths: dict[str, Path], *, owned_root: Path | None = None
+) -> list[dict[str, Any]]:
     """Describe non-empty runner logs without treating them as delivery."""
     outputs: list[dict[str, Any]] = []
     for key, kind in (
@@ -54,7 +56,17 @@ def collect_run_logs(root: Path, paths: dict[str, Path]) -> list[dict[str, Any]]
         if not path.is_file() or path.stat().st_size == 0:
             continue
         value = descriptor(path, kind=kind)
-        value["path"] = path.resolve().relative_to(root.resolve()).as_posix()
+        resolved = path.resolve()
+        try:
+            value["path"] = resolved.relative_to(root.resolve()).as_posix()
+        except ValueError as exc:
+            if owned_root is None:
+                raise ValueError("partial-output log path escaped its authorized roots") from exc
+            try:
+                resolved.relative_to(owned_root.resolve())
+            except ValueError as owner_exc:
+                raise ValueError("partial-output log path escaped the exact owned scratch root") from owner_exc
+            value["path"] = str(resolved)
         outputs.append(value)
     return outputs
 

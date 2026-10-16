@@ -436,6 +436,9 @@ reviewer_tiers:
     reasoning_effort: xhigh
     service_tier: priority
     fork_turns: none
+  medium:
+    model: gpt-6-luna
+    reasoning_effort: medium
 packet_sections:
   - id: only
     title: Only
@@ -458,6 +461,17 @@ packet_sections:
     assert "model=gpt-6-luna" in md
     assert "pending-parent-spawn" in md
     assert "**Execution mode**: `file-backed-worker`" in md
+    selected = _build_shape_packet(
+        adapter=adapter,
+        repo_root=tmp_path,
+        prepared_for="unit",
+        reviewer_tier="medium",
+    )["reviewer_tier_evidence"]
+    assert selected["requested_tier"] == "medium"
+    assert selected["requested_spawn_fields"] == {
+        "model": "gpt-6-luna",
+        "reasoning_effort": "medium",
+    }
     evidence["reviewer_runner"] = "not a mapping"
     assert "**Reviewer runner**: `missing`" in render_markdown(packet)
 

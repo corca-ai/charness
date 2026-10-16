@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+import scripts.cli.host_codex as host_codex
 from tests.repo_copy import clone_seeded_charness_repo
 
 from .support import (
@@ -19,7 +20,6 @@ from .support import (
     run_cli,
     run_cli_path,
 )
-from .test_managed_install import load_charness_module
 
 CURRENT_VERSION = json.loads((CLI.parent / "packaging" / "charness.json").read_text(encoding="utf-8"))["version"]
 
@@ -110,10 +110,9 @@ def test_charness_doctor_reports_codex_version_drift(
 
 
 def test_codex_host_guidance_without_refreshed_cache_requires_manual_refresh() -> None:
-    module = load_charness_module("charness_codex_managed_install_unit_under_test")
     old_version = "0.0.0-old"
 
-    guidance = module.build_codex_host_guidance(
+    guidance = host_codex.build_codex_host_guidance(
         codex_available=True,
         codex_marketplace_path=Path("/tmp/codex/marketplace.json"),
         source_version=CURRENT_VERSION,

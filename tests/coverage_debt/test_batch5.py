@@ -625,7 +625,7 @@ UNREADABLE_PAYLOAD_SCRIPT = (
 
 
 def test_an_unreadable_repo_script_payload_names_the_repo_and_the_child_stderr(
-    charness_cli, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """The parse refusal alone does not say WHICH checkout produced it.
 
@@ -640,12 +640,11 @@ def test_an_unreadable_repo_script_payload_names_the_repo_and_the_child_stderr(
     # patch the namespace the payload calls, which also raises the tree
     # error class rather than the entry fallback copy.
     import scripts.cli.process as process
-    from scripts.cli.bootstrap import CharnessError as _TreeCharnessError
 
     monkeypatch.setattr(process, "resolve_repo_python", lambda _root: sys.executable)
 
-    with pytest.raises(_TreeCharnessError) as caught:
-        charness_cli.invoke_repo_json_script(repo, "emit.py")
+    with pytest.raises(process.CharnessError) as caught:
+        process.invoke_repo_json_script(repo, "emit.py")
 
     message = str(caught.value)
     assert "did not return a readable YAML payload" in message
@@ -655,11 +654,11 @@ def test_an_unreadable_repo_script_payload_names_the_repo_and_the_child_stderr(
     # Falsifiable counterpart: a readable payload comes back parsed, so the wrapper
     # is refusing bad output rather than refusing everything.
     ok_repo = _script_repo(tmp_path / "ok", "emit.py", "print('status: fine')\n")
-    assert charness_cli.invoke_repo_json_script(ok_repo, "emit.py") == {"status": "fine"}
+    assert process.invoke_repo_json_script(ok_repo, "emit.py") == {"status": "fine"}
 
 
 def test_the_repair_command_runner_carries_the_same_repo_and_stderr_context(
-    charness_cli, tmp_path: Path
+    tmp_path: Path
 ) -> None:
     """The repair path needs the same diagnosis, and it is a SECOND copy of the wrapper.
 
@@ -670,8 +669,10 @@ def test_the_repair_command_runner_carries_the_same_repo_and_stderr_context(
     """
     repo = _script_repo(tmp_path, "guard.py", UNREADABLE_PAYLOAD_SCRIPT)
 
-    with pytest.raises(charness_cli.CharnessError) as caught:
-        charness_cli._run_repo_json_command(repo, [sys.executable, "guard.py"])
+    from scripts.cli import process
+
+    with pytest.raises(process.CharnessError) as caught:
+        process._run_repo_json_command(repo, [sys.executable, "guard.py"])
 
     message = str(caught.value)
     assert f"REPO ROOT: {repo}" in message
@@ -684,9 +685,7 @@ def test_the_repair_command_runner_carries_the_same_repo_and_stderr_context(
         "guard.py",
         "import sys\nprint('cleaned: 2')\nprint('note', file=sys.stderr)\nsys.exit(3)\n",
     )
-    payload, code, stderr = charness_cli._run_repo_json_command(
-        ok_repo, [sys.executable, "guard.py"]
-    )
+    payload, code, stderr = process._run_repo_json_command(ok_repo, [sys.executable, "guard.py"])
     assert (payload, code) == ({"cleaned": 2}, 3)
     assert "note" in stderr
 

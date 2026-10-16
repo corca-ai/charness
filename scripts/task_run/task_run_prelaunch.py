@@ -93,7 +93,11 @@ def _scope_file_deficits(
 
 
 def _coverage_mapping_deficits(
-    verifiers: Mapping[str, Any], target: Path, changed_paths: Sequence[Any]
+    verifiers: Mapping[str, Any],
+    target: Path,
+    changed_paths: Sequence[Any],
+    *,
+    empty_report_only_candidate: bool = False,
 ) -> list[str]:
     from scripts.gates_support import select_verifiers
 
@@ -109,7 +113,9 @@ def _coverage_mapping_deficits(
         if isinstance(unmatched, list)
         else []
     )
-    if verifiers.get("bundle_status") == "missing-bundle" or unmatched:
+    if verifiers.get("bundle_status") == "missing-bundle" or (
+        unmatched and not empty_report_only_candidate
+    ):
         raw_scope_paths = verifiers.get("scope_paths", [])
         scope_paths = raw_scope_paths if isinstance(raw_scope_paths, list) else []
         paths = unmatched or scope_paths
@@ -163,6 +169,7 @@ def _mapped_suite_deficits(verifiers: Mapping[str, Any], target: Path) -> list[s
 def acceptance_deficit_blockers(
     payload: Mapping[str, Any],
     resolved_target: Path,
+    scope_specs: Sequence[Mapping[str, Any]],
     candidate: Mapping[str, Any],
 ) -> list[str]:
     plan = payload.get("prelaunch_plan")
@@ -170,13 +177,26 @@ def acceptance_deficit_blockers(
         return ["acceptance deficit: launch preflight and verifier plan are missing"]
     changed = candidate.get("changed_paths")
     changed = changed if isinstance(changed, list) else []
+    empty_report_only_candidate = (
+        payload.get("report_only") is True
+        and candidate.get("status") == "absent"
+        and candidate.get("useful") is False
+        and isinstance(candidate.get("changed_paths"), list)
+        and not candidate["changed_paths"]
+        and candidate.get("disallowed_paths") == []
+    )
     blockers = _scope_file_deficits(plan, resolved_target)
     verifiers = plan.get("scope_verifiers")
     if not isinstance(verifiers, Mapping):
         return [*blockers, "coverage mapping deficit: no scope-to-verifier plan was recorded"]
     return [
         *blockers,
-        *_coverage_mapping_deficits(verifiers, resolved_target, changed),
+        *_coverage_mapping_deficits(
+            verifiers,
+            resolved_target,
+            changed,
+            empty_report_only_candidate=empty_report_only_candidate,
+        ),
         *_mapped_suite_deficits(verifiers, resolved_target),
     ]
 

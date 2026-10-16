@@ -19,7 +19,7 @@ from typing import Any
 
 try:
     from reviewer_partial_output import descriptor as partial_output_descriptor
-    from reviewer_result_contract import write_model_authored_schema
+    from reviewer_result_contract import RUNNER_JOINED_FIELDS, write_model_authored_schema
     from reviewer_worker_backend import (
         SUCCESS,
         WorkerError,
@@ -39,7 +39,10 @@ except ImportError:
     from skills.shared.scripts.reviewer_partial_output import (
         descriptor as partial_output_descriptor,
     )
-    from skills.shared.scripts.reviewer_result_contract import write_model_authored_schema
+    from skills.shared.scripts.reviewer_result_contract import (
+        RUNNER_JOINED_FIELDS,
+        write_model_authored_schema,
+    )
     from skills.shared.scripts.reviewer_worker_backend import (
         SUCCESS,
         WorkerError,
@@ -115,10 +118,17 @@ def _validate_result(
     # the joiner instead of this module's typed refusal.
     if not isinstance(payload, dict):
         raise WorkerError("schema-invalid", "review result must be a JSON object")
-    # Runner-owned provenance lands BEFORE schema validation because the canonical
-    # schema requires those fields; validating first would fail every model-authored
-    # result on the very fields the model must not author.
+    authored_runner_fields = sorted(set(payload).intersection(RUNNER_JOINED_FIELDS))
+    if authored_runner_fields:
+        raise WorkerError(
+            "schema-invalid",
+            "review result supplied runner-owned field(s): " + ", ".join(authored_runner_fields),
+        )
+    # Machine identities are derived from this worker invocation. Capability
+    # provenance is joined from the launch envelope by the supplied joiner.
     payload = join(payload)
+    payload["packet_sha256"] = packet_identity
+    payload["reviewed_input_identity_sha256"] = reviewed_input_identity
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     try:
         validator.validate(payload)
@@ -220,6 +230,8 @@ def run(args: Any, paths: dict[str, Any], run_id: str, started_at: str) -> dict[
             pending_output=temp_output,
             raw_output=raw_output,
             timeout_seconds=float(paths["timeout_seconds"]),
+            model=args.reviewer_model,
+            reasoning_effort=args.reviewer_reasoning_effort,
         )
         capability = collect(capability, capability_file, attempt_id=args.attempt_id)
         result = _validate_result(
@@ -290,6 +302,15 @@ def run(args: Any, paths: dict[str, Any], run_id: str, started_at: str) -> dict[
         "boundary_mode": args.boundary_mode,
         "boundary_fingerprint": args.boundary_fingerprint,
         "execution_mode": args.execution_mode,
+        "reviewer_tier": args.reviewer_tier,
+        "requested_model": args.reviewer_model,
+        "requested_reasoning_effort": args.reviewer_reasoning_effort,
+        "unsupported_reviewer_fields": args.unsupported_reviewer_field,
+        "model_application_state": (
+            "unverified-by-provider"
+            if args.reviewer_model is not None or args.reviewer_reasoning_effort is not None
+            else "not-requested"
+        ),
         "prompt_sha256": sha256(prompt),
         "schema_sha256": sha256(schema),
         # An auditor reading the result cannot otherwise tell that these two fields

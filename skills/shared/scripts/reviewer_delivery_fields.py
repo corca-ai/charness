@@ -87,12 +87,10 @@ def parent_receipt_identity(value: object, label: str = "parent_receipt_identity
 def boundary_binding(
     mode_value: object | None, fingerprint_value: object | None
 ) -> tuple[str, str | None]:
-    """Normalize the execution boundary without inventing a git snapshot.
+    """Normalize optional producer inputs without inventing a git snapshot.
 
-    Older ledgers only carried ``boundary_fingerprint``. Preserve that shape by
-    inferring the shared-tree mode when the field is present. New read-only
-    workers carry an explicit mode and no fingerprint because their backend
-    envelope already removes write and exec capability.
+    New read-only workers carry an explicit mode and no fingerprint because
+    their backend envelope already removes write and exec capability.
     """
     if mode_value is None:
         mode = FINGERPRINT_BOUNDARY_MODE if fingerprint_value is not None else DEFAULT_BOUNDARY_MODE
@@ -110,6 +108,34 @@ def boundary_binding(
     if mode == DEFAULT_BOUNDARY_MODE and fingerprint is not None:
         raise ValueError("read-only-worker must not carry a boundary_fingerprint")
     return mode, fingerprint
+
+
+def validate_joined_fields(
+    *, attempt: Any, report: dict[str, Any], receipt: dict[str, Any], provenance: dict[str, Any]
+) -> None:
+    """Require canonical delivery identities to agree across durable channels."""
+    fields = (
+        "attempt_id", "scope", "packet_identity", "reviewed_input_identity",
+        "parent_receipt_identity", "boundary_mode", "boundary_fingerprint", "execution_mode",
+        "backend", "prompt_sha256", "schema_sha256", "capability_launch_envelope_sha256",
+    )
+    if report.get("attempt_id") != provenance.get("attempt_id"):
+        raise ValueError("delivery chain attempt_id does not match report provenance")
+    if provenance.get("capability_non_claims_sha256") != report.get("capability_non_claims_sha256"):
+        raise ValueError("delivery chain capability non-claim digest does not match report provenance")
+    for field in fields:
+        expected = provenance.get(field) if field == "attempt_id" else report.get(field)
+        actual = getattr(attempt, field, None)
+        if field == "boundary_fingerprint" and expected is None:
+            if actual is not None or receipt.get(field) is not None or provenance.get(field) is not None:
+                raise ValueError(
+                    "delivery chain boundary_fingerprint is present for a boundary mode that does not require it"
+                )
+            continue
+        if expected is None or actual != expected or receipt.get(field) != expected:
+            raise ValueError(f"delivery chain {field} does not match report, receipt, and ledger attempt")
+        if field != "attempt_id" and provenance.get(field) != expected:
+            raise ValueError(f"delivery chain {field} does not match report provenance")
 
 
 def bound_fields(
@@ -166,8 +192,10 @@ def bound_fields(
         if payload.get("capability_launch_envelope_sha256") is not None
         else None
     )
+    if payload.get("boundary_mode") is None:
+        raise ValueError("boundary_mode is required")
     boundary_mode, boundary_fingerprint = boundary_binding(
-        payload.get("boundary_mode"), payload.get("boundary_fingerprint")
+        payload["boundary_mode"], payload.get("boundary_fingerprint")
     )
     output_file = _text(payload["output_file"], "output_file") if payload.get("output_file") is not None else None
     receipt_file = _text(payload["receipt_file"], "receipt_file") if payload.get("receipt_file") is not None else None

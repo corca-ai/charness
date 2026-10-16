@@ -25,11 +25,10 @@ in-process exec/import of the entry attributes zero coverage lines):
   older than the packaged version walks the downgrade branch.
 
 Lines that no measured spawn can reach (unembedded-entry-only branches,
-the ``required=True`` raise with a sole ``required=False`` caller, the
-impossible empty semver core, the in-process-only ``__getattr__`` raise)
-carry ``# pragma: no cover`` in the entry with the reason inline; the
-dead ``cmd_train_stats`` entry shim (no callers, uncallable via dispatch)
-was deleted instead.
+the ``required=True`` raise with a sole ``required=False`` caller, and the
+impossible empty semver core) carry ``# pragma: no cover`` in the entry with
+the reason inline; the dead ``cmd_train_stats`` entry shim (no callers,
+uncallable via dispatch) was deleted instead.
 """
 
 from __future__ import annotations

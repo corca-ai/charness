@@ -122,7 +122,7 @@ def complete_task(
     execution_status = execution_state(execution, delivery)
     payload["execution"]["status"] = execution_status
     acceptance_skeleton = _prelaunch.finish_acceptance_skeleton(payload, resolved_target) if execution_status == "completed" else None
-    stderr_text = _progress._lane_stderr_text(stdout_log, stderr_log)
+    stderr_text = _evidence._lane_stderr_text(stdout_log, stderr_log)
     payload["failure"] = _state.classify_failure(execution, stderr_text=stderr_text, delivery=delivery)
     candidate, result_state = candidate_result_state(
         execution_state=execution_status,
@@ -146,7 +146,12 @@ def complete_task(
         persistence=payload["persistence"],
         acceptance_skeleton=acceptance_skeleton,
     )
-    blockers += _prelaunch.acceptance_deficit_blockers(payload, resolved_target, candidate)
+    effective_scope_specs = scope.get("specs")
+    if not isinstance(effective_scope_specs, list):
+        effective_scope_specs = scope_specs
+    blockers += _prelaunch.acceptance_deficit_blockers(
+        payload, resolved_target, effective_scope_specs, candidate
+    )
     _lane_runner.apply_lane_receipt(
         payload,
         blockers,
@@ -156,9 +161,6 @@ def complete_task(
         stderr_text=stderr_text,
         guard_phases=_progress._guard_phases(payload),
         guard_blocker=_progress._guard_stop_reason(payload),
-    )
-    _apply_self_revert_backstop(
-        payload, scope, blockers, base_sha=base_sha, require_change=require_change
     )
     gate, blockers, result_state = _proof._prove_ready_candidate(
         payload,
@@ -244,63 +246,6 @@ def complete_task(
 
 def _execution_reviewer_result(delivery: Mapping[str, Any]) -> dict[str, Any] | None:
     return _execution._reviewer_result_carrier(delivery)
-
-
-def _apply_self_revert_backstop(
-    payload: dict[str, Any],
-    scope: Mapping[str, Any],
-    blockers: list[str],
-    *,
-    base_sha: str,
-    require_change: bool,
-) -> bool:
-    """Flag an EDITING lane that ends BLOCKED with an unchanged worktree (#834).
-
-    A worker that discovers a scope mismatch after editing must keep its
-    candidate and emit the typed extension request; a lane that emitted
-    EDITING/TESTING and then reports BLOCKED with no changes discarded its
-    own tested candidate (usually via ``git restore``). That shape reads as
-    ``candidate-self-reverted`` on the receipt instead of a plain
-    skipped/unchanged stall, and the guard's first-scoped-diff snapshot rides
-    along when observed so the parent can recover what was discarded.
-    """
-    lane_progress = payload.get("lane_progress")
-    phases = lane_progress.get("phases") if isinstance(lane_progress, Mapping) else []
-    blocker = lane_progress.get("blocker") if isinstance(lane_progress, Mapping) else None
-    edited = isinstance(phases, list) and any(
-        phase in ("EDITING", "TESTING") for phase in phases
-    )
-    unchanged = not scope.get("changed_paths") and not scope.get("disallowed_paths")
-    same_head = payload.get("target_sha") == base_sha
-    if not (require_change and edited and isinstance(blocker, str) and blocker and unchanged and same_head):
-        return False
-    payload["candidate_self_reverted"] = True
-    candidate = payload.get("candidate")
-    if isinstance(candidate, dict):
-        candidate["self_reverted"] = True
-    guard = payload.get("progress_guard")
-    snapshot = guard.get("first_scoped_diff") if isinstance(guard, Mapping) else None
-    if isinstance(snapshot, Mapping) and snapshot.get("observed"):
-        # The diff text lives once at progress_guard.first_scoped_diff; this
-        # snapshot carries only the recovery pointer, not a second copy.
-        payload["recovered_scoped_snapshot"] = {
-            "changed_paths": list(snapshot.get("changed_paths") or []),
-            "diff_ref": "progress_guard.first_scoped_diff.diff",
-            "truncated": bool(snapshot.get("truncated")),
-        }
-    else:
-        payload["recovered_scoped_snapshot"] = {
-            "changed_paths": [],
-            "diff_ref": None,
-            "truncated": False,
-            "unobserved": True,
-        }
-    blockers.append(
-        "candidate self-reverted after EDITING: the lane emitted EDITING "
-        "then ended BLOCKED with an unchanged worktree; keep the candidate "
-        "on a rescope instead of restoring scoped files"
-    )
-    return True
 
 
 def _completion_blockers(

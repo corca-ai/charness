@@ -2,16 +2,21 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import stat
 import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import yaml
 
+from scripts.runtime_scratch import owned_scratch
+from skills.shared.scripts import reviewer_delivery_fields, reviewer_worker_carrier_support
+from skills.shared.scripts.reviewer_capability import envelope_sha256
 from tests.quality_gates.reviewer_capability_support import (
     EMPTY_NON_CLAIMS_SHA256,
     ready_capability,
@@ -28,6 +33,79 @@ pytestmark = pytest.mark.boundary_contract(
 def _executable(path: Path, body: str) -> None:
     path.write_text(body, encoding="utf-8")
     path.chmod(path.stat().st_mode | stat.S_IXUSR)
+
+
+def test_carrier_result_contract_loader_refuses_ancestor_fallback(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    package_dir = tmp_path / "package"
+    package_dir.mkdir()
+    marker = tmp_path / "ancestor-contract-loaded"
+    (tmp_path / "reviewer_result_contract.py").write_text(
+        f"from pathlib import Path\nPath({str(marker)!r}).write_text('loaded')\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        reviewer_worker_carrier_support,
+        "__file__",
+        str(package_dir / "reviewer_worker_carrier_support.py"),
+    )
+
+    with pytest.raises(ImportError, match="package-local reviewer_result_contract.py not found"):
+        reviewer_worker_carrier_support._load_result_contract()
+    assert not marker.exists()
+
+
+def _assert_runner_refuses_option(
+    command: list[str], env: dict[str, str], option: str, value: str, reason: str
+) -> None:
+    rejected = list(command)
+    rejected[rejected.index(option) + 1] = value
+    report_index = rejected.index("--report-file") + 1
+    report_path = Path(rejected[report_index])
+    suffix = hashlib.sha256(f"{option}:{value}".encode()).hexdigest()[:12]
+    rejected[report_index] = str(report_path.with_name(f"refusal-{suffix}.yaml"))
+    result = subprocess.run(rejected, cwd=ROOT, env=env, capture_output=True, text=True, check=False)
+    payload = yaml.safe_load(result.stdout)
+    assert result.returncode == 2, result.stderr + result.stdout
+    assert reason in payload["error"]
+
+
+def _assert_carrier_refuses_owner_symlink(repo: Path, owner: Path) -> None:
+    link = owner / "repo-escape-report.json"
+    link.symlink_to(repo / ".git" / "config")
+    with pytest.raises(
+        reviewer_worker_carrier_support.WorkerCarrierError,
+        match="crosses an owned scratch symlink",
+    ):
+        reviewer_worker_carrier_support._report_path(
+            repo, str(link), allow_hidden=True, owned_root=owner
+        )
+
+
+def test_delivery_fields_reject_receipt_without_explicit_boundary_mode() -> None:
+    fields = {
+        "attempt_id": "attempt-1",
+        "scope": "scope-1",
+        "packet_identity": "packet-1",
+        "reviewed_input_identity": "input-1",
+        "parent_receipt_identity": "parent-1",
+        "boundary_mode": "shared-tree-fingerprint",
+        "boundary_fingerprint": "fingerprint-1",
+        "execution_mode": "file-backed-worker",
+        "backend": "codex_exec",
+        "prompt_sha256": "a" * 64,
+        "schema_sha256": "b" * 64,
+        "capability_launch_envelope_sha256": "c" * 64,
+    }
+    report = {**fields, "capability_non_claims_sha256": "d" * 64}
+    provenance = {**report}
+    receipt = {key: value for key, value in fields.items() if key != "boundary_mode"}
+
+    with pytest.raises(ValueError, match="delivery chain boundary_mode does not match"):
+        reviewer_delivery_fields.validate_joined_fields(
+            attempt=SimpleNamespace(**fields), report=report, receipt=receipt, provenance=provenance
+        )
 
 
 def _common(tmp_path: Path) -> dict[str, Path]:
@@ -76,20 +154,25 @@ def test_file_backed_runner_binds_receipt_ledger_and_report(tmp_path: Path) -> N
     files = _common(tmp_path)
     (tmp_path / ".agents").mkdir()
     (tmp_path / ".agents" / "critique-adapter.yaml").write_text(
-        "version: 1\nreviewer_runner:\n  mode: file-backed-worker\n  backend: codex_exec\n  timeout_seconds: 900\n",
+        "version: 1\n"
+        "reviewer_runner:\n  mode: file-backed-worker\n  backend: codex_exec\n  timeout_seconds: 900\n"
+        "reviewer_tiers:\n  medium:\n    model: gpt-5.6-luna\n    reasoning_effort: xhigh\n"
+        "    service_tier: priority\n    fork_turns: none\n",
         encoding="utf-8",
     )
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
+    argv_capture = tmp_path / "backend-argv.txt"
     _executable(
         bin_dir / "codex",
         """#!/bin/sh
+printf '%s\n' "$@" > "$ARGV_CAPTURE"
 out=""
 while [ "$#" -gt 0 ]; do
   if [ "$1" = "-o" ]; then out="$2"; shift 2; continue; fi
   shift
 done
-printf '%s\n' '{"kind":"charness.bounded_review.v1","lens":"runner test","verdict":"pass","findings":[],"counterweight_triage":[],"next_move":"test","non_claims":["test"],"capability_non_claims":[],"capability_non_claims_sha256":"__EMPTY_NON_CLAIMS_SHA256__","packet_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","reviewed_input_identity_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}' > "$out"
+printf '%s\n' '{"kind":"charness.bounded_review.v1","lens":"runner test","verdict":"pass","findings":[],"counterweight_triage":[],"next_move":"test","non_claims":["test"]}' > "$out"
 """,
     )
     script = (
@@ -99,7 +182,11 @@ printf '%s\n' '{"kind":"charness.bounded_review.v1","lens":"runner test","verdic
     )
     (bin_dir / "codex").write_text(script, encoding="utf-8")
     (bin_dir / "codex").chmod(0o755)
-    env = {**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}"}
+    env = {
+        **os.environ,
+        "PATH": f"{bin_dir}:{os.environ['PATH']}",
+        "ARGV_CAPTURE": str(argv_capture),
+    }
     command = [
         sys.executable,
         str(SCRIPT),
@@ -123,6 +210,8 @@ printf '%s\n' '{"kind":"charness.bounded_review.v1","lens":"runner test","verdic
         "attempt-1",
         "--parent-receipt-identity",
         "parent-1",
+        "--reviewer-tier",
+        "medium",
         "--boundary-fingerprint",
         "boundary-1",
         "--ledger-file",
@@ -139,12 +228,236 @@ printf '%s\n' '{"kind":"charness.bounded_review.v1","lens":"runner test","verdic
     assert result.returncode == 0, result.stderr
     assert report["approval_eligible"] is True
     assert report["execution_mode"] == "file-backed-worker"
-    assert yaml.safe_load(files["report"].read_text(encoding="utf-8"))["approval_eligible"] is True
+    delivered = json.loads(files["output"].read_text(encoding="utf-8"))
+    assert delivered["packet_sha256"] == "a" * 64
+    assert delivered["reviewed_input_identity_sha256"] == "a" * 64
+    persisted_report = yaml.safe_load(files["report"].read_text(encoding="utf-8"))
+    assert persisted_report["approval_eligible"] is True
+    backend_argv = argv_capture.read_text(encoding="utf-8").splitlines()
+    assert backend_argv[backend_argv.index("-m") + 1] == "gpt-5.6-luna"
+    assert backend_argv[backend_argv.index("-c") + 1] == "model_reasoning_effort=xhigh"
+    receipt = json.loads(files["receipt"].read_text(encoding="utf-8"))
+    for payload in (receipt, report, persisted_report):
+        assert payload["reviewer_tier"] == "medium"
+        assert payload["requested_model"] == "gpt-5.6-luna"
+        assert payload["requested_reasoning_effort"] == "xhigh"
+        assert payload["model_application_state"] == "unverified-by-provider"
+        assert payload["unsupported_reviewer_fields"] == [
+            "service_tier=priority",
+            "fork_turns=none",
+        ]
     ledger = json.loads(files["ledger"].read_text(encoding="utf-8"))
     assert [event["state"] for event in ledger["attempts"][0]["history"]][:2] == [
         "spawn-accepted",
         "running",
     ]
+
+
+def test_file_backed_runner_accepts_exact_external_owned_scratch(tmp_path: Path, monkeypatch) -> None:
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    (workspace / ".agents").mkdir()
+    (workspace / ".agents" / "critique-adapter.yaml").write_text(
+        "version: 1\nreviewer_runner:\n  mode: file-backed-worker\n  backend: codex_exec\n  timeout_seconds: 900\n",
+        encoding="utf-8",
+    )
+    (workspace / "user-change.txt").write_text("leave visible\n", encoding="utf-8")
+    subprocess.run(["git", "init", "-q", str(workspace)], check=True)
+    runtime = tmp_path / "external-runtime"
+    monkeypatch.setenv("CHARNESS_RUNTIME_ROOT", str(runtime))
+    monkeypatch.delenv("CHARNESS_RUNTIME_ROOT_AUTO", raising=False)
+    monkeypatch.delenv("CHARNESS_RUNTIME_REPO_KEY", raising=False)
+    env = {
+        **os.environ,
+        "CHARNESS_RUNTIME_ROOT": str(runtime),
+    }
+    env.pop("CHARNESS_RUNTIME_ROOT_AUTO", None)
+    env.pop("CHARNESS_RUNTIME_REPO_KEY", None)
+    owner = owned_scratch(workspace, "critique-review", run_id="owner-live")
+    owner.open()
+    files = {
+        "workspace": workspace,
+        "prompt": owner.path / "prompt.md",
+        "schema": owner.path / "schema.json",
+        "capability": owner.path / "capability.json",
+        "ledger": owner.path / "delivery.json",
+        "output": owner.path / "result.json",
+        "receipt": owner.path / "receipt.json",
+        "report": owner.path / "report.yaml",
+    }
+    files["prompt"].write_text("return the typed result\n", encoding="utf-8")
+    files["schema"].write_bytes(RESULT_SCHEMA.read_bytes())
+    capability = ready_capability("attempt-1")
+    files["capability"].write_text(json.dumps(capability), encoding="utf-8")
+    plan = {
+        "kind": "charness.review_run_plan.v1",
+        "attempt_id": "attempt-1",
+        "owner_run_id": owner.run_id,
+        "scope": "scope-1",
+        "packet_sha256": "a" * 64,
+        "reviewed_input_identity_sha256": "a" * 64,
+        "prompt_sha256": hashlib.sha256(files["prompt"].read_bytes()).hexdigest(),
+        "parent_receipt_identity": "parent-1",
+        "backend": "codex_exec",
+        "boundary_mode": "shared-tree-fingerprint",
+        "boundary_fingerprint": "boundary-1",
+        "schema_sha256": hashlib.sha256(files["schema"].read_bytes()).hexdigest(),
+        "capability_envelope_sha256": envelope_sha256(capability),
+    }
+    plan_path = owner.path / "run-plan.json"
+    plan_path.write_text(json.dumps(plan, sort_keys=True) + "\n", encoding="utf-8")
+    owner.update(
+        attempt_id="attempt-1",
+        plan_sha256=hashlib.sha256(plan_path.read_bytes()).hexdigest(),
+        packet_identity="a" * 64,
+        reviewed_input_identity="a" * 64,
+        parent_receipt_identity="parent-1",
+    )
+
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    argv_capture = tmp_path / "backend-argv.txt"
+    result_body = json.dumps(
+        {
+            "kind": "charness.bounded_review.v1",
+            "lens": "external owner test",
+            "verdict": "pass",
+            "findings": [],
+            "counterweight_triage": [],
+            "next_move": "test",
+            "non_claims": ["test"],
+        }
+    )
+    _executable(
+        bin_dir / "codex",
+        "#!/bin/sh\n"
+        'printf \'%s\\n\' "$@" > "$ARGV_CAPTURE"\n'
+        'out=""\nwhile [ "$#" -gt 0 ]; do\n'
+        '  if [ "$1" = "-o" ]; then out="$2"; shift 2; continue; fi\n'
+        '  shift\ndone\n'
+        f"printf '%s\\n' '{result_body}' > \"$out\"\n",
+    )
+    env.update({"PATH": f"{bin_dir}:{env['PATH']}", "ARGV_CAPTURE": str(argv_capture)})
+    command = [
+        sys.executable, str(SCRIPT), "--repo-root", str(workspace), "--backend", "codex_exec",
+        "--prompt-file", str(files["prompt"]), "--schema-file", str(files["schema"]),
+        "--capability-file", str(files["capability"]), "--scope", "scope-1",
+        "--packet-identity", "a" * 64, "--reviewed-input-identity", "a" * 64,
+        "--attempt-id", "attempt-1", "--parent-receipt-identity", "parent-1",
+        "--boundary-fingerprint", "boundary-1", "--ledger-file", str(files["ledger"]),
+        "--output-file", str(files["output"]), "--receipt-file", str(files["receipt"]),
+        "--report-file", str(files["report"]), "--owner-run-id", owner.run_id,
+        "--owner-receipt-file", str(owner.receipt_path),
+    ]
+    try:
+        repo_escape_target = workspace / "owned-scratch-escape.json"
+        repo_escape_link = owner.path / "repo-escape-result.json"
+        repo_escape_link.symlink_to(repo_escape_target)
+        _assert_runner_refuses_option(
+            command,
+            env,
+            "--output-file",
+            str(repo_escape_link),
+            "crosses an owned scratch symlink",
+        )
+        assert not repo_escape_target.exists()
+
+        foreign_workspace = tmp_path / "foreign-workspace"
+        (foreign_workspace / ".agents").mkdir(parents=True)
+        (foreign_workspace / ".agents" / "critique-adapter.yaml").write_text(
+            "version: 1\nreviewer_runner:\n  mode: file-backed-worker\n  backend: codex_exec\n  timeout_seconds: 900\n",
+            encoding="utf-8",
+        )
+        _assert_runner_refuses_option(
+            command, env, "--owner-run-id", f"{owner.run_id}-other", "receipt is missing or unsafe"
+        )
+        _assert_runner_refuses_option(
+            command, env, "--repo-root", str(foreign_workspace), "identity does not match this run"
+        )
+        _assert_runner_refuses_option(
+            command, env, "--attempt-id", "attempt-2", "attempt_id does not match"
+        )
+        altered_schema = owner.path / "altered-schema.json"
+        altered_schema.write_text("{}\n", encoding="utf-8")
+        _assert_runner_refuses_option(
+            command,
+            env,
+            "--schema-file",
+            str(altered_schema),
+            "canonical bounded-review result schema",
+        )
+        altered_capability = owner.path / "altered-capability.json"
+        altered_capability.write_text(
+            json.dumps(ready_capability("attempt-1", target="github:issue:999")),
+            encoding="utf-8",
+        )
+        _assert_runner_refuses_option(
+            command,
+            env,
+            "--capability-file",
+            str(altered_capability),
+            "schema or capability identity does not match",
+        )
+        assert not argv_capture.exists()
+
+        result = subprocess.run(command, cwd=ROOT, env=env, capture_output=True, text=True, check=False)
+        report = yaml.safe_load(result.stdout)
+        assert result.returncode == 0, result.stderr + result.stdout
+        assert report["approval_eligible"] is True
+        assert report["receipt_path"] == str(files["receipt"].resolve())
+        persisted_report = yaml.safe_load(files["report"].read_text(encoding="utf-8"))
+        with pytest.raises(ValueError, match="outside the exact owned scratch root"):
+            reviewer_worker_carrier_support.validate_delivered_worker_report(
+                repo_root=workspace, report=persisted_report, expected_attempt_id="attempt-1"
+            )
+        reviewer_worker_carrier_support.validate_delivered_worker_report(
+            repo_root=workspace,
+            report=persisted_report,
+            expected_attempt_id="attempt-1",
+            expected_paths={
+                "receipt": files["receipt"],
+                "delivery": files["ledger"],
+                "result": files["output"],
+            },
+            owned_root=owner.path,
+        )
+        _assert_carrier_refuses_owner_symlink(workspace, owner.path)
+        assert not (workspace / ".charness" / "scratch").exists()
+        status = subprocess.check_output(["git", "status", "--porcelain"], cwd=workspace, text=True)
+        assert "?? user-change.txt" in status
+        backend_argv = argv_capture.read_text(encoding="utf-8").splitlines()
+        assert backend_argv[backend_argv.index("-C") + 1] == str(workspace.resolve())
+        _assert_runner_refuses_option(
+            command, env, "--output-file", str(files["ledger"]), "distinct files"
+        )
+        stale_output = owner.path / "stale-result.json"
+        stale_output.write_text("stale\n", encoding="utf-8")
+        _assert_runner_refuses_option(
+            command, env, "--output-file", str(stale_output), str(stale_output)
+        )
+
+        arbitrary = tmp_path / "arbitrary-result.json"
+        _assert_runner_refuses_option(
+            command,
+            env,
+            "--output-file",
+            str(arbitrary),
+            "outside the exact owned scratch root",
+        )
+        assert not arbitrary.exists()
+        symlink_target = tmp_path / "symlink-result.json"
+        symlink_path = owner.path / "escape-result.json"
+        symlink_path.symlink_to(symlink_target)
+        _assert_runner_refuses_option(
+            command,
+            env,
+            "--output-file",
+            str(symlink_path),
+            "crosses an owned scratch symlink",
+        )
+        assert not symlink_target.exists()
+    finally:
+        owner.close()
 
 
 def test_file_backed_runner_resolves_relative_artifacts_once_from_repo_root(tmp_path: Path) -> None:
@@ -167,7 +480,7 @@ while [ "$#" -gt 0 ]; do
   shift
 done
 cat >/dev/null
-printf '%s\\n' '{"kind":"charness.bounded_review.v1","lens":"runner path test","verdict":"pass","findings":[],"counterweight_triage":[],"next_move":"test","non_claims":["test"],"capability_non_claims":[],"capability_non_claims_sha256":"__EMPTY_NON_CLAIMS_SHA256__","packet_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","reviewed_input_identity_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}' > "$out"
+printf '%s\\n' '{"kind":"charness.bounded_review.v1","lens":"runner path test","verdict":"pass","findings":[],"counterweight_triage":[],"next_move":"test","non_claims":["test"]}' > "$out"
         """,
     )
     script = (
@@ -287,7 +600,18 @@ def _run_worker_with_result(
         encoding="utf-8",
     )
     body_file = tmp_path / "backend-body.json"
-    body_file.write_text(json.dumps(body), encoding="utf-8")
+    generation_body = {
+        name: value
+        for name, value in body.items()
+        if name
+        not in {
+            "packet_sha256",
+            "reviewed_input_identity_sha256",
+            "capability_non_claims",
+            "capability_non_claims_sha256",
+        }
+    }
+    body_file.write_text(json.dumps(generation_body), encoding="utf-8")
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     _executable(

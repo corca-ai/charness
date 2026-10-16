@@ -98,23 +98,28 @@ Field semantics:
   runner writes a scope receipt and the review consumer independently rechecks
   it. This proves narrowing, not approval.
 - `reviewer_tiers` — optional mapping from a portable reviewer tier
-  (`high-leverage`, `medium`, or `standard`) to host-specific spawn fields. The tier is
-  host-plural: it translates the portable policy in
+  (`high-leverage`, `medium`, or `standard`) to host-specific reviewer fields. The
+  selected tier comes from `run_review.py --reviewer-tier`, or from the prepared
+  packet when the flag is omitted. The tier is host-plural: it translates the portable policy in
   [fresh-eye-subagent-review.md](../../../shared/references/fresh-eye-subagent-review.md)
   into the values for whichever host this repo runs on. Use `medium` for
   routine bounded fresh-eye packets and reserve `high-leverage` for release,
   issue, quality closeout, deployment-confidence, or explicitly justified
   high-risk reviews. Each tier value may set `model`, `reasoning_effort`,
-  `service_tier`, and `fork_turns` (all strings, all optional);
-  `reasoning_effort` / `service_tier` / `fork_turns` apply only where the host
-  exposes them. Unknown tier names
+  `service_tier`, and `fork_turns` (all strings, all optional). In file-backed
+  mode, `codex_exec` receives `model` as `-m` and `reasoning_effort` as
+  `-c model_reasoning_effort=...`; `claude_p` receives them as `--model` and
+  `--effort`. Those backends do not accept the native `service_tier` or
+  `fork_turns` fields; the worker report records them as unsupported. In
+  `typed-subagent` mode, the host may apply its supported spawn fields.
+  Unknown tier names
   warn; unknown sub-fields error. A host without subagent model overrides
   ignores it. Use the example or scaffolded adapter for concrete host mappings
   instead of copying provider-specific model/version values into this reference.
 
-Reviewer-tier fields are requested spawn fields, not provider-application
-evidence. A host accepting or sending them does not prove the provider applied
-them; record application only when the host confirms it. On hosts whose roles
+Reviewer-tier fields record requested backend or spawn inputs, not provider-application
+evidence. A CLI accepting or sending them does not prove the provider applied
+them; record application only when the provider confirms it. On hosts whose roles
 can override caller-selected fields (such as Codex `agent_type`), either omit
 that role or ensure its mapping preserves the requested model and reasoning
 effort. This remains host-specific: other hosts own their own role and

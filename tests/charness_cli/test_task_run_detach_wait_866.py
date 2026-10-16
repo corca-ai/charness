@@ -184,7 +184,7 @@ def test_child_argv_drops_detach_and_forwards_repeats() -> None:
         skip_prepare=False,
         allow_no_change=False,
         report_only=False,
-        self_review_policy="auto",
+        self_review_policy="never",
         critical_lane=False,
         acceptance_skeleton=None,
         premise_check=[["p1", "premise one", "decide one"]],
@@ -442,6 +442,10 @@ def test_child_argv_round_trips_through_the_real_parser(tmp_path: Path) -> None:
     """
     cli = load_cli_module("charness_detach_round_trip", CLI)
     parser = cli.build_parser()
+    default_policy = parser.parse_args(
+        ["task", "run", "--scope", "module.py", "--prompt", "do it", "--effort", "medium"]
+    )
+    assert default_policy.self_review_policy == "never"
     lane_path = str(tmp_path / "lane")
     prompt_file = tmp_path / "prompt.md"
     prompt_file.write_text("do it", encoding="utf-8")

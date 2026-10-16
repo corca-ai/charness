@@ -108,7 +108,7 @@ def test_invalid_receipts_are_unreadable_and_refused(tmp_path: Path, monkeypatch
 
     path = _scratch_path(runtime, "corrupt", "receipt")
     (path / core.OWNER_RECEIPT_NAME).write_text("{not-json", encoding="utf-8")
-    monkeypatch.setattr(core, "_registered_worktrees", lambda _repo: [])
+    monkeypatch.setattr(registry, "_registered_worktrees", lambda _core, _repo: [])
 
     report = registry.inspect_scratch_roots(core, repo, runtime_root_path=runtime)
 
@@ -120,7 +120,7 @@ def test_inventory_handles_missing_roots_links_limits_and_stat_errors(
     tmp_path: Path, monkeypatch
 ) -> None:
     missing = tmp_path / "does-not-exist"
-    assert core._tree_inventory(missing, max_entries=10) == (0, 0, False)
+    assert registry._tree_inventory(missing, max_entries=10) == (0, 0, False)
 
     root = tmp_path / "inventory"
     nested = root / "nested"
@@ -128,9 +128,9 @@ def test_inventory_handles_missing_roots_links_limits_and_stat_errors(
     (nested / "payload").write_bytes(b"payload")
     (root / "link").symlink_to(nested, target_is_directory=True)
 
-    entries, size, truncated = core._tree_inventory(root, max_entries=10)
+    entries, size, truncated = registry._tree_inventory(root, max_entries=10)
     assert (entries, size, truncated) == (3, len(b"payload"), False)
-    assert core._tree_inventory(root, max_entries=0)[2] is True
+    assert registry._tree_inventory(root, max_entries=0)[2] is True
 
     class BrokenFile:
         path = str(root / "broken")
@@ -147,7 +147,7 @@ def test_inventory_handles_missing_roots_links_limits_and_stat_errors(
         def stat(self, *, follow_symlinks: bool = False):
             raise OSError("stat raced with removal")
 
-    original_scandir = core.os.scandir
+    original_scandir = registry.os.scandir
 
     def injected_scandir(current):
         if Path(current) == root:
@@ -155,8 +155,8 @@ def test_inventory_handles_missing_roots_links_limits_and_stat_errors(
         return original_scandir(current)
 
     with monkeypatch.context() as patch:
-        patch.setattr(core.os, "scandir", injected_scandir)
-        assert core._tree_inventory(root, max_entries=10) == (1, 0, True)
+        patch.setattr(registry.os, "scandir", injected_scandir)
+        assert registry._tree_inventory(root, max_entries=10) == (1, 0, True)
 
 
 def test_lock_probe_refuses_unreadable_lock_and_supports_no_fcntl(tmp_path: Path, monkeypatch) -> None:
@@ -176,6 +176,55 @@ def test_lock_probe_refuses_unreadable_lock_and_supports_no_fcntl(tmp_path: Path
     with monkeypatch.context() as patch:
         patch.setattr(core, "fcntl", None)
         assert core._lock_is_active(lock_path) is False
+
+
+def test_owned_lock_authority_requires_observed_contention(tmp_path: Path, monkeypatch) -> None:
+    lock_path = tmp_path / "owner.lock"
+    lock_path.write_text("owner\n", encoding="utf-8")
+    with monkeypatch.context() as patch:
+        patch.setattr(core, "fcntl", None)
+        with pytest.raises(core.ScratchError, match="cannot be verified"):
+            core._require_held_owner_lock(lock_path)
+    if core.fcntl is None:
+        return
+
+    class BrokenFcntl:
+        LOCK_EX = core.fcntl.LOCK_EX
+        LOCK_NB = core.fcntl.LOCK_NB
+
+        @staticmethod
+        def flock(*_args, **_kwargs):
+            raise OSError("lock device failed")
+
+    with monkeypatch.context() as patch:
+        patch.setattr(core, "fcntl", BrokenFcntl)
+        with pytest.raises(core.ScratchError, match="cannot be verified"):
+            core._require_held_owner_lock(lock_path)
+
+    missing = tmp_path / "missing.lock"
+    with pytest.raises(core.ScratchError, match="cannot be verified"):
+        core._require_held_owner_lock(missing)
+    assert not missing.exists()
+
+    original_open = core.Path.open
+
+    def unreadable(path, *args, **kwargs):
+        if path == lock_path:
+            raise OSError("lock is unreadable")
+        return original_open(path, *args, **kwargs)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(core.Path, "open", unreadable)
+        with pytest.raises(core.ScratchError, match="cannot be verified"):
+            core._require_held_owner_lock(lock_path)
+
+    with pytest.raises(core.ScratchError, match="not held"):
+        core._require_held_owner_lock(lock_path)
+
+    with lock_path.open("r") as held:
+        core.fcntl.flock(held.fileno(), core.fcntl.LOCK_EX | core.fcntl.LOCK_NB)
+        assert core.observe_owner_lock(lock_path) is True
+        core._require_held_owner_lock(lock_path)
 
 
 @pytest.mark.parametrize("outcome, expected", [("dead", False), ("denied", True), ("error", False), ("alive", True)])
@@ -203,29 +252,29 @@ def test_worktree_probe_translates_failures_and_parses_success(monkeypatch, tmp_
     def unavailable(*_args, **_kwargs):
         raise OSError("git is unavailable")
 
-    monkeypatch.setattr(core, "run_process", unavailable)
+    monkeypatch.setattr(registry, "run_process", unavailable)
     with pytest.raises(core.ScratchError, match="cannot inspect registered worktrees: git is unavailable"):
-        core._registered_worktrees(repo)
+        registry._registered_worktrees(core, repo)
 
     monkeypatch.setattr(
-        core,
+        registry,
         "run_process",
         lambda *_args, **_kwargs: SimpleNamespace(returncode=1, stderr="permission denied\n", stdout=""),
     )
     with pytest.raises(core.ScratchError, match="permission denied"):
-        core._registered_worktrees(repo)
+        registry._registered_worktrees(core, repo)
 
     monkeypatch.setattr(
-        core,
+        registry,
         "run_process",
         lambda *_args, **_kwargs: SimpleNamespace(returncode=1, stderr="", stdout="git failed\n"),
     )
     with pytest.raises(core.ScratchError, match="git failed"):
-        core._registered_worktrees(repo)
+        registry._registered_worktrees(core, repo)
 
     nested = repo / "nested"
     monkeypatch.setattr(
-        core,
+        registry,
         "run_process",
         lambda *_args, **_kwargs: SimpleNamespace(
             returncode=0,
@@ -233,7 +282,7 @@ def test_worktree_probe_translates_failures_and_parses_success(monkeypatch, tmp_
             stdout=f"worktree {repo}\nworktree {nested}\n",
         ),
     )
-    assert core._registered_worktrees(repo) == [repo.resolve(), nested.resolve()]
+    assert registry._registered_worktrees(core, repo) == [repo.resolve(), nested.resolve()]
 
 
 def test_owner_open_is_idempotent_and_rejects_collisions(tmp_path: Path) -> None:
@@ -453,7 +502,7 @@ def test_registry_refuses_unknown_owner_and_skips_non_directory_children(
     (scratch / "ignored-link").symlink_to(ignored_target, target_is_directory=True)
     path = _scratch_path(runtime, "unknown", "run")
     (path / core.OWNER_RECEIPT_NAME).write_text("{bad", encoding="utf-8")
-    monkeypatch.setattr(core, "_registered_worktrees", lambda _repo: [])
+    monkeypatch.setattr(registry, "_registered_worktrees", lambda _core, _repo: [])
 
     report = registry.inspect_scratch_roots(core, repo, runtime_root_path=runtime)
 
@@ -717,18 +766,23 @@ def test_cli_dispatches_commands_with_injected_core_and_yaml() -> None:
     emitted: list[dict[str, object]] = []
 
     def record(command: str, payload: dict[str, object]):
-        def handler(repo: Path, **options: object) -> dict[str, object]:
-            calls.append((command, repo, options))
+        def handler(core: object, repo: Path, **options: object) -> dict[str, object]:
+            calls.append((command, repo, {"core": core, **options}))
             return payload
 
         return handler
 
     yaml_output = SimpleNamespace(emit_yaml=emitted.append)
-    fake_core = SimpleNamespace(
+    fake_registry = SimpleNamespace(
         inspect_scratch_roots=record("inspect", {"command": "inspect"}),
         gc_scratch_roots=record("gc", {"command": "gc"}),
         recover_scratch_roots=record("recover", {"command": "recover"}),
-        import_repo_module=lambda *_args: yaml_output,
+    )
+    fake_core = SimpleNamespace(
+        import_repo_module=lambda _path, name: {
+            "scripts.runtime_scratch_registry": fake_registry,
+            "scripts.yaml_output": yaml_output,
+        }[name]
     )
     repo = Path("/fixture/repo")
     runtime = Path("/fixture/runtime")
@@ -752,15 +806,22 @@ def test_cli_dispatches_commands_with_injected_core_and_yaml() -> None:
 
     assert [call[0] for call in calls] == ["inspect", "gc", "recover"]
     assert all(call[1] == repo for call in calls)
-    assert calls[0][2] == {"runtime_root_path": runtime, "max_roots": 3, "max_entries": 7}
+    assert calls[0][2] == {
+        "core": fake_core,
+        "runtime_root_path": runtime,
+        "max_roots": 3,
+        "max_entries": 7,
+    }
+    assert calls[1][2]["core"] is fake_core
     assert calls[1][2]["dry_run"] is False
+    assert calls[2][2]["core"] is fake_core
     assert calls[2][2]["dry_run"] is False
     assert emitted == [{"command": command} for command in ("inspect", "gc", "recover")]
 
 
 def test_runtime_scratch_main_runs_cli_in_process(tmp_path: Path, monkeypatch, capsys) -> None:
     repo, runtime = _repo_and_runtime(tmp_path)
-    monkeypatch.setattr(core, "_registered_worktrees", lambda _repo: [])
+    monkeypatch.setattr(registry, "_registered_worktrees", lambda _core, _repo: [])
 
     assert core.main(
         [
@@ -779,10 +840,8 @@ def test_direct_script_entrypoint_runs_inspection_with_injected_process_probe(
     tmp_path: Path, monkeypatch, capsys
 ) -> None:
     repo, runtime = _repo_and_runtime(tmp_path)
-    from scripts.core import subprocess_guard
-
     monkeypatch.setattr(
-        subprocess_guard,
+        registry,
         "run_process",
         lambda *_args, **_kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
     )

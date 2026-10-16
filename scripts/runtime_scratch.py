@@ -43,10 +43,6 @@ from scripts.runtime_bootstrap import (  # noqa: E402
     runtime_root,
 )
 
-_guard = import_repo_module(__file__, "scripts.core.subprocess_guard")
-run_process = _guard.run_process
-
-
 SCHEMA = "charness.runtime-scratch-owner/v1"
 SCRATCH_DIR_NAME = "scratch"
 OWNER_RECEIPT_NAME = ".charness-owner.json"
@@ -118,33 +114,6 @@ def _read_owner(path: Path) -> dict[str, Any] | None:
     return payload if isinstance(payload, dict) else None
 
 
-def _tree_inventory(root: Path, *, max_entries: int) -> tuple[int, int, bool]:
-    entries = 0
-    size = 0
-    truncated = False
-    stack = [root]
-    while stack:
-        current = stack.pop()
-        try:
-            children = list(os.scandir(current))
-        except OSError:
-            continue
-        for entry in children:
-            entries += 1
-            if entries > max_entries:
-                return entries, size, True
-            try:
-                if entry.is_symlink():
-                    continue
-                if entry.is_dir(follow_symlinks=False):
-                    stack.append(Path(entry.path))
-                elif entry.is_file(follow_symlinks=False):
-                    size += entry.stat(follow_symlinks=False).st_size
-            except OSError:
-                truncated = True
-    return entries, size, truncated
-
-
 def _lock_is_active(lock_path: Path) -> bool:
     if not lock_path.is_file():
         return False
@@ -165,6 +134,43 @@ def _lock_is_active(lock_path: Path) -> bool:
         handle.close()
 
 
+def observe_owner_lock(lock_path: Path) -> bool | None:
+    """Observe whether an owner lock is held without acquiring the lease.
+
+    Returns True when the lock is held, False when it is free, and None
+    when the state cannot be verified.  Unreadable errors are unverifiable
+    here: ``_lock_is_active`` treats them as active for conservative GC,
+    but an authorization decision must not admit external I/O on that
+    basis.
+    """
+    try:
+        handle = lock_path.open("r")
+    except OSError:
+        return None
+    try:
+        if fcntl is None:
+            return None
+        try:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            return True
+        except OSError:
+            return None
+        return False
+    finally:
+        handle.close()
+
+
+def _require_held_owner_lock(lock_path: Path) -> None:
+    """Refuse external I/O unless the owner lock is observably held."""
+    state = observe_owner_lock(lock_path)
+    if state is True:
+        return
+    if state is False:
+        raise ScratchError("owned scratch producer lock is not held")
+    raise ScratchError("owned scratch producer lock cannot be verified")
+
+
 def _pid_is_alive(value: object) -> bool:
     if not isinstance(value, int) or value <= 0:
         return False
@@ -177,25 +183,6 @@ def _pid_is_alive(value: object) -> bool:
     except OSError:
         return False
     return True
-
-
-def _registered_worktrees(repo_root: Path) -> list[Path]:
-    try:
-        result = run_process(
-            ["git", "worktree", "list", "--porcelain"],
-            cwd=repo_root,
-            timeout_seconds=10,
-        )
-    except OSError as exc:
-        raise ScratchError(f"cannot inspect registered worktrees: {exc}") from exc
-    if result.returncode != 0:
-        detail = result.stderr.strip() or result.stdout.strip() or "git worktree list failed"
-        raise ScratchError(f"cannot inspect registered worktrees: {detail}")
-    paths: list[Path] = []
-    for line in result.stdout.splitlines():
-        if line.startswith("worktree "):
-            paths.append(Path(line.removeprefix("worktree ")).resolve())
-    return paths
 
 
 def _contains_path(parent: Path, child: Path) -> bool:
@@ -462,6 +449,67 @@ class OwnedScratch:
         return False
 
 
+def validate_owned_scratch_reference(
+    repo_root: str | Path,
+    receipt_path: str | Path,
+    *,
+    producer: str,
+    run_id: str,
+    expected_fields: dict[str, Any],
+    runtime_environment: dict[str, str] | None = None,
+) -> tuple[OwnedScratch, dict[str, Any]]:
+    """Validate a live external owner reference without acquiring its lock.
+
+    The caller must already possess the producer lease. This is the read-only
+    proof used by a child runner to admit paths in that exact run directory.
+    """
+    repo = Path(repo_root).expanduser().resolve()
+    expected_runtime_root = runtime_root(repo, runtime_environment)
+    owner = OwnedScratch(
+        repo, producer, run_id=run_id, runtime_root_path=expected_runtime_root
+    )
+    raw_receipt = Path(receipt_path).expanduser()
+    if not raw_receipt.is_absolute() or raw_receipt != owner.receipt_path:
+        raise ScratchError("owner receipt is not the exact default external runtime owner")
+    try:
+        owner.path.relative_to(repo)
+    except ValueError:
+        pass
+    else:
+        raise ScratchError("owned scratch path is inside the reviewed repository")
+
+    current = owner.runtime_root
+    for part in (SCRATCH_DIR_NAME, owner.producer, owner.run_id, OWNER_RECEIPT_NAME):
+        current = current / part
+        if current.is_symlink():
+            raise ScratchError(f"owned scratch reference crosses a symlink: {current}")
+    if not owner.receipt_path.is_file():
+        raise ScratchError("owned scratch receipt is missing or not a regular file")
+    record = _read_owner(owner.receipt_path)
+    if record is None or not _RECEIPT_CORE_FIELDS.issubset(record):
+        raise ScratchError("owned scratch receipt is unreadable or incomplete")
+    if (
+        record.get("schema") != SCHEMA
+        or record.get("owner") != "charness"
+        or record.get("repo_root") != str(repo)
+        or record.get("repo_identity") != _repo_identity(repo)
+        or record.get("producer") != owner.producer
+        or record.get("run_id") != owner.run_id
+    ):
+        raise ScratchError("owned scratch receipt identity does not match this run")
+    if record.get("state") != "active" or record.get("retention") != "scratch":
+        raise ScratchError("owned scratch receipt is not an active disposable run")
+    if not _pid_is_alive(record.get("pid")):
+        raise ScratchError("owned scratch producer process is not alive")
+    if not owner.lock_path.is_file() or owner.lock_path.is_symlink():
+        raise ScratchError("owned scratch producer lock record is missing or unsafe")
+    _require_held_owner_lock(owner.lock_path)
+    for field, expected in expected_fields.items():
+        if record.get(field) != expected:
+            raise ScratchError(f"owned scratch receipt {field} does not match the run plan")
+    return owner, record
+
+
 def owned_scratch(
     repo_root: str | Path,
     producer: str,
@@ -478,62 +526,6 @@ def owned_scratch(
         retention=retention,
         runtime_root_path=runtime_root_path,
         retention_seconds=retention_seconds,
-    )
-
-
-def _registry_module():
-    return import_repo_module(__file__, "scripts.runtime_scratch_registry")
-
-
-def inspect_scratch_roots(
-    repo_root: str | Path,
-    *,
-    runtime_root_path: str | Path | None = None,
-    max_roots: int = 256,
-    max_entries: int = 100_000,
-) -> dict[str, Any]:
-    return _registry_module().inspect_scratch_roots(
-        sys.modules[__name__],
-        repo_root,
-        runtime_root_path=runtime_root_path,
-        max_roots=max_roots,
-        max_entries=max_entries,
-    )
-
-
-def gc_scratch_roots(
-    repo_root: str | Path,
-    *,
-    runtime_root_path: str | Path | None = None,
-    dry_run: bool = True,
-    max_roots: int = 256,
-    max_entries: int = 100_000,
-) -> dict[str, Any]:
-    return _registry_module().gc_scratch_roots(
-        sys.modules[__name__],
-        repo_root,
-        runtime_root_path=runtime_root_path,
-        dry_run=dry_run,
-        max_roots=max_roots,
-        max_entries=max_entries,
-    )
-
-
-def recover_scratch_roots(
-    repo_root: str | Path,
-    *,
-    runtime_root_path: str | Path | None = None,
-    dry_run: bool = True,
-    max_roots: int = 256,
-    max_entries: int = 100_000,
-) -> dict[str, Any]:
-    return _registry_module().recover_scratch_roots(
-        sys.modules[__name__],
-        repo_root,
-        runtime_root_path=runtime_root_path,
-        dry_run=dry_run,
-        max_roots=max_roots,
-        max_entries=max_entries,
     )
 
 

@@ -9,10 +9,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from scripts.task_run import task_run_evidence as evidence
 from scripts.task_run import task_run_git, task_run_scope
 from scripts.task_run import task_run_lane_runner as lane_runner
 from scripts.task_run import task_run_progress as prog
-from tests.charness_cli.test_task_run_fixtures import _repo, _run
+from tests.charness_cli.test_task_run_fixtures import _codex, _repo, _run
 
 
 def test_implementation_prompt_separates_edit_scope_from_judgment() -> None:
@@ -112,7 +113,7 @@ def test_stderr_only_markers_reach_receipt(tmp_path: Path) -> None:
 def test_stderr_scan_is_bounded_to_tail(tmp_path: Path) -> None:
     stderr_log = tmp_path / "codex.stderr.log"
     stderr_log.write_bytes(b"CONTRACT-READ\n" + b"x" * (300 * 1024) + b"\nEDITING\n")
-    text = prog._lane_stderr_text(
+    text = evidence._lane_stderr_text(
         tmp_path / "codex.stdout.log", stderr_log
     )
     assert "EDITING" in text
@@ -121,7 +122,7 @@ def test_stderr_scan_is_bounded_to_tail(tmp_path: Path) -> None:
 
 def test_missing_stderr_scans_as_no_markers(tmp_path: Path) -> None:
     assert (
-        prog._lane_stderr_text(
+        evidence._lane_stderr_text(
             tmp_path / "stdout.log", tmp_path / "absent.log"
         )
         == ""
@@ -551,7 +552,7 @@ def test_stderr_sibling_fallback_is_used_without_explicit_log(
     stdout_log = tmp_path / "codex.stdout.log"
     stdout_log.write_text("", encoding="utf-8")
     (tmp_path / "codex.stderr.log").write_text("CONTRACT-READ\n", encoding="utf-8")
-    assert prog._lane_stderr_text(stdout_log, None) == "CONTRACT-READ\n"
+    assert evidence._lane_stderr_text(stdout_log, None) == "CONTRACT-READ\n"
 
 
 def test_stderr_unreadable_scans_as_no_markers(
@@ -565,9 +566,16 @@ def test_stderr_unreadable_scans_as_no_markers(
     def _raise(self, *args, **kwargs):
         raise OSError("unreadable transcript")
 
-    monkeypatch.setattr(_Path, "read_bytes", _raise)
-    assert prog._lane_stderr_text(tmp_path / "o.log", stderr_log) == ""
-    assert prog._tail_text(stderr_log) == ""
+    original_open = _Path.open
+
+    def _open(self, *args, **kwargs):
+        if self == stderr_log:
+            return _raise(self, *args, **kwargs)
+        return original_open(self, *args, **kwargs)
+
+    monkeypatch.setattr(_Path, "open", _open)
+    assert evidence._lane_stderr_text(tmp_path / "o.log", stderr_log) == ""
+    assert evidence._tail_text(stderr_log) == ""
 
 
 def test_nonfinite_durations_fall_back_to_defaults(monkeypatch, tmp_path: Path) -> None:
@@ -744,10 +752,7 @@ def test_scope_mismatch_outside_declared_scope_is_typed_refusal(tmp_path: Path) 
 
 
 def _stub(tmp_path: Path, body: str) -> Path:
-    executable = tmp_path / "codex"
-    executable.write_text(f"#!/bin/sh\n{body}\n", encoding="utf-8")
-    executable.chmod(0o755)
-    return executable
+    return _codex(tmp_path, body, capture_last_message=True)
 
 
 def test_blocked_lane_records_typed_blocker(tmp_path: Path) -> None:

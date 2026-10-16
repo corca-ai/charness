@@ -45,6 +45,13 @@ def test_spawn_acceptance_is_not_approval() -> None:
     assert attempt.history[0]["event_id"]
 
 
+def test_readback_requires_explicit_boundary_mode() -> None:
+    payload = _ledger().to_dict()
+    payload["attempts"][0].pop("boundary_mode")
+    with pytest.raises(delivery.DeliveryError, match="boundary_mode is required"):
+        delivery.DeliveryLedger.from_dict(payload)
+
+
 def test_findings_received_is_the_only_approval_state() -> None:
     ledger = _ledger()
     ledger.require("a1").transition(delivery.RUNNING, "reviewer started", "2026-08-21T00:00:10Z")

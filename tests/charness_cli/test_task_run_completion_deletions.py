@@ -80,6 +80,73 @@ def test_completion_accepts_an_intentional_exact_scope_file_deletion(
     capsys.readouterr()
 
 
+def test_completion_accepts_a_glob_scoped_file_deletion(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    payload = _complete(
+        tmp_path,
+        candidate_kind="delete",
+        delete_path="module.py",
+        scope_specs_override=[{"path": "**", "kind": "glob", "matches": ["module.py"]}],
+        changed_line_gate=lambda *_args, **_kwargs: {
+            "status": "clean",
+            "blocking": False,
+            "summary": "gate clean",
+        },
+    )
+
+    assert payload["status"] == "completed"
+    assert payload["approval_eligibility"] == "eligible"
+    capsys.readouterr()
+
+
+def test_completion_accepts_a_git_delete_add_rename_within_directory_scope(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    surfaces = json.dumps(
+        {
+            "version": 1,
+            "surfaces": [
+                {
+                    "surface_id": "rename-fixture",
+                    "description": "Fixture verifier mapping for a Git D+A rename.",
+                    "source_paths": ["pkg/module.py", "pkg/module2.py"],
+                    "derived_paths": [],
+                    "sync_commands": [],
+                    "verify_commands": [
+                        "python3 -m pytest -q tests/test_completion_scope.py"
+                    ],
+                    "notes": [],
+                }
+            ],
+        }
+    )
+    payload = _complete(
+        tmp_path,
+        candidate_kind="rename",
+        rename_from="pkg/module.py",
+        rename_to="pkg/module2.py",
+        extra_files={
+            "pkg/module.py": "VALUE = 1\n",
+            ".agents/surfaces.json": surfaces,
+        },
+        scope_specs_override=[{"path": "pkg", "kind": "directory"}],
+        changed_line_gate=lambda *_args, **_kwargs: {
+            "status": "clean",
+            "blocking": False,
+            "summary": "gate clean",
+        },
+    )
+
+    assert set(payload["candidate"]["changed_paths"]) == {
+        "pkg/module.py",
+        "pkg/module2.py",
+    }
+    assert payload["status"] == "completed"
+    assert payload["approval_eligibility"] == "eligible"
+    capsys.readouterr()
+
+
 def test_completion_still_blocks_a_missing_promised_exact_scope_file(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:

@@ -28,7 +28,7 @@ Reclassifying the final persisted carrier through existing scope and acceptance 
 
 ## Verification
 
-The bounded current-owner omission control failed as expected on disallowed_paths == [] versus pkg/item.py; the wrapper returned success after observing pytest return code 1. The direct focused pytest run passed 230 tests across 11 affected modules. Ruff, the canonical code-length check for both changed Python files, and staged/unstaged diff checks passed. The receipt binds current implementation and fixture source hashes. The direct 230-test output was streamed and no persistent raw log was retained. Post-commit changed-line coverage remains pending; no full authoring lane is claimed.
+The bounded current-owner omission control failed as expected on disallowed_paths == [] versus pkg/item.py; the wrapper returned success after observing pytest return code 1. The direct focused pytest run passed 237 tests across 11 affected modules. Ruff, the canonical code-length check for both changed Python files, and staged/unstaged diff checks passed. The receipt binds current implementation and fixture source hashes. The direct 237-test output was streamed and no persistent raw log was retained. Post-commit changed-line coverage remains pending; no full authoring lane is claimed.
 
 ## Root Cause
 
@@ -76,14 +76,14 @@ Keep deletion truth in the canonical Git carrier. Reuse canonical scope and acce
 
 ## Evidence Disposition
 
-- Report Identity: fixture:R1#sha256:d67a5d49d85fa951fb0a01f4749e0b9c874ce73a7e4156e0ea4602f0d714bb24
+- Report Identity: fixture:R1#sha256:a9a35a8635098b907f99e14ac9fae5aa5f3f48118606e4ee67fdac629413b17d
 - Reported Findings: 1
 - Dispositioned Findings: R1
 - Missing Findings: none
-- Evidence Digest: sha256:d12796adaab580fd727cf06369ad592f6d4beaf0976ab99691327a88ce91124d
+- Evidence Digest: sha256:de974f5bf44f5b8a71d42c628dbf09c642ada7595351614369c853e4a44c6c51
 - Report Source: tests/charness_cli/test_task_run_completion_deletions.py
-- Report Source SHA256: d67a5d49d85fa951fb0a01f4749e0b9c874ce73a7e4156e0ea4602f0d714bb24
+- Report Source SHA256: a9a35a8635098b907f99e14ac9fae5aa5f3f48118606e4ee67fdac629413b17d
 
 ## Adversarial Verification
 
-- Finding: R1 | source: tests/charness_cli/test_task_run_completion_deletions.py | expected: After persistence, final changed paths must be scope- and verifier-classified before proof and approval. | stimulus: Build target adds pkg/item.py; lane merges then deletes it; dirty allowed module.py persists; disable only final reclassification and observe completion. | disposition: reproduced | observed: Current-owner omission leaves pkg/item.py with disallowed_paths empty. Restored completion blocks the out-of-scope candidate and the in-scope candidate whose deleted path has no mapped verifier; the focused suite passes 230 tests. | proof: executable fixture | handoff: charness-artifacts/debug/2026-10-15-task-run-intentional-deletion-followup.md | next move: commit slice and run the bounded changed-line proof | receipt: charness-artifacts/debug/2026-10-15-task-run-intentional-deletion-followup.receipt.json | receipt sha256: 88f6d68e55fddffbef06894d5adf4da70855216bf81a3e8f2ab08a49ac777146
+- Finding: R1 | source: tests/charness_cli/test_task_run_completion_deletions.py | expected: After persistence, final changed paths must be scope- and verifier-classified before proof and approval. | stimulus: Build target adds pkg/item.py; lane merges then deletes it; dirty allowed module.py persists; disable only final reclassification and observe completion. | disposition: reproduced | observed: Current-owner omission leaves pkg/item.py with disallowed_paths empty. Restored completion blocks the out-of-scope candidate and the in-scope candidate whose deleted path has no mapped verifier; the focused suite passes 237 tests. | proof: executable fixture | handoff: charness-artifacts/debug/2026-10-15-task-run-intentional-deletion-followup.md | next move: commit slice and run the bounded changed-line proof | receipt: charness-artifacts/debug/2026-10-15-task-run-intentional-deletion-followup.receipt.json | receipt sha256: b69d6ec3227d5085af0c6e5435537024cc22ac8ed186cffe2f3e012db5b0a75c

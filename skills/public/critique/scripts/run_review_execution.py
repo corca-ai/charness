@@ -19,6 +19,7 @@ def run_live(  # noqa: C901, PLR0915
     read_only_boundary_mode: str,
     lifecycle_semantic_input: Any,
     materialize_semantic_input: Any,
+    semantic_review_paths: Any,
     adapter_name: Any,
 ) -> int:  # noqa: C901, PLR0915
     """Run a reviewer and retain every terminal carrier, including failures."""
@@ -67,6 +68,9 @@ def run_live(  # noqa: C901, PLR0915
         packet_path, packet_payload, packet_sha, input_sha, verification = packet.select_packet(
             support, root, args, artifact_key, reviewed_paths, adapter, package
         )
+        packet_tier = packet_payload.get("reviewer_tier_evidence")
+        packet_tier = packet_tier.get("requested_tier") if isinstance(packet_tier, dict) else None
+        reviewer_tier = getattr(args, "reviewer_tier", None) or packet_tier
 
         durable_attempt_dir = root / promotion.DURABLE_WORKER_REPORTS / artifact_key
         if durable_attempt_dir.exists() or durable_attempt_dir.is_symlink():
@@ -80,7 +84,9 @@ def run_live(  # noqa: C901, PLR0915
         context["paths"] = {
             key: support.relative(root, value) for key, value in paths.items() if key != "run_dir"
         }
-        semantic_input = materialize_semantic_input(root, packet_payload, paths["run_dir"])
+        semantic_input = materialize_semantic_input(
+            root, packet_payload, paths["run_dir"], owner=run_owner
+        )
         projected_input = lifecycle_semantic_input(semantic_input)
         context["semantic_input"] = semantic_input
         paths["schema"].write_bytes(package["schema"].read_bytes())
@@ -97,23 +103,29 @@ def run_live(  # noqa: C901, PLR0915
         capability_sha = decision.envelope_sha256
         packet.write_prompt(
             paths["prompt"], packet_payload, scope=args.scope, lens=args.lens,
-            packet_sha=packet_sha, input_sha=input_sha, goal_lineage=goal_lineage,
+            semantic_review_paths=semantic_review_paths,
+            goal_lineage=goal_lineage,
             semantic_input=semantic_input,
             expected_targets=getattr(args, "expected_target", None),
+            reviewer_tier=reviewer_tier,
         )
         boundary_mode = read_only_boundary_mode
         boundary_sha = None
+        prompt_sha = support.sha256(paths["prompt"])
         plan = {
             "kind": "charness.review_run_plan.v1",
             "attempt_id": args.attempt_id,
+            "owner_run_id": run_owner.run_id,
             "scope": args.scope,
             "lens": args.lens,
             "packet_path": support.relative(root, packet_path),
             "packet_sha256": packet_sha,
             "reviewed_input_identity_sha256": input_sha,
+            "prompt_sha256": prompt_sha,
             "schema_sha256": schema_sha,
             "capability_envelope_sha256": capability_sha,
             "backend": backend,
+            "reviewer_tier": reviewer_tier,
             "timeout_seconds": timeout,
             "goal_lineage": goal_lineage,
             "semantic_input": semantic_input,
@@ -137,6 +149,7 @@ def run_live(  # noqa: C901, PLR0915
                 "reviewed_input_identity_sha256": input_sha,
                 "parent_receipt_identity": parent_receipt,
                 "backend": backend,
+                "reviewer_tier": reviewer_tier,
                 "timeout_seconds": timeout,
             }
         )
@@ -153,6 +166,7 @@ def run_live(  # noqa: C901, PLR0915
                     "capability_envelope_sha256": capability_sha,
                     "schema_sha256": schema_sha,
                     "backend": backend,
+                    "reviewer_tier": reviewer_tier,
                     "timeout_seconds": timeout,
                     "scope": args.scope,
                     "lens": args.lens,
@@ -179,6 +193,9 @@ def run_live(  # noqa: C901, PLR0915
             attempt=args.attempt_id, packet_sha=packet_sha, input_sha=input_sha,
             parent_receipt=parent_receipt, boundary_mode=boundary_mode, boundary_sha=boundary_sha,
             expected_targets=expected_targets,
+            reviewer_tier=reviewer_tier,
+            owner_run_id=run_owner.run_id,
+            owner_receipt=run_owner.receipt_path,
         )
         returncode, status, started, error = support.run_runner_held_out(
             command, root=root, stdout_path=paths["runner_stdout"],
@@ -204,7 +221,7 @@ def run_live(  # noqa: C901, PLR0915
             partial_outputs=(
                 []
                 if isinstance(report, dict) and report.get("delivery_state") == "findings-received"
-                else partial_output.collect_run_logs(root, paths)
+                else partial_output.collect_run_logs(root, paths, owned_root=run_dir)
             ),
         )
         result.update(
