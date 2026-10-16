@@ -490,11 +490,13 @@ def steered_lane_invocation(
         prompt_path.write_text(amended_prompt, encoding="utf-8")
         return list(command), amended_prompt, "session-resume"
     if executor == "codex" and session_id:
-        output_path = Path(command[command.index("--output-last-message") + 1])
+        runtime_options_start = command.index("--json")
         return (
             [
-                command[0], "exec", "resume", session_id, "--json",
-                "--output-last-message", str(output_path), "-",
+                *command[:runtime_options_start],
+                "resume",
+                session_id,
+                *command[runtime_options_start:],
             ],
             amended_prompt,
             "session-resume",

@@ -240,8 +240,11 @@ def _execute_codex(
             if not pending:
                 break
             delivered_batch = pending
+            # Rebuild Codex resumes from the original authorized argv so later
+            # steers do not accumulate earlier `resume <session>` arguments.
+            steer_command = command if executor == "codex" else current_command
             current_command, current_prompt, resume_path = _lane_runner.steered_lane_invocation(
-                executor, current_command, current_prompt, pending, session_id
+                executor, steer_command, current_prompt, pending, session_id
             )
             _append_steer_transcript(stderr_log, pending, resume_path)
             invocation += 1
