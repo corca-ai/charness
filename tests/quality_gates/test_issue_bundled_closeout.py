@@ -175,6 +175,9 @@ def test_issue_review_resolution_composes_one_worker_carrier_for_both_consumers(
     _fake_codex(bin_dir / "codex")
     env = {**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}"}
     env["FAKE_REVIEW_OBSERVATIONS"] = json.dumps(OBSERVATIONS)
+    env["CHARNESS_RUNTIME_ROOT"] = str(tmp_path.parent / f"{tmp_path.name}-external-runtime")
+    env.pop("CHARNESS_RUNTIME_ROOT_AUTO", None)
+    env.pop("CHARNESS_RUNTIME_REPO_KEY", None)
     body = _write_body(tmp_path, _bundle_body())
     wrong_observations = (
         [{**item, "summary": "Root cause confirmed; no repair exists"} for item in OBSERVATIONS]
@@ -222,7 +225,7 @@ def test_issue_review_resolution_composes_one_worker_carrier_for_both_consumers(
         cwd=tmp_path,
         env=env,
     )
-    assert result.returncode == 0, result.stderr
+    assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
     payload = yaml.safe_load(result.stdout)
     assert payload["reviewer_started"] is True
     assert payload["approval_eligible"] is True
