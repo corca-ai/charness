@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import errno
 import hashlib
 import json
 import os
@@ -309,7 +310,7 @@ def runner_liveness(record: Mapping[str, Any]) -> dict[str, Any]:
     that record is stale.
     """
     pid = record.get("runner_pid")
-    if not isinstance(pid, int) or pid <= 0:
+    if isinstance(pid, bool) or not isinstance(pid, int) or pid <= 0:
         return {"runner_pid": None, "alive": None}
     try:
         os.kill(pid, 0)
@@ -318,6 +319,12 @@ def runner_liveness(record: Mapping[str, Any]) -> dict[str, Any]:
         alive = False
     except PermissionError:
         alive = True
+    except OverflowError:
+        alive = None
+    except OSError as exc:
+        if exc.errno not in {errno.EINVAL, errno.EOVERFLOW}:
+            raise
+        alive = None
     return {"runner_pid": pid, "alive": alive}
 
 
@@ -551,7 +558,9 @@ def _enumerate_task_results(
     except OSError as exc:
         return results, unknown, [f"unreadable task-run store under {key_root}: {exc}"]
     if not stat.S_ISDIR(store_stat.st_mode):
-        return results, unknown, reasons
+        return results, unknown, [
+            f"task-run store under {key_root} is not a directory"
+        ]
 
     try:
         with os.scandir(store) as task_dirs:
