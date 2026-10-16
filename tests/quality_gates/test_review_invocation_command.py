@@ -60,3 +60,9 @@ def test_no_declaration_means_no_worker_flags(tmp_path: Path) -> None:
 def test_boundary_fingerprint_stays_optional(tmp_path: Path) -> None:
     assert "--boundary-fingerprint" not in _command(tmp_path)
     assert "--boundary-fingerprint" in _command(tmp_path, boundary_sha="boundary-1")
+
+
+def test_selected_reviewer_tier_reaches_canonical_runner(tmp_path: Path) -> None:
+    argv = _command(tmp_path, reviewer_tier="medium")
+    index = argv.index("--reviewer-tier")
+    assert argv[index + 1] == "medium"

@@ -67,6 +67,9 @@ def run_live(  # noqa: C901, PLR0915
         packet_path, packet_payload, packet_sha, input_sha, verification = packet.select_packet(
             support, root, args, artifact_key, reviewed_paths, adapter, package
         )
+        packet_tier = packet_payload.get("reviewer_tier_evidence")
+        packet_tier = packet_tier.get("requested_tier") if isinstance(packet_tier, dict) else None
+        reviewer_tier = getattr(args, "reviewer_tier", None) or packet_tier
 
         durable_attempt_dir = root / promotion.DURABLE_WORKER_REPORTS / artifact_key
         if durable_attempt_dir.exists() or durable_attempt_dir.is_symlink():
@@ -100,6 +103,7 @@ def run_live(  # noqa: C901, PLR0915
             packet_sha=packet_sha, input_sha=input_sha, goal_lineage=goal_lineage,
             semantic_input=semantic_input,
             expected_targets=getattr(args, "expected_target", None),
+            reviewer_tier=reviewer_tier,
         )
         boundary_mode = read_only_boundary_mode
         boundary_sha = None
@@ -114,6 +118,7 @@ def run_live(  # noqa: C901, PLR0915
             "schema_sha256": schema_sha,
             "capability_envelope_sha256": capability_sha,
             "backend": backend,
+            "reviewer_tier": reviewer_tier,
             "timeout_seconds": timeout,
             "goal_lineage": goal_lineage,
             "semantic_input": semantic_input,
@@ -137,6 +142,7 @@ def run_live(  # noqa: C901, PLR0915
                 "reviewed_input_identity_sha256": input_sha,
                 "parent_receipt_identity": parent_receipt,
                 "backend": backend,
+                "reviewer_tier": reviewer_tier,
                 "timeout_seconds": timeout,
             }
         )
@@ -153,6 +159,7 @@ def run_live(  # noqa: C901, PLR0915
                     "capability_envelope_sha256": capability_sha,
                     "schema_sha256": schema_sha,
                     "backend": backend,
+                    "reviewer_tier": reviewer_tier,
                     "timeout_seconds": timeout,
                     "scope": args.scope,
                     "lens": args.lens,
@@ -179,6 +186,7 @@ def run_live(  # noqa: C901, PLR0915
             attempt=args.attempt_id, packet_sha=packet_sha, input_sha=input_sha,
             parent_receipt=parent_receipt, boundary_mode=boundary_mode, boundary_sha=boundary_sha,
             expected_targets=expected_targets,
+            reviewer_tier=reviewer_tier,
         )
         returncode, status, started, error = support.run_runner_held_out(
             command, root=root, stdout_path=paths["runner_stdout"],

@@ -122,6 +122,9 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument("--stderr-file", type=Path)
     result.add_argument("--backend", choices=("codex_exec", "claude_p"))
     result.add_argument(
+        "--reviewer-tier", choices=("high-leverage", "medium", "standard")
+    )
+    result.add_argument(
         "--expected-target",
         action="append",
         default=None,
@@ -139,7 +142,9 @@ def parser() -> argparse.ArgumentParser:
     return result
 
 
-def select_runner(args: argparse.Namespace, repo_root: Path) -> tuple[str, str | None, float]:
+def select_runner(
+    args: argparse.Namespace, repo_root: Path
+) -> tuple[str, str | None, float, dict[str, Any]]:
     adapter_data = adapter(repo_root).get("data") or {}
     runner = adapter_data.get("reviewer_runner") or {}
     configured_mode = runner.get("mode", "file-backed-worker")
@@ -173,4 +178,47 @@ def select_runner(args: argparse.Namespace, repo_root: Path) -> tuple[str, str |
         if configured_timeout is not None
         else (args.timeout_seconds if args.timeout_seconds is not None else 900)
     )
-    return configured_mode, backend, timeout
+    tier = getattr(args, "reviewer_tier", None)
+    tier_fields: dict[str, Any] = {}
+    if tier is not None:
+        tiers = adapter_data.get("reviewer_tiers") or {}
+        if not isinstance(tiers, dict):
+            raise ValueError("reviewer_tiers must be a mapping")
+        tier_fields = tiers.get(tier) or {}
+        if not isinstance(tier_fields, dict):
+            raise ValueError(f"reviewer_tiers.{tier} must be a mapping")
+    model = tier_fields.get("model")
+    effort = tier_fields.get("reasoning_effort")
+    for name, value in (("model", model), ("reasoning_effort", effort)):
+        if value is not None and (not isinstance(value, str) or not value.strip()):
+            raise ValueError(f"reviewer_tiers.{tier}.{name} must be a non-empty string")
+    return configured_mode, backend, timeout, {
+        "tier": tier,
+        "model": model,
+        "reasoning_effort": effort,
+        "unsupported_fields": {
+            name: tier_fields[name]
+            for name in ("service_tier", "fork_turns")
+            if name in tier_fields
+        },
+    }
+
+
+def reviewer_worker_arguments(
+    *,
+    tier: str | None,
+    model: str | None,
+    reasoning_effort: str | None,
+    unsupported_fields: dict[str, Any],
+) -> list[str]:
+    """Build only the adapter-resolved reviewer-specific worker arguments."""
+    arguments: list[str] = []
+    if tier is not None:
+        arguments.extend(["--reviewer-tier", tier])
+    if model is not None:
+        arguments.extend(["--reviewer-model", model])
+    if reasoning_effort is not None:
+        arguments.extend(["--reviewer-reasoning-effort", reasoning_effort])
+    for name, value in unsupported_fields.items():
+        arguments.extend(["--unsupported-reviewer-field", f"{name}={value}"])
+    return arguments

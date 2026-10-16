@@ -220,6 +220,8 @@ def run(args: Any, paths: dict[str, Any], run_id: str, started_at: str) -> dict[
             pending_output=temp_output,
             raw_output=raw_output,
             timeout_seconds=float(paths["timeout_seconds"]),
+            model=args.reviewer_model,
+            reasoning_effort=args.reviewer_reasoning_effort,
         )
         capability = collect(capability, capability_file, attempt_id=args.attempt_id)
         result = _validate_result(
@@ -290,6 +292,15 @@ def run(args: Any, paths: dict[str, Any], run_id: str, started_at: str) -> dict[
         "boundary_mode": args.boundary_mode,
         "boundary_fingerprint": args.boundary_fingerprint,
         "execution_mode": args.execution_mode,
+        "reviewer_tier": args.reviewer_tier,
+        "requested_model": args.reviewer_model,
+        "requested_reasoning_effort": args.reviewer_reasoning_effort,
+        "unsupported_reviewer_fields": args.unsupported_reviewer_field,
+        "model_application_state": (
+            "unverified-by-provider"
+            if args.reviewer_model is not None or args.reviewer_reasoning_effort is not None
+            else "not-requested"
+        ),
         "prompt_sha256": sha256(prompt),
         "schema_sha256": sha256(schema),
         # An auditor reading the result cannot otherwise tell that these two fields

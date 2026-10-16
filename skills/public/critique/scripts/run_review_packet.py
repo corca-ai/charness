@@ -131,6 +131,9 @@ def prepare_packet(
         command.extend(["--reviewed-path", path])
     for target in (args.prepared_target or []):
         command.extend(["--prepared-target", target])
+    reviewer_tier = getattr(args, "reviewer_tier", None)
+    if reviewer_tier is not None:
+        command.extend(["--reviewer-tier", reviewer_tier])
     follow_up_from = getattr(args, "follow_up_from", None)
     if follow_up_from is not None:
         command.extend(["--follow-up-from", follow_up_from])
@@ -301,6 +304,7 @@ def write_prompt(
     goal_lineage: dict[str, Any] | None = None,
     semantic_input: dict[str, Any] | None = None,
     expected_targets: Sequence[str] | None = None,
+    reviewer_tier: str | None = None,
 ) -> None:
     readable_paths, deleted_paths = _semantic_review_paths(packet)
     semantic_lines = [
@@ -343,6 +347,13 @@ def write_prompt(
         "evidence array. A schema-valid result that silently drops a declared target is refused "
         "as incomplete coverage, so never invent observations for targets you did not review.",
     ) if declared else ()
+    reviewer_tier_lines: tuple[str, ...] = ()
+    if reviewer_tier is not None:
+        reviewer_tier_lines = (
+            f"Effective reviewer tier for this run: {reviewer_tier}. The file-backed "
+            "runner applies the adapter's supported model and reasoning-effort fields "
+            "for this tier.",
+        )
     path.write_text(
         "\n".join(
             (
@@ -353,6 +364,7 @@ def write_prompt(
                 f"Reviewed input identity (copy exactly): {input_sha}",
                 *lineage_lines,
                 *follow_up_lines,
+                *reviewer_tier_lines,
                 "Return only JSON matching the supplied bounded-review result schema.",
                 "Do not edit the workspace, and do not treat partial progress as approval.",
                 *target_lines,

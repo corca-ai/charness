@@ -105,6 +105,11 @@ def _parser() -> argparse.ArgumentParser:
         help="Promote a retained failed attempt after its original durable promotion failed",
     )
     parser.add_argument("--backend", choices=("codex_exec", "claude_p"))
+    parser.add_argument(
+        "--reviewer-tier",
+        choices=("high-leverage", "medium", "standard"),
+        help="Adapter reviewer tier to apply; defaults to the prepared packet's tier",
+    )
     parser.add_argument("--goal-lineage-file", help="Repo-relative full Goal Run evidence-lineage JSON")
     parser.add_argument("--dry-run", action="store_true", help="Derive and validate the run without starting a reviewer")
     parser.add_argument(

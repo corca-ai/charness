@@ -77,12 +77,25 @@ def atomic_write_json(path: Path, payload: dict[str, Any]) -> None:
         raise
 
 
-def _command(backend: str, workspace: Path, schema: Path, raw_output: Path) -> list[str]:
+def _command(
+    backend: str,
+    workspace: Path,
+    schema: Path,
+    raw_output: Path,
+    *,
+    model: str | None = None,
+    reasoning_effort: str | None = None,
+) -> list[str]:
     if backend == "codex_exec":
-        return [
+        command = [
             "codex", "exec", "-C", str(workspace), "--sandbox", "read-only", "--ephemeral",
             "--output-schema", str(schema), "-o", str(raw_output), "-",
         ]
+        if model is not None:
+            command.extend(["-m", model])
+        if reasoning_effort is not None:
+            command.extend(["-c", f"model_reasoning_effort={reasoning_effort}"])
+        return command
     if backend == "claude_p":
         try:
             schema_payload = json.loads(schema.read_text(encoding="utf-8"))
@@ -92,10 +105,15 @@ def _command(backend: str, workspace: Path, schema: Path, raw_output: Path) -> l
             # The Claude CLI rejects a draft 2020-12 $schema key, so the
             # inline --json-schema form carries the shape without it (#878).
             schema_payload.pop("$schema", None)
-        return [
+        command = [
             "claude", "-p", "--no-session-persistence", "--tools", "", "--output-format", "json",
             "--json-schema", json.dumps(schema_payload, ensure_ascii=False, separators=(",", ":")),
         ]
+        if model is not None:
+            command.extend(["--model", model])
+        if reasoning_effort is not None:
+            command.extend(["--effort", reasoning_effort])
+        return command
     raise WorkerError("input-invalid", f"unsupported backend: {backend}")
 
 
@@ -151,11 +169,20 @@ def execute_backend(
     pending_output: Path,
     raw_output: Path,
     timeout_seconds: float,
+    model: str | None = None,
+    reasoning_effort: str | None = None,
 ) -> int:
     """Invoke one backend, map process failures, and normalize its output."""
     try:
         exit_code = run_bounded_process(
-            _command(backend, workspace, schema, raw_output),
+            _command(
+                backend,
+                workspace,
+                schema,
+                raw_output,
+                model=model,
+                reasoning_effort=reasoning_effort,
+            ),
             cwd=workspace,
             stdin_path=prompt,
             stdout_path=stdout if backend == "codex_exec" else raw_output,

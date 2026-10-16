@@ -38,6 +38,9 @@ try:
         repo_path as _repo_path,
     )
     from reviewer_worker_runner_support import (
+        reviewer_worker_arguments as _reviewer_worker_arguments,
+    )
+    from reviewer_worker_runner_support import (
         select_runner as _select_runner,
     )
     from reviewer_worker_runner_support import (
@@ -62,6 +65,9 @@ except ImportError:
     )
     from skills.shared.scripts.reviewer_worker_runner_support import (
         repo_path as _repo_path,
+    )
+    from skills.shared.scripts.reviewer_worker_runner_support import (
+        reviewer_worker_arguments as _reviewer_worker_arguments,
     )
     from skills.shared.scripts.reviewer_worker_runner_support import (
         select_runner as _select_runner,
@@ -90,7 +96,7 @@ def main(argv: list[str] | None = None) -> int:
     repo_root = args.repo_root.resolve()
     report_target: Path | None = None
     try:
-        mode, backend, timeout = _select_runner(args, repo_root)
+        mode, backend, timeout, reviewer = _select_runner(args, repo_root)
         if mode == "typed-subagent":
             emit_yaml(
                 {
@@ -211,6 +217,14 @@ def main(argv: list[str] | None = None) -> int:
             "--parent-receipt-identity",
             args.parent_receipt_identity,
         ]
+        worker_argv.extend(
+            _reviewer_worker_arguments(
+                tier=reviewer["tier"],
+                model=reviewer["model"],
+                reasoning_effort=reviewer["reasoning_effort"],
+                unsupported_fields=reviewer["unsupported_fields"],
+            )
+        )
         worker_argv.extend(["--boundary-mode", boundary_mode])
         if boundary_fingerprint is not None:
             worker_argv.extend(["--boundary-fingerprint", boundary_fingerprint])

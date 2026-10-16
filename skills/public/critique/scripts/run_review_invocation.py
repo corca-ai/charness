@@ -23,6 +23,7 @@ def runner_command(
     boundary_mode: str,
     boundary_sha: str | None,
     expected_targets: Sequence[str] | None = None,
+    reviewer_tier: str | None = None,
 ) -> list[str]:
     """Bind one worker process to the prepared packet and artifact paths.
 
@@ -62,6 +63,8 @@ def runner_command(
     ]
     if boundary_sha is not None:
         command.extend(["--boundary-fingerprint", boundary_sha])
+    if reviewer_tier is not None:
+        command.extend(["--reviewer-tier", reviewer_tier])
     for target in expected_targets or ():
         command.extend(["--expected-target", target])
     return command
