@@ -76,14 +76,19 @@ def test_file_backed_runner_binds_receipt_ledger_and_report(tmp_path: Path) -> N
     files = _common(tmp_path)
     (tmp_path / ".agents").mkdir()
     (tmp_path / ".agents" / "critique-adapter.yaml").write_text(
-        "version: 1\nreviewer_runner:\n  mode: file-backed-worker\n  backend: codex_exec\n  timeout_seconds: 900\n",
+        "version: 1\n"
+        "reviewer_runner:\n  mode: file-backed-worker\n  backend: codex_exec\n  timeout_seconds: 900\n"
+        "reviewer_tiers:\n  medium:\n    model: gpt-5.6-luna\n    reasoning_effort: xhigh\n"
+        "    service_tier: priority\n    fork_turns: none\n",
         encoding="utf-8",
     )
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
+    argv_capture = tmp_path / "backend-argv.txt"
     _executable(
         bin_dir / "codex",
         """#!/bin/sh
+printf '%s\n' "$@" > "$ARGV_CAPTURE"
 out=""
 while [ "$#" -gt 0 ]; do
   if [ "$1" = "-o" ]; then out="$2"; shift 2; continue; fi
@@ -99,7 +104,11 @@ printf '%s\n' '{"kind":"charness.bounded_review.v1","lens":"runner test","verdic
     )
     (bin_dir / "codex").write_text(script, encoding="utf-8")
     (bin_dir / "codex").chmod(0o755)
-    env = {**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}"}
+    env = {
+        **os.environ,
+        "PATH": f"{bin_dir}:{os.environ['PATH']}",
+        "ARGV_CAPTURE": str(argv_capture),
+    }
     command = [
         sys.executable,
         str(SCRIPT),
@@ -123,6 +132,8 @@ printf '%s\n' '{"kind":"charness.bounded_review.v1","lens":"runner test","verdic
         "attempt-1",
         "--parent-receipt-identity",
         "parent-1",
+        "--reviewer-tier",
+        "medium",
         "--boundary-fingerprint",
         "boundary-1",
         "--ledger-file",
@@ -139,7 +150,21 @@ printf '%s\n' '{"kind":"charness.bounded_review.v1","lens":"runner test","verdic
     assert result.returncode == 0, result.stderr
     assert report["approval_eligible"] is True
     assert report["execution_mode"] == "file-backed-worker"
-    assert yaml.safe_load(files["report"].read_text(encoding="utf-8"))["approval_eligible"] is True
+    persisted_report = yaml.safe_load(files["report"].read_text(encoding="utf-8"))
+    assert persisted_report["approval_eligible"] is True
+    backend_argv = argv_capture.read_text(encoding="utf-8").splitlines()
+    assert backend_argv[backend_argv.index("-m") + 1] == "gpt-5.6-luna"
+    assert backend_argv[backend_argv.index("-c") + 1] == "model_reasoning_effort=xhigh"
+    receipt = json.loads(files["receipt"].read_text(encoding="utf-8"))
+    for payload in (receipt, report, persisted_report):
+        assert payload["reviewer_tier"] == "medium"
+        assert payload["requested_model"] == "gpt-5.6-luna"
+        assert payload["requested_reasoning_effort"] == "xhigh"
+        assert payload["model_application_state"] == "unverified-by-provider"
+        assert payload["unsupported_reviewer_fields"] == [
+            "service_tier=priority",
+            "fork_turns=none",
+        ]
     ledger = json.loads(files["ledger"].read_text(encoding="utf-8"))
     assert [event["state"] for event in ledger["attempts"][0]["history"]][:2] == [
         "spawn-accepted",
