@@ -609,6 +609,7 @@ def test_execution_refuses_a_sectionless_adapter_before_starting_a_reviewer() ->
         read_only_boundary_mode="read-only-worker",
         lifecycle_semantic_input=lambda value: value,
         materialize_semantic_input=lambda *values: {},
+        semantic_review_paths=lambda _packet: ([], []),
         adapter_name=lambda *values: ".agents/critique-adapter.yaml",
     )
     assert result == 2

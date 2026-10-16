@@ -461,7 +461,8 @@ def test_tool_repair_reports_unsupported_tools(tmp_path: Path, seeded_charness_r
 
 
 def test_tool_next_step_prefers_agent_browser_repair_for_cleanup_runtime_drift() -> None:
-    module = load_charness_module("charness_tool_repair_next_step_under_test")
+    from scripts.cli.tool_next_steps import tool_next_step
+
     doctor_result = {
         "doctor_status": "unhealthy",
         "healthcheck": {
@@ -478,7 +479,7 @@ def test_tool_next_step_prefers_agent_browser_repair_for_cleanup_runtime_drift()
         },
     }
 
-    next_step = module.tool_next_step("agent-browser", None, doctor_result, None)
+    next_step = tool_next_step("agent-browser", None, doctor_result, None)
 
     assert "charness tool repair --execute agent-browser" in next_step
 
