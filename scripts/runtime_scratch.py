@@ -165,6 +165,45 @@ def _lock_is_active(lock_path: Path) -> bool:
         handle.close()
 
 
+def observe_owner_lock(lock_path: Path) -> bool | None:
+    """Observe whether an owner lock is held without acquiring the lease.
+
+    Returns True when the lock is held, False when it is free, and None
+    when the state cannot be verified.  Unreadable errors are unverifiable
+    here: ``_lock_is_active`` treats them as active for conservative GC,
+    but an authorization decision must not admit external I/O on that
+    basis.
+    """
+    try:
+        handle = lock_path.open("a+")
+    except OSError:
+        return None
+    try:
+        if fcntl is None:
+            return None
+        try:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except (BlockingIOError, OSError):
+            return True
+        try:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+        except OSError:
+            pass
+        return False
+    finally:
+        handle.close()
+
+
+def _require_held_owner_lock(lock_path: Path) -> None:
+    """Refuse external I/O unless the owner lock is observably held."""
+    state = observe_owner_lock(lock_path)
+    if state is True:
+        return
+    if state is False:
+        raise ScratchError("owned scratch producer lock is not held")
+    raise ScratchError("owned scratch producer lock cannot be verified")
+
+
 def _pid_is_alive(value: object) -> bool:
     if not isinstance(value, int) or value <= 0:
         return False
@@ -516,6 +555,7 @@ def validate_owned_scratch_reference(
         raise ScratchError("owned scratch producer process is not alive")
     if not owner.lock_path.is_file() or owner.lock_path.is_symlink():
         raise ScratchError("owned scratch producer lock record is missing or unsafe")
+    _require_held_owner_lock(owner.lock_path)
     for field, expected in expected_fields.items():
         if record.get(field) != expected:
             raise ScratchError(f"owned scratch receipt {field} does not match the run plan")

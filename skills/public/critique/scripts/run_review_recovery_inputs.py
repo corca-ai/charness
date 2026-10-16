@@ -79,6 +79,12 @@ def validate_retained_inputs(  # noqa: C901, PLR0915
     checks["plan_sha256"] = {"expected": owner.get("plan_sha256"), "actual": actual_plan}
     if not isinstance(owner.get("plan_sha256"), str) or owner.get("plan_sha256") != actual_plan:
         return invalid("retained run plan bytes do not match the owner receipt")
+    expected_prompt = plan.get("prompt_sha256")
+    prompt_path = paths.get("prompt")
+    actual_prompt = support.sha256(prompt_path) if prompt_path is not None and prompt_path.is_file() else None
+    checks["prompt_sha256"] = {"expected": expected_prompt, "actual": actual_prompt}
+    if not isinstance(expected_prompt, str) or actual_prompt != expected_prompt:
+        return invalid("retained prompt bytes do not match the run plan")
 
     retained_paths = {
         "receipt": "receipt",

@@ -266,6 +266,42 @@ def test_live_owner_reference_is_exact_read_only_and_identity_bound(tmp_path: Pa
     parent.close()
 
 
+def test_live_owner_reference_refuses_free_and_unverifiable_lock(tmp_path: Path, monkeypatch) -> None:
+    repo, runtime = _paths(tmp_path)
+    monkeypatch.setenv("CHARNESS_RUNTIME_ROOT", str(runtime))
+    monkeypatch.delenv("CHARNESS_RUNTIME_ROOT_AUTO", raising=False)
+    monkeypatch.delenv("CHARNESS_RUNTIME_REPO_KEY", raising=False)
+    parent = owned_scratch(repo, "critique-review", run_id="review-stale")
+    parent.open()
+    parent.update(
+        attempt_id="attempt-1",
+        plan_sha256="a" * 64,
+        packet_identity="b" * 64,
+        reviewed_input_identity="c" * 64,
+        parent_receipt_identity="parent-1",
+    )
+    fields = {
+        "attempt_id": "attempt-1",
+        "plan_sha256": "a" * 64,
+        "packet_identity": "b" * 64,
+        "reviewed_input_identity": "c" * 64,
+        "parent_receipt_identity": "parent-1",
+    }
+    parent._close_lock()
+    with pytest.raises(ScratchError, match="lock is not held"):
+        validate_owned_scratch_reference(
+            repo, parent.receipt_path, producer="critique-review", run_id="review-stale",
+            expected_fields=dict(fields),
+        )
+    parent.lock_path.unlink()
+    with pytest.raises(ScratchError, match="lock record is missing|lock cannot be verified"):
+        validate_owned_scratch_reference(
+            repo, parent.receipt_path, producer="critique-review", run_id="review-stale",
+            expected_fields=dict(fields),
+        )
+    parent.close()
+
+
 def test_inspection_reports_active_owner_and_exact_inventory(tmp_path: Path) -> None:
     repo, runtime = _paths(tmp_path)
     owner = owned_scratch(repo, "probe", run_id="live", runtime_root_path=runtime)

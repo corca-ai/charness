@@ -150,6 +150,15 @@ def _report_path(
                 raise WorkerCarrierError(
                     f"worker report carrier does not exist in its authorized root: {value}"
                 )
+            try:
+                if report_file.stat().st_nlink > 1:
+                    raise WorkerCarrierError(
+                        f"worker report carrier is hardlinked outside private ownership: {value}"
+                    )
+            except OSError as exc:
+                raise WorkerCarrierError(
+                    f"worker report carrier cannot be verified inside the owned root: {value}: {exc}"
+                ) from exc
             return report_file
     resolved_root = repo_root.resolve()
     report_file = (report_path if report_path.is_absolute() else resolved_root / report_path).resolve()

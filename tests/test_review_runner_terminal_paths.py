@@ -81,11 +81,14 @@ def test_live_runner_disposes_terminal_failure_without_losing_retry_inputs(tmp_p
         run_runner_held_out=lambda *a, **k: (0, "runner-completed", True, None),
         classify_runner_output=lambda *a, **k: (0, "runner-completed", True, None),
     )
+    def _write_prompt(path, *args, **kwargs):
+        Path(path).write_text("terminal prompt\n", encoding="utf-8")
+
     packet = NS(
         manifest_paths=lambda *args: [],
         select_packet=lambda *args: (packet_path, {}, "packet", "input", {}),
         run_paths=PACKET.run_paths, default_capability=lambda root: {},
-        write_prompt=lambda *a, **k: None,
+        write_prompt=_write_prompt,
     )
     carrier = NS(
         failure_carrier=lambda *a, **k: {"approval_eligible": False, "reason_code": k["code"]},

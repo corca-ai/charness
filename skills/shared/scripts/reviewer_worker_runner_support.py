@@ -110,6 +110,9 @@ def validate_owned_run_reference(
             raise ValueError(f"owned scratch run plan is unreadable: {exc}") from exc
         if not isinstance(owner_plan, dict):
             raise ValueError("owned scratch run plan must be a mapping")
+        prompt_bound = owner_plan.get("prompt_sha256")
+        if not isinstance(prompt_bound, str) or not prompt_bound.strip():
+            raise ValueError("owned scratch run plan has no prompt binding")
         owner, _ = scratch.validate_owned_scratch_reference(
             repo_root,
             owner_receipt_file,
@@ -172,6 +175,13 @@ def resolve_runner_path(
                 raise ValueError(
                     f"runner {label} resolves outside the exact owned scratch root: {resolved}"
                 ) from exc
+            try:
+                if resolved.is_file() and resolved.stat().st_nlink > 1:
+                    raise ValueError(
+                        f"runner {label} is hardlinked outside private ownership: {resolved}"
+                    )
+            except OSError as exc:
+                raise ValueError(f"runner {label} cannot be verified inside the owned root: {exc}") from exc
             return resolved
     resolved = repo_path(repo_root, raw)
     try:
@@ -185,10 +195,29 @@ def resolve_runner_path(
         raise ValueError(f"runner {label} is outside the exact owned scratch root: {resolved}") from exc
 
 
+def require_prompt_binding(owner_plan: dict[str, Any] | None, prompt_sha: str) -> None:
+    """Bind the actual prompt bytes to the canonical owner plan before the backend starts."""
+    if owner_plan is None:
+        return
+    expected = owner_plan.get("prompt_sha256")
+    if not isinstance(expected, str) or expected != prompt_sha:
+        raise ValueError("owned scratch prompt bytes do not match the run plan")
+
+
 def require_distinct_runner_paths(paths: tuple[Path, ...]) -> None:
     """Refuse input/output aliasing before any runner artifact is written."""
     if len(set(paths)) != len(paths):
         raise ValueError("runner input and output paths must resolve to distinct files")
+    seen: dict[tuple[int, int], Path] = {}
+    for path in paths:
+        try:
+            descriptor = path.stat()
+        except OSError:
+            continue
+        key = (descriptor.st_dev, descriptor.st_ino)
+        if key in seen:
+            raise ValueError("runner input and output paths must resolve to distinct files")
+        seen[key] = path
 
 
 def atomic_write_yaml(path: Path, payload: dict[str, Any]) -> None:

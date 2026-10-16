@@ -109,6 +109,7 @@ def run_live(  # noqa: C901, PLR0915
         )
         boundary_mode = read_only_boundary_mode
         boundary_sha = None
+        prompt_sha = support.sha256(paths["prompt"])
         plan = {
             "kind": "charness.review_run_plan.v1",
             "attempt_id": args.attempt_id,
@@ -118,6 +119,7 @@ def run_live(  # noqa: C901, PLR0915
             "packet_path": support.relative(root, packet_path),
             "packet_sha256": packet_sha,
             "reviewed_input_identity_sha256": input_sha,
+            "prompt_sha256": prompt_sha,
             "schema_sha256": schema_sha,
             "capability_envelope_sha256": capability_sha,
             "backend": backend,

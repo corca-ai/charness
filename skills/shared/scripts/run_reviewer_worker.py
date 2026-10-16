@@ -39,6 +39,9 @@ try:
         require_distinct_runner_paths as _require_distinct_runner_paths,
     )
     from reviewer_worker_runner_support import (
+        require_prompt_binding as _require_prompt_binding,
+    )
+    from reviewer_worker_runner_support import (
         resolve_runner_path as _resolve_runner_path,
     )
     from reviewer_worker_runner_support import (
@@ -72,6 +75,9 @@ except ImportError:
     )
     from skills.shared.scripts.reviewer_worker_runner_support import (
         require_distinct_runner_paths as _require_distinct_runner_paths,
+    )
+    from skills.shared.scripts.reviewer_worker_runner_support import (
+        require_prompt_binding as _require_prompt_binding,
     )
     from skills.shared.scripts.reviewer_worker_runner_support import (
         resolve_runner_path as _resolve_runner_path,
@@ -218,6 +224,7 @@ def main(argv: list[str] | None = None) -> int:
             )
         prompt_sha = _sha256(prompt)
         schema_sha = _sha256(schema)
+        _require_prompt_binding(owner_plan, prompt_sha)
         with ledger_lock(ledger_path):
             ledger = _read(ledger_path)
             ledger.start(

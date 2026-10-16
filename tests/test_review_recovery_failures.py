@@ -72,12 +72,16 @@ def _retained_fixture(tmp_path: Path) -> dict[str, object]:
     packet_path.write_text(json.dumps(packet_payload, sort_keys=True) + "\n", encoding="utf-8")
     packet_sha = hashlib.sha256(packet_path.read_bytes()).hexdigest()
 
+    prompt_path = run_dir / "review-prompt.md"
+    prompt_path.write_text("bounded review prompt\n", encoding="utf-8")
+    prompt_sha = hashlib.sha256(prompt_path.read_bytes()).hexdigest()
     plan = {
         "kind": "charness.review_run_plan.v1",
         "attempt_id": attempt,
         "packet_path": "packet.json",
         "packet_sha256": packet_sha,
         "reviewed_input_identity_sha256": "i" * 64,
+        "prompt_sha256": prompt_sha,
         "scope": "retained recovery",
         "lens": "identity",
     }
@@ -88,6 +92,7 @@ def _retained_fixture(tmp_path: Path) -> dict[str, object]:
     paths = {
         "run_dir": run_dir,
         "plan": plan_path,
+        "prompt": prompt_path,
         "receipt": run_dir / "receipt.json",
         "ledger": run_dir / "delivery.json",
         "output": run_dir / "result.json",
@@ -204,6 +209,25 @@ def test_retained_input_validation_rebinds_all_identity_and_semantic_bytes(
     assert result["checks"]["semantic_input"] == {"status": "verified", "entries": 1}
 
 
+def test_retained_prompt_tamper_refuses_before_recovery(tmp_path: Path) -> None:
+    fixture = _retained_fixture(tmp_path)
+    fixture["paths"]["prompt"].write_text("tampered prompt\n", encoding="utf-8")
+    result = RECOVERY_INPUTS.validate_retained_inputs(
+        fixture["repo"],
+        fixture["plan"],
+        fixture["packet"],
+        fixture["paths"],
+        attempt=fixture["attempt"],
+        owner_receipt=fixture["owner_receipt"],
+        package=fixture["package"],
+        support=SUPPORT,
+        packet_module=fixture["packet_module"],
+        identity_verification=fixture["identity_verification"],
+    )
+    assert result["ok"] is False
+    assert result["reason"] == "retained prompt bytes do not match the run plan"
+
+
 @pytest.mark.parametrize(
     ("mutation", "expected"),
     [
@@ -300,6 +324,56 @@ def test_promoted_chain_reopens_durable_files_and_checks_integrity(tmp_path: Pat
     )
     assert invalid["ok"] is False
     assert "integrity check failed" in invalid["reason"]
+
+
+def test_failed_promoted_readback_downgrades_manifest_and_retains_evidence(tmp_path: Path) -> None:
+    durable = tmp_path / "charness-artifacts" / "critique" / "workers" / "downgrade"
+    durable.mkdir(parents=True)
+    names = {key: f"{key}.json" for key in ("report", "receipt", "ledger", "output", "summary")}
+    files = {}
+    for key, name in names.items():
+        path = durable / name
+        SUPPORT.write_json(path, {"kind": key, "approval_eligible": False})
+        files[key] = SUPPORT.relative(tmp_path, path)
+    final_carrier = {"state": "terminal", "approval_eligible": False}
+    integrity = {
+        key: {
+            "path": relative,
+            "bytes": (tmp_path / relative).stat().st_size,
+            "sha256": SUPPORT.sha256(tmp_path / relative),
+        }
+        for key, relative in files.items()
+    }
+    manifest_path = durable / "attempt-manifest.json"
+    SUPPORT.write_json(
+        manifest_path,
+        {"files": files, "file_integrity": integrity, "approval_eligible": True,
+         "use_class": "approval", "identity_binding": "worker-report-bound"},
+    )
+    manifest_relative = SUPPORT.relative(tmp_path, manifest_path)
+    (tmp_path / files["output"]).write_text('{"kind": "output", "corrupted": true}\n', encoding="utf-8")
+    failed = RECOVERY_INPUTS.validate_promoted_chain(
+        tmp_path,
+        dict(files),
+        final_carrier,
+        {"attempt_id": "attempt", "packet_sha256": "p", "reviewed_input_identity_sha256": "i", "parent_receipt_identity": "parent"},
+        support=SUPPORT,
+        carrier_validation=SimpleNamespace(validate_delivered_worker_report=lambda **_kwargs: None),
+        promotion=SimpleNamespace(identity_binding=lambda _report, _expected: {"matches": True}),
+    )
+    assert failed["ok"] is False
+    downgraded = json.loads(manifest_path.read_text(encoding="utf-8"))
+    downgraded.update(
+        approval_eligible=False,
+        use_class="diagnostic-retryable",
+        identity_binding="consumer-required",
+    )
+    PROMOTION.STORAGE.write_json_atomically(manifest_path, downgraded)
+    PROMOTION.refresh_manifest_integrity(tmp_path, manifest_relative)
+    saved = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert saved["approval_eligible"] is False
+    assert saved["use_class"] == "diagnostic-retryable"
+    assert (tmp_path / files["output"]).is_file()
 
 
 class _RecoveryOwner:
