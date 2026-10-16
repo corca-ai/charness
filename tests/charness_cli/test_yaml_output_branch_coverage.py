@@ -9,6 +9,15 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
+import scripts.cli.cmd_meta as cli_cmd_meta
+import scripts.cli.cmd_task as cli_cmd_task
+import scripts.cli.common as cli_common
+import scripts.cli.doctor_payload as cli_doctor_payload
+import scripts.cli.host_codex as cli_host_codex
+import scripts.cli.install_delivery as cli_install_delivery
+import scripts.cli.tool_response as cli_tool_response
+import scripts.cli.tool_update as cli_tool_update
+
 from .test_managed_install import load_charness_module
 
 
@@ -265,15 +274,14 @@ def test_update_all_failure_preserves_scope_in_recovery_action(tmp_path: Path, m
 
 
 def test_delivery_provenance_helpers_cover_fail_closed_boundaries(tmp_path: Path, monkeypatch) -> None:
-    module = load_charness_module("charness_delivery_provenance_helpers_under_test")
     home_root = tmp_path / "home"
     doctor = {"checkout_git_head": "commit-1"}
 
     # An empty host-state file is a real first-run boundary, not an impossible
     # defensive branch: no prior delivery can be treated as installed.
-    assert module._last_installed_commit(tmp_path / "empty-home") is None
+    assert cli_host_codex._last_installed_commit(tmp_path / "empty-home") is None
 
-    module.write_host_state(
+    cli_install_delivery.write_host_state(
         home_root,
         key="last_update",
         payload=doctor,
@@ -281,13 +289,13 @@ def test_delivery_provenance_helpers_cover_fail_closed_boundaries(tmp_path: Path
         operation_status="failed",
         operation_scope="all",
     )
-    state = module.read_host_state(home_root)
+    state = cli_install_delivery.read_host_state(home_root)
     assert state["last_update"]["delivery_verified"] is False
     assert state["last_update"]["operation_status"] == "failed"
     assert state["last_update"]["operation_scope"] == "all"
-    assert module._last_installed_commit(home_root) is None
+    assert cli_host_codex._last_installed_commit(home_root) is None
 
-    module.write_host_state(
+    cli_install_delivery.write_host_state(
         home_root,
         key="last_update",
         payload=doctor,
@@ -295,9 +303,9 @@ def test_delivery_provenance_helpers_cover_fail_closed_boundaries(tmp_path: Path
         operation_status="failed",
         operation_scope="self",
     )
-    assert module._last_installed_commit(home_root) is None
+    assert cli_host_codex._last_installed_commit(home_root) is None
 
-    module.write_host_state(
+    cli_install_delivery.write_host_state(
         home_root,
         key="last_update",
         payload=doctor,
@@ -305,25 +313,24 @@ def test_delivery_provenance_helpers_cover_fail_closed_boundaries(tmp_path: Path
         operation_status="success",
         operation_scope="self",
     )
-    assert module._last_installed_commit(home_root) == "commit-1"
+    assert cli_host_codex._last_installed_commit(home_root) == "commit-1"
 
     tree = tmp_path / "tree"
     tree.mkdir()
     (tree / "payload.txt").write_text("payload\n", encoding="utf-8")
     (tree / "payload-link").symlink_to(tree / "payload.txt")
     os.mkfifo(tree / "payload-fifo")
-    assert module._tree_content_digest(tree)
-    assert module._tree_content_digest(tmp_path / "missing") is None
+    assert cli_host_codex._tree_content_digest(tree)
+    assert cli_host_codex._tree_content_digest(tmp_path / "missing") is None
 
     def broken_rglob(_self, _pattern):
         raise OSError("synthetic digest read failure")
 
     monkeypatch.setattr(Path, "rglob", broken_rglob)
-    assert module._tree_content_digest(tree) is None
+    assert cli_host_codex._tree_content_digest(tree) is None
 
 
 def test_same_version_readback_and_tool_failure_helpers_are_typed(tmp_path: Path) -> None:
-    module = load_charness_module("charness_delivery_provenance_readback_under_test")
     source_root = tmp_path / "source"
     cache_root = tmp_path / "cache"
     source_root.mkdir()
@@ -331,9 +338,9 @@ def test_same_version_readback_and_tool_failure_helpers_are_typed(tmp_path: Path
     (source_root / "payload.txt").write_text("same payload\n", encoding="utf-8")
     (cache_root / "payload.txt").write_text("same payload\n", encoding="utf-8")
 
-    assert module._same_version_cache_readback({}) is None
-    assert module._same_version_cache_readback({"plugin_root": str(source_root), "codex_cache_entries": []}) is None
-    assert module._same_version_cache_readback(
+    assert cli_host_codex._same_version_cache_readback({}) is None
+    assert cli_host_codex._same_version_cache_readback({"plugin_root": str(source_root), "codex_cache_entries": []}) is None
+    assert cli_host_codex._same_version_cache_readback(
         {
             "plugin_root": str(source_root),
             "codex_cache_entries": [],
@@ -356,15 +363,15 @@ def test_same_version_readback_and_tool_failure_helpers_are_typed(tmp_path: Path
         "codex_source_version": "1.0.0",
     }
     wrong_manifest = dict(entry, manifest_version="0.9.0")
-    assert module._same_version_cache_readback(dict(base, codex_cache_entries=[wrong_manifest])) is None
+    assert cli_host_codex._same_version_cache_readback(dict(base, codex_cache_entries=[wrong_manifest])) is None
     missing_cache_dir = dict(entry, version_dir=None)
-    assert module._same_version_cache_readback(dict(base, codex_cache_entries=[missing_cache_dir])) is None
-    readback = module._same_version_cache_readback(base)
+    assert cli_host_codex._same_version_cache_readback(dict(base, codex_cache_entries=[missing_cache_dir])) is None
+    readback = cli_host_codex._same_version_cache_readback(base)
     assert readback is not None
     assert readback["delivery_verified"] is True
     assert readback["source_content_sha256"] == readback["cache_content_sha256"]
 
-    module._mark_external_tool_update_failure({}, scope="self")
+    cli_tool_update._mark_external_tool_update_failure({}, scope="self")
     payload: dict[str, object] = {
         "home_root": "/tmp/home",
         "repo_root": "/tmp/repo",
@@ -376,7 +383,7 @@ def test_same_version_readback_and_tool_failure_helpers_are_typed(tmp_path: Path
             }
         }
     }
-    module._mark_external_tool_update_failure(payload, scope="all")
+    cli_tool_update._mark_external_tool_update_failure(payload, scope="all")
     assert payload["tool_update"]["failed_tool_ids"] == ["alpha", "zeta"]
     assert payload["next_action"]["recovery_command"] == "charness update all --detail"
     assert payload["next_action"]["scope"] == "all"
@@ -392,7 +399,7 @@ def test_same_version_readback_and_tool_failure_helpers_are_typed(tmp_path: Path
         "host_next_steps": {},
         "next_action": {},
     }
-    module._mark_host_delivery_failure(
+    cli_doctor_payload._mark_host_delivery_failure(
         doctor_payload,
         {"status": "failed", "reason": "content-readback-failed"},
         command="update",
@@ -411,7 +418,7 @@ def test_same_version_readback_and_tool_failure_helpers_are_typed(tmp_path: Path
     assert doctor_payload["next_action"]["recovery_context"]["codex_cache_root"] == "/tmp/home/.codex/plugins/cache"
 
     malformed_guidance_payload = dict(doctor_payload, codex_host_guidance="malformed")
-    module._mark_host_delivery_failure(
+    cli_doctor_payload._mark_host_delivery_failure(
         malformed_guidance_payload,
         {"status": "failed", "reason": "malformed-guidance"},
         command="update",
@@ -420,14 +427,13 @@ def test_same_version_readback_and_tool_failure_helpers_are_typed(tmp_path: Path
 
 
 def test_invalid_cache_manifest_and_post_delivery_readback_fail_closed(tmp_path: Path) -> None:
-    module = load_charness_module("charness_delivery_provenance_fail_closed_under_test")
     cache_root = tmp_path / "cache"
     manifest_path = cache_root / "local" / "charness" / "1.0.0" / ".codex-plugin" / "plugin.json"
     manifest_path.parent.mkdir(parents=True)
     manifest_path.write_text("not-json\n", encoding="utf-8")
-    entries = module.codex_cache_entries(cache_root)
+    entries = cli_host_codex.codex_cache_entries(cache_root)
     assert entries[0]["manifest_status"] == "invalid"
-    assert module.build_codex_host_guidance(
+    assert cli_host_codex.build_codex_host_guidance(
         codex_available=True,
         codex_marketplace_path=tmp_path / "marketplace.json",
         source_version="1.0.0",
@@ -436,7 +442,7 @@ def test_invalid_cache_manifest_and_post_delivery_readback_fail_closed(tmp_path:
     )["reason"] == "invalid-cache-manifest"
 
     manifest_path.write_text('{"version":"1.0.0"}\n', encoding="utf-8")
-    valid_entries = module.codex_cache_entries(cache_root)
+    valid_entries = cli_host_codex.codex_cache_entries(cache_root)
     assert valid_entries[0]["manifest_version"] == "1.0.0"
     assert valid_entries[0]["manifest_status"] == "valid"
 
@@ -447,7 +453,7 @@ def test_invalid_cache_manifest_and_post_delivery_readback_fail_closed(tmp_path:
     (source_root / "payload.txt").write_text("source\n", encoding="utf-8")
     (copied_root / "payload.txt").write_text("stale\n", encoding="utf-8")
     delivery: dict[str, object] = {"status": "attempted"}
-    readback = module._record_post_delivery_readback(
+    readback = cli_host_codex._record_post_delivery_readback(
         delivery,
         {
             "plugin_root": str(source_root),
@@ -472,7 +478,7 @@ def test_invalid_cache_manifest_and_post_delivery_readback_fail_closed(tmp_path:
 
     (copied_root / "payload.txt").write_text("source\n", encoding="utf-8")
     verified_delivery: dict[str, object] = {"status": "attempted"}
-    verified_readback = module._record_post_delivery_readback(
+    verified_readback = cli_host_codex._record_post_delivery_readback(
         verified_delivery,
         {
             "plugin_root": str(source_root),
@@ -501,9 +507,8 @@ def test_invalid_cache_manifest_and_post_delivery_readback_fail_closed(tmp_path:
 
 
 def test_doctor_surfaces_latest_failed_delivery_and_compact_projection_keeps_proof(tmp_path: Path) -> None:
-    module = load_charness_module("charness_doctor_latest_failure_projection_under_test")
     home_root = tmp_path / "home"
-    module.write_host_state(
+    cli_install_delivery.write_host_state(
         home_root,
         key="last_update",
         payload={"checkout_git_head": "commit-1"},
@@ -519,13 +524,13 @@ def test_doctor_surfaces_latest_failed_delivery_and_compact_projection_keeps_pro
         "repo_onboarding": {},
         "host_next_steps": {},
     }
-    module._apply_latest_host_operation(payload, home_root=home_root)
+    cli_doctor_payload._apply_latest_host_operation(payload, home_root=home_root)
     assert payload["codex_host_guidance"]["status"] == "failed"
     assert payload["latest_host_operation"]["operation_scope"] == "all"
     assert payload["next_action"]["status"] == "failed"
 
     skipped_home = tmp_path / "skipped-home"
-    module.write_host_state(
+    cli_install_delivery.write_host_state(
         skipped_home,
         key="last_update",
         payload={"checkout_git_head": "commit-2"},
@@ -538,14 +543,14 @@ def test_doctor_surfaces_latest_failed_delivery_and_compact_projection_keeps_pro
         "codex_host_guidance": {"status": "installed"},
         "host_next_steps": {},
     }
-    module._apply_latest_host_operation(skipped_payload, home_root=skipped_home)
+    cli_doctor_payload._apply_latest_host_operation(skipped_payload, home_root=skipped_home)
     assert skipped_payload["codex_host_guidance"]["status"] == "installed"
 
     non_codex_payload = {"hosts": {"codex": False}, "codex_host_guidance": {}}
-    module._apply_latest_host_operation(non_codex_payload, home_root=home_root)
+    cli_doctor_payload._apply_latest_host_operation(non_codex_payload, home_root=home_root)
     assert non_codex_payload["latest_host_operation"]["delivery_status"] == "failed"
 
-    projected = module.project_runtime_response(
+    projected = cli_cmd_task.project_runtime_response(
         {
             "codex_cache_manifest_status": "valid",
             "codex_cache_refresh": {
@@ -570,7 +575,6 @@ def test_doctor_surfaces_latest_failed_delivery_and_compact_projection_keeps_pro
 
 
 def test_same_version_verified_readback_skips_refresh_call(tmp_path: Path, monkeypatch) -> None:
-    module = load_charness_module("charness_verified_same_version_skip_under_test")
     # `maybe_install_codex_host` lives in scripts/cli/host_codex.py after
     # #873: patch the namespace the payload calls, not the loaded entry copy.
     import scripts.cli.host_codex as host_codex
@@ -589,7 +593,7 @@ def test_same_version_verified_readback_skips_refresh_call(tmp_path: Path, monke
         raise AssertionError("verified same-version content must not refresh")
 
     monkeypatch.setattr(host_codex, "refresh_codex_cache_via_app_server", unexpected_refresh)
-    result = module.maybe_install_codex_host(
+    result = cli_host_codex.maybe_install_codex_host(
         home_root=tmp_path / "home",
         codex_marketplace_path=tmp_path / "marketplace.json",
         doctor_payload={
@@ -657,9 +661,9 @@ def test_task_and_uninstall_paths_emit_yaml(tmp_path: Path, monkeypatch, capsys)
     repo_root.mkdir()
     home_root = tmp_path / "home"
     _patch_runtime_dependencies(module, monkeypatch, repo_root, home_root)
-    monkeypatch.setattr(module, "has_source_manifest", lambda _path: False)
-    monkeypatch.setattr(module, "remove_codex_marketplace_entry", lambda _path: False)
-    monkeypatch.setattr(module, "remove_codex_config_entries", lambda _path: [])
+    monkeypatch.setattr(cli_cmd_meta, "has_source_manifest", lambda _path: False)
+    monkeypatch.setattr(cli_cmd_meta, "remove_codex_marketplace_entry", lambda _path: False)
+    monkeypatch.setattr(cli_cmd_meta, "remove_codex_config_entries", lambda _path: [])
     uninstall_args = Namespace(
         home_root=home_root,
         repo_root=repo_root,
@@ -732,7 +736,6 @@ def test_tool_command_outputs_are_routed_through_yaml(tmp_path: Path, monkeypatc
 
 
 def test_operational_response_detail_preserves_the_full_payload(capsys) -> None:
-    module = load_charness_module("charness_yaml_detail_output_under_test")
     raw_payload = {
         "repo_root": "/tmp/charness",
         "results": {
@@ -743,21 +746,21 @@ def test_operational_response_detail_preserves_the_full_payload(capsys) -> None:
         },
     }
 
-    module.emit_operational_response(
+    cli_common.emit_operational_response(
         Namespace(detail=False),
         raw_payload,
         event="tool-update",
-        projector=lambda data: module.project_tool_response(data, event="tool-update"),
+        projector=lambda data: cli_tool_response.project_tool_response(data, event="tool-update"),
     )
     summary = yaml.safe_load(capsys.readouterr().out)
     assert summary["response_level"] == "summary"
     assert "commands" not in summary["results"]["demo"]["update"]
 
-    module.emit_operational_response(
+    cli_common.emit_operational_response(
         Namespace(detail=True),
         raw_payload,
         event="tool-update",
-        projector=lambda data: module.project_tool_response(data, event="tool-update"),
+        projector=lambda data: cli_tool_response.project_tool_response(data, event="tool-update"),
     )
     detail = yaml.safe_load(capsys.readouterr().out)
     assert detail["response_level"] == "detail"
@@ -831,8 +834,7 @@ def test_worktree_and_goal_run_fallback_keep_stdout_yaml(tmp_path: Path, monkeyp
 
 
 def test_build_host_next_steps_includes_repo_onboarding_message() -> None:
-    module = load_charness_module("charness_host_next_steps_repo_under_test")
-    steps = module.build_host_next_steps(
+    steps = cli_install_delivery.build_host_next_steps(
         {
             "codex_host_guidance": {"message": "restart codex"},
             "claude_host_guidance": {},
@@ -843,7 +845,6 @@ def test_build_host_next_steps_includes_repo_onboarding_message() -> None:
 
 
 def test_install_surface_records_claude_plugin_message_in_host_next_steps(monkeypatch, tmp_path: Path) -> None:
-    module = load_charness_module("charness_install_surface_claude_under_test")
     # `install_surface` lives in scripts/cli/doctor_payload.py after #873:
     # patch the namespace the payload calls, not the loaded entry copy.
     import scripts.cli.doctor_payload as doctor_payload
@@ -854,7 +855,7 @@ def test_install_surface_records_claude_plugin_message_in_host_next_steps(monkey
     monkeypatch.setattr(
         doctor_payload, "ensure_claude_plugin", lambda *args, **kwargs: (["claude_plugin_installed"], "Restart Claude Code to load charness.")
     )
-    payload = module.install_surface(
+    payload = cli_doctor_payload.install_surface(
         tmp_path / "repo",
         home_root=tmp_path / "home",
         plugin_root=tmp_path / "home" / "plugins" / "charness",

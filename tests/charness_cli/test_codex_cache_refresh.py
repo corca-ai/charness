@@ -12,6 +12,9 @@ from types import SimpleNamespace
 import pytest
 import yaml
 
+import scripts.cli.cmd_update as cli_cmd_update
+import scripts.cli.host_codex_rpc as cli_host_codex_rpc
+import scripts.cli.process as cli_process
 from scripts.cli.bootstrap import CharnessError as _TreeCharnessError
 from tests.repo_copy import repo_copy_ignore_for
 
@@ -301,7 +304,6 @@ def test_failed_codex_init_emits_failure_progress_and_records_failed_operation(
 
 
 def test_cache_diff_and_staleness_capture_rotation(tmp_path: Path) -> None:
-    module = load_charness_module("charness_codex_cache_refresh_diff_under_test")
     old_root = tmp_path / "cache" / "local" / "charness" / "0.0.0-old"
     new_root = tmp_path / "cache" / "local" / "charness" / CURRENT_VERSION
     old_root.mkdir(parents=True)
@@ -340,7 +342,7 @@ def test_cache_diff_and_staleness_capture_rotation(tmp_path: Path) -> None:
         before[1],
     ]
 
-    diff = module.diff_cache_entries(before, after)
+    diff = cli_cmd_update.diff_cache_entries(before, after)
     assert diff["rotated"] == [
         {
             "marketplace": "local",
@@ -351,7 +353,7 @@ def test_cache_diff_and_staleness_capture_rotation(tmp_path: Path) -> None:
             "new_version_dir": str(new_root),
         }
     ]
-    payload = module.session_staleness_payload(
+    payload = cli_cmd_update.session_staleness_payload(
         diff, home_root=tmp_path / "home", repo_root=tmp_path / "repo"
     )
     assert payload is not None
@@ -367,10 +369,10 @@ def test_cache_diff_and_staleness_capture_rotation(tmp_path: Path) -> None:
         "manifest_path": str(stable_root / ".codex-plugin" / "plugin.json"),
         "manifest_version": CURRENT_VERSION,
     }
-    stable_diff = module.diff_cache_entries([stable], [stable])
+    stable_diff = cli_cmd_update.diff_cache_entries([stable], [stable])
     assert stable_diff == {"rotated": [], "removed": [], "added": []}
     assert (
-        module.session_staleness_payload(
+        cli_cmd_update.session_staleness_payload(
             stable_diff, home_root=tmp_path / "home", repo_root=tmp_path / "repo"
         )
         is None
@@ -378,9 +380,7 @@ def test_cache_diff_and_staleness_capture_rotation(tmp_path: Path) -> None:
 
 
 def test_session_staleness_without_cache_diff_returns_none(tmp_path: Path) -> None:
-    module = load_charness_module("charness_codex_cache_refresh_unit_under_test")
-
-    payload = module.session_staleness_payload(
+    payload = cli_cmd_update.session_staleness_payload(
         {"rotated": [], "removed": [], "added": []},
         home_root=tmp_path / "home",
         repo_root=tmp_path / "repo",
@@ -432,7 +432,6 @@ def test_jsonrpc_response_wait_uses_one_absolute_deadline(monkeypatch: pytest.Mo
     emits an unbounded stream of non-matching messages so the outcome cannot
     depend on how many of them it managed to print before being torn down.
     """
-    module = load_charness_module("charness_codex_deadline_under_test")
     fake_time, calls = _stepped_monotonic(step=1000.0)
     # The wait clock lives in scripts/cli/install_delivery.py
     # (`read_jsonrpc_line_before`): patch the namespace the payload calls,
@@ -445,7 +444,7 @@ def test_jsonrpc_response_wait_uses_one_absolute_deadline(monkeypatch: pytest.Mo
     )
     try:
         with pytest.raises(_TreeCharnessError, match="timed out"):
-            module.wait_for_jsonrpc_response(
+            cli_host_codex_rpc.wait_for_jsonrpc_response(
                 proc,
                 expected_id=2,
                 deadline=2500.0,
@@ -467,7 +466,6 @@ def test_jsonrpc_response_wait_uses_one_absolute_deadline(monkeypatch: pytest.Mo
 def test_jsonrpc_response_wait_reports_malformed_payload_and_eof(
     source: str, message: str, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    module = load_charness_module(f"charness_codex_failure_{message.split()[0]}_under_test")
     fake_time, _calls = _stepped_monotonic(step=0.0)
     # The wait clock lives in scripts/cli/install_delivery.py
     # (`read_jsonrpc_line_before`): patch the namespace the payload calls,
@@ -478,7 +476,7 @@ def test_jsonrpc_response_wait_reports_malformed_payload_and_eof(
     proc = _jsonrpc_child(source)
     try:
         with pytest.raises(_TreeCharnessError, match=message):
-            module.wait_for_jsonrpc_response(
+            cli_host_codex_rpc.wait_for_jsonrpc_response(
                 proc,
                 expected_id=2,
                 deadline=60.0,
@@ -490,7 +488,6 @@ def test_jsonrpc_response_wait_reports_malformed_payload_and_eof(
 def test_jsonrpc_response_wait_returns_matching_error_after_unrelated_message(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    module = load_charness_module("charness_codex_matching_error_under_test")
     fake_time, _calls = _stepped_monotonic(step=0.0)
     # The wait clock lives in scripts/cli/install_delivery.py
     # (`read_jsonrpc_line_before`): patch the namespace the payload calls,
@@ -504,7 +501,7 @@ def test_jsonrpc_response_wait_returns_matching_error_after_unrelated_message(
         "print(json.dumps({'id': 2, 'error': {'code': -32000, 'message': 'nope'}}), flush=True)\n"
     )
     try:
-        response = module.wait_for_jsonrpc_response(
+        response = cli_host_codex_rpc.wait_for_jsonrpc_response(
             proc,
             expected_id=2,
             deadline=60.0,
@@ -516,13 +513,12 @@ def test_jsonrpc_response_wait_returns_matching_error_after_unrelated_message(
 
 
 def test_codex_cache_refresh_preserves_matching_error_envelope(tmp_path: Path, monkeypatch) -> None:
-    module = load_charness_module("charness_codex_error_envelope_under_test")
     fake_codex = make_fake_codex(tmp_path, fail_plugin_install=True)
     monkeypatch.setenv("PATH", build_test_path(fake_codex.parent))
     home_root = tmp_path / "home"
     home_root.mkdir()
 
-    result = module.refresh_codex_cache_via_app_server(
+    result = cli_host_codex_rpc.refresh_codex_cache_via_app_server(
         home_root=home_root,
         codex_marketplace_path=CLI.parent / ".agents" / "plugins" / "marketplace.json",
         plugin_name="charness",
@@ -540,14 +536,13 @@ def test_codex_cache_refresh_preserves_matching_error_envelope(tmp_path: Path, m
 def test_codex_cache_refresh_accepts_real_initialize_shape_and_lifecycle_notifications(
     tmp_path: Path, monkeypatch
 ) -> None:
-    module = load_charness_module("charness_codex_real_lifecycle_under_test")
     fake_codex = make_fake_codex(tmp_path)
     monkeypatch.setenv("PATH", build_test_path(fake_codex.parent))
     monkeypatch.setenv("CHARNESS_FAKE_CODEX_APP_SERVER_MODE", "real-init-notifications")
     home_root = tmp_path / "home"
     home_root.mkdir()
 
-    result = module.refresh_codex_cache_via_app_server(
+    result = cli_host_codex_rpc.refresh_codex_cache_via_app_server(
         home_root=home_root,
         codex_marketplace_path=CLI.parent / ".agents" / "plugins" / "marketplace.json",
         plugin_name="charness",
@@ -573,14 +568,13 @@ def test_codex_cache_refresh_maps_transport_failures_to_existing_envelope(
     mode: str,
     error_text: str,
 ) -> None:
-    module = load_charness_module(f"charness_codex_{mode}_envelope_under_test")
     fake_codex = make_fake_codex(tmp_path)
     monkeypatch.setenv("PATH", build_test_path(fake_codex.parent))
     monkeypatch.setenv("CHARNESS_FAKE_CODEX_APP_SERVER_MODE", mode)
     home_root = tmp_path / "home"
     home_root.mkdir()
 
-    result = module.refresh_codex_cache_via_app_server(
+    result = cli_host_codex_rpc.refresh_codex_cache_via_app_server(
         home_root=home_root,
         codex_marketplace_path=CLI.parent / ".agents" / "plugins" / "marketplace.json",
         plugin_name="charness",
@@ -596,7 +590,6 @@ def test_codex_cache_refresh_maps_transport_failures_to_existing_envelope(
 def test_session_staleness_uses_repo_resolver_then_managed_checkout_fallback(
     tmp_path: Path,
 ) -> None:
-    module = load_charness_module("charness_codex_cache_refresh_resolver_under_test")
     diff = {
         "rotated": [
             {"marketplace": "local", "plugin": "charness", "old_version": "1", "new_version": "2"}
@@ -610,13 +603,13 @@ def test_session_staleness_uses_repo_resolver_then_managed_checkout_fallback(
     (repo / "scripts" / "adapters" / "capability_catalog.py").write_text(
         "# repo resolver\n", encoding="utf-8"
     )
-    payload = module.session_staleness_payload(diff, home_root=tmp_path / "home", repo_root=repo)
+    payload = cli_cmd_update.session_staleness_payload(diff, home_root=tmp_path / "home", repo_root=repo)
     assert payload["resolver_path"] == str(repo / "scripts" / "adapters" / "capability_catalog.py")
 
     fallback = tmp_path / "fallback-home" / ".agents" / "src" / "charness" / "scripts" / "adapters"
     fallback.mkdir(parents=True)
     (fallback / "capability_catalog.py").write_text("# managed resolver\n", encoding="utf-8")
-    payload = module.session_staleness_payload(
+    payload = cli_cmd_update.session_staleness_payload(
         diff, home_root=tmp_path / "fallback-home", repo_root=tmp_path / "missing-repo"
     )
     assert payload["resolver_path"] == str(fallback / "capability_catalog.py")
@@ -624,16 +617,18 @@ def test_session_staleness_uses_repo_resolver_then_managed_checkout_fallback(
 
 def test_charness_catalog_loader_imports_backend_in_process(tmp_path: Path, capsys) -> None:
     module = load_charness_module("charness_catalog_loader_under_test")
-    backend = module._load_catalog_lib()
+    backend = cli_process._load_catalog_lib()
     assert backend.list_catalog(Path.cwd())["artifacts"]["mode"] == "read-only"
     root = str(Path.cwd().resolve())
-    original_path = list(module.sys.path)
+    original_path = list(sys.path)
+    original_embedded_root = cli_process._bootstrap.EMBEDDED_REPO_ROOT
     try:
-        module.EMBEDDED_REPO_ROOT = None
-        module.sys.path[:] = [entry for entry in module.sys.path if entry != root]
-        assert module._load_catalog_lib() is backend
+        cli_process._bootstrap.EMBEDDED_REPO_ROOT = None
+        sys.path[:] = [entry for entry in sys.path if entry != root]
+        assert cli_process._load_catalog_lib() is backend
     finally:
-        module.sys.path[:] = original_path
+        cli_process._bootstrap.EMBEDDED_REPO_ROOT = original_embedded_root
+        sys.path[:] = original_path
 
     adoption = tmp_path / ".agents"
     adoption.mkdir()

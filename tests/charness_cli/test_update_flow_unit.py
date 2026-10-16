@@ -7,10 +7,6 @@ from .support import load_cli_module
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def load_charness_module(module_name: str = "charness_update_flow_unit_under_test"):
-    return load_cli_module(module_name, ROOT / "charness")
-
-
 def load_tool_commands_module(module_name: str):
     # `run_tool_update_flow` lives in scripts/cli/tool_update.py after #873:
     # load the feature file fresh so the `invoke_repo_json_script` seam below
@@ -182,7 +178,7 @@ def _seed_checkout(tmp_path: Path, body: str) -> Path:
 
 
 def test_reexec_noops_when_running_cli_matches_checkout(monkeypatch, tmp_path: Path) -> None:
-    module = load_charness_module("charness_reexec_match_under_test")
+    module = load_bootstrap_module("charness_reexec_match_under_test")
     monkeypatch.delenv(module._CLI_REEXEC_GUARD_ENV, raising=False)
     checkout = _seed_checkout(tmp_path, "#!/usr/bin/env python3\nprint('cli')\n")
     same_bytes_copy = tmp_path / "installed-charness"
@@ -202,7 +198,7 @@ def test_reexec_noops_when_running_cli_matches_checkout(monkeypatch, tmp_path: P
 
 
 def test_reexec_replaces_process_when_checkout_is_newer(monkeypatch, tmp_path: Path) -> None:
-    module = load_charness_module("charness_reexec_fire_under_test")
+    module = load_bootstrap_module("charness_reexec_fire_under_test")
     monkeypatch.delenv(module._CLI_REEXEC_GUARD_ENV, raising=False)
     checkout = _seed_checkout(tmp_path, "print('new cli')\n")
     stale_cli = tmp_path / "installed-charness"
@@ -224,7 +220,7 @@ def test_reexec_replaces_process_when_checkout_is_newer(monkeypatch, tmp_path: P
 
 
 def test_reexec_guard_reports_child_and_blocks_loops(monkeypatch, tmp_path: Path) -> None:
-    module = load_charness_module("charness_reexec_guard_under_test")
+    module = load_bootstrap_module("charness_reexec_guard_under_test")
     monkeypatch.setenv(module._CLI_REEXEC_GUARD_ENV, str(module.os.getpid()))
     checkout = _seed_checkout(tmp_path, "print('new cli')\n")
 
@@ -244,7 +240,7 @@ def test_reexec_guard_reports_child_and_blocks_loops(monkeypatch, tmp_path: Path
 def test_reexec_ignores_foreign_guard_value_and_survives_execve_failure(
     monkeypatch, tmp_path: Path
 ) -> None:
-    module = load_charness_module("charness_reexec_foreign_guard_under_test")
+    module = load_bootstrap_module("charness_reexec_foreign_guard_under_test")
     # A stale/foreign guard (a "1" or another process's pid inherited from an
     # unrelated environment) must not suppress the self-heal.
     monkeypatch.setenv(module._CLI_REEXEC_GUARD_ENV, "1")

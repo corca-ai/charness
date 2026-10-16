@@ -15,6 +15,7 @@ import sys
 from pathlib import Path
 
 import scripts.cli.cmd_task as task_payload
+import scripts.cli.process as cli_process
 from scripts.task_run import (
     task_run_execution,
     task_run_lane_runner,
@@ -548,7 +549,6 @@ def test_real_entry_path_inserts_foreign_checkout_lib_root(tmp_path: Path) -> No
 
 
 def test_load_train_lib_inserts_missing_repo_root(monkeypatch) -> None:
-    cli = load_cli_module("charness_task_run_train_libroot", CLI)
     repo = Path(__file__).resolve().parents[2]
     # The loaded module resolves to this checkout, so dropping the checkout
     # from the path takes the fallback insert; the import below re-adds it.
@@ -559,7 +559,7 @@ def test_load_train_lib_inserts_missing_repo_root(monkeypatch) -> None:
     )
     assert str(repo) not in sys.path
 
-    lib = cli._load_train_lib(argparse.Namespace())
+    lib = cli_process._load_train_lib(argparse.Namespace())
 
     assert lib is not None
     assert sys.path[0] == str(repo)

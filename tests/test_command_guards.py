@@ -665,15 +665,29 @@ def test_hooks_status_command_reports_intents(tmp_path: Path, monkeypatch) -> No
     assert code == 0
     assert set(emitted[-1]["intents"]) >= {"command_guard_parallel_window"}
 
-    code = (
-        cli.cmd_task_run_detached(__import__("argparse").Namespace(dry_run=True)) if False else code
-    )
-    # The detach entry lives in scripts/cli after #873: the tree contract
-    # error is wrapped into the tree CharnessError, not the entry fallback.
+    # Dispatch through the real parser/wrapper path; the detach owner rejects
+    # incompatible flags with the tree CharnessError.
     from scripts.cli.bootstrap import CharnessError as TreeCharnessError
 
     with pytest.raises(TreeCharnessError, match="--detach cannot be combined"):
-        cli.cmd_task_run_detached(__import__("argparse").Namespace(dry_run=True))
+        cli.main(
+            [
+                "task",
+                "run",
+                "--repo-root",
+                str(tmp_path),
+                "--lane",
+                "detach-reject",
+                "--scope",
+                "single-lane",
+                "--prompt",
+                "Reject incompatible detach flags",
+                "--effort",
+                "low",
+                "--detach",
+                "--dry-run",
+            ]
+        )
 
 
 def test_invalid_extra_pattern_compiles_to_skip_without_match() -> None:
