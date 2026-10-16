@@ -125,7 +125,7 @@ while [ "$#" -gt 0 ]; do
   if [ "$1" = "-o" ]; then out="$2"; shift 2; continue; fi
   shift
 done
-printf '%s\n' '{"kind":"charness.bounded_review.v1","lens":"runner test","verdict":"pass","findings":[],"counterweight_triage":[],"next_move":"test","non_claims":["test"],"capability_non_claims":[],"capability_non_claims_sha256":"__EMPTY_NON_CLAIMS_SHA256__","packet_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","reviewed_input_identity_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}' > "$out"
+printf '%s\n' '{"kind":"charness.bounded_review.v1","lens":"runner test","verdict":"pass","findings":[],"counterweight_triage":[],"next_move":"test","non_claims":["test"]}' > "$out"
 """,
     )
     script = (
@@ -181,6 +181,9 @@ printf '%s\n' '{"kind":"charness.bounded_review.v1","lens":"runner test","verdic
     assert result.returncode == 0, result.stderr
     assert report["approval_eligible"] is True
     assert report["execution_mode"] == "file-backed-worker"
+    delivered = json.loads(files["output"].read_text(encoding="utf-8"))
+    assert delivered["packet_sha256"] == "a" * 64
+    assert delivered["reviewed_input_identity_sha256"] == "a" * 64
     persisted_report = yaml.safe_load(files["report"].read_text(encoding="utf-8"))
     assert persisted_report["approval_eligible"] is True
     backend_argv = argv_capture.read_text(encoding="utf-8").splitlines()
@@ -276,10 +279,6 @@ def test_file_backed_runner_accepts_exact_external_owned_scratch(tmp_path: Path,
             "counterweight_triage": [],
             "next_move": "test",
             "non_claims": ["test"],
-            "capability_non_claims": [],
-            "capability_non_claims_sha256": EMPTY_NON_CLAIMS_SHA256,
-            "packet_sha256": "a" * 64,
-            "reviewed_input_identity_sha256": "a" * 64,
         }
     )
     _executable(
@@ -434,7 +433,7 @@ while [ "$#" -gt 0 ]; do
   shift
 done
 cat >/dev/null
-printf '%s\\n' '{"kind":"charness.bounded_review.v1","lens":"runner path test","verdict":"pass","findings":[],"counterweight_triage":[],"next_move":"test","non_claims":["test"],"capability_non_claims":[],"capability_non_claims_sha256":"__EMPTY_NON_CLAIMS_SHA256__","packet_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","reviewed_input_identity_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}' > "$out"
+printf '%s\\n' '{"kind":"charness.bounded_review.v1","lens":"runner path test","verdict":"pass","findings":[],"counterweight_triage":[],"next_move":"test","non_claims":["test"]}' > "$out"
         """,
     )
     script = (
@@ -554,7 +553,18 @@ def _run_worker_with_result(
         encoding="utf-8",
     )
     body_file = tmp_path / "backend-body.json"
-    body_file.write_text(json.dumps(body), encoding="utf-8")
+    generation_body = {
+        name: value
+        for name, value in body.items()
+        if name
+        not in {
+            "packet_sha256",
+            "reviewed_input_identity_sha256",
+            "capability_non_claims",
+            "capability_non_claims_sha256",
+        }
+    }
+    body_file.write_text(json.dumps(generation_body), encoding="utf-8")
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     _executable(

@@ -102,7 +102,7 @@ def run_live(  # noqa: C901, PLR0915
         capability_sha = decision.envelope_sha256
         packet.write_prompt(
             paths["prompt"], packet_payload, scope=args.scope, lens=args.lens,
-            packet_sha=packet_sha, input_sha=input_sha, goal_lineage=goal_lineage,
+            goal_lineage=goal_lineage,
             semantic_input=semantic_input,
             expected_targets=getattr(args, "expected_target", None),
             reviewer_tier=reviewer_tier,

@@ -265,8 +265,6 @@ def test_packet_loader_failures_and_prompt_carrier_mismatch_are_typed(
             packet,
             scope="scope",
             lens="lens",
-            packet_sha="p" * 64,
-            input_sha="i" * 64,
             semantic_input={"entries": []},
         )
 

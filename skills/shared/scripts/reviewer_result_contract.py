@@ -41,12 +41,16 @@ def canonical_schema_path() -> Path:
     raise ReviewerResultError("canonical bounded-review result schema is unavailable")
 
 
-#: Capability provenance the RUNNER joins from the launch envelope, never the
-#: model. Named here because the canonical schema and the model-facing projection
-#: must not disagree about which fields those are; deriving the projection from
-#: this one tuple is what keeps a field added to the schema from silently landing
-#: back on the model.
-RUNNER_JOINED_FIELDS = ("capability_non_claims", "capability_non_claims_sha256")
+#: Machine-owned fields never authored by the model. Packet/input identities
+#: come from the verified worker invocation; capability provenance comes from
+#: its launch envelope. The canonical schema and generation projection share
+#: this tuple so a new machine field cannot silently land on the model.
+RUNNER_JOINED_FIELDS = (
+    "packet_sha256",
+    "reviewed_input_identity_sha256",
+    "capability_non_claims",
+    "capability_non_claims_sha256",
+)
 
 
 def bounded_result_shape(payload: dict[str, Any]) -> str:
@@ -99,7 +103,7 @@ def write_model_authored_schema(schema: dict[str, Any], path: Path) -> Path:
     """Materialize the generation-facing projection and return its path.
 
     The backend generates against this file, never the canonical schema: the
-    canonical one requires two digests no language model can compute. The worker
+    canonical one requires machine identities the runner owns. The worker
     receipt still records the CANONICAL schema's identity, because that is the
     contract the delivered result is validated against -- the projection relaxes
     what is asked of the model, not what the artifact must be.

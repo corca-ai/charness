@@ -140,7 +140,7 @@ while [ "$#" -gt 0 ]; do
   shift
 done
 cat >/dev/null
-printf '%s\n' '{"kind":"review","reason":"fresh","capability_non_claims":[],"capability_non_claims_sha256":"__EMPTY_NON_CLAIMS_SHA256__","packet_sha256":"pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp","reviewed_input_identity_sha256":"iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"}' > "$out"
+printf '%s\n' '{"kind":"review","reason":"fresh"}' > "$out"
 """,
     )
     script = (
@@ -160,7 +160,10 @@ printf '%s\n' '{"kind":"review","reason":"fresh","capability_non_claims":[],"cap
         os.environ["PATH"] = old_path
     assert result.returncode == 0, result.stderr
     assert yaml.safe_load(result.stdout)["status"] == "succeeded"
-    assert json.loads(output.read_text(encoding="utf-8"))["reason"] == "fresh"
+    published = json.loads(output.read_text(encoding="utf-8"))
+    assert published["reason"] == "fresh"
+    assert published["packet_sha256"] == "p" * 64
+    assert published["reviewed_input_identity_sha256"] == "i" * 64
     record = json.loads(receipt.read_text(encoding="utf-8"))
     assert record["status"] == "succeeded"
     assert record["output_fresh"] is True
@@ -221,7 +224,7 @@ while [ "$#" -gt 0 ]; do
   shift
 done
 cat >/dev/null
-printf '%s\\n' '{{"kind":"review","reason":"fresh","packet_sha256":"pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp","reviewed_input_identity_sha256":"iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"}}' > "$out"
+printf '%s\\n' '{{"kind":"review","reason":"fresh"}}' > "$out"
 sed -i 's/fixture-config-1/fixture-config-2/' {capability}
 """,
     )
@@ -439,7 +442,7 @@ def test_claude_structured_output_is_normalized_and_schema_checked(tmp_path: Pat
         bin_dir / "claude",
         """#!/bin/sh
 cat >/dev/null
-printf '%s\n' '{"is_error":false,"structured_output":{"kind":"review","reason":"claude","capability_non_claims":[],"capability_non_claims_sha256":"__EMPTY_NON_CLAIMS_SHA256__","packet_sha256":"pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp","reviewed_input_identity_sha256":"iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"}}'
+printf '%s\n' '{"is_error":false,"structured_output":{"kind":"review","reason":"claude"}}'
         """,
     )
     script = (
@@ -486,7 +489,7 @@ while [ "$#" -gt 0 ]; do
 done
 cat >/dev/null
 cp "$given" '{handed_schema}'
-printf '%s\\n' '{{"kind":"review","reason":"semantic-only","packet_sha256":"{"p" * 64}","reviewed_input_identity_sha256":"{"i" * 64}"}}' > "$out"
+printf '%s\\n' '{{"kind":"review","reason":"semantic-only"}}' > "$out"
 """,
     )
     old_path = os.environ["PATH"]
@@ -520,11 +523,12 @@ printf '%s\\n' '{{"kind":"review","reason":"semantic-only","packet_sha256":"{"p"
     assert "capability_non_claims_sha256" not in generation_schema["required"]
     # ...and everything the model does author survived the projection.
     assert "reason" in generation_schema["properties"]
-    assert "packet_sha256" in generation_schema["required"]
+    assert "packet_sha256" not in generation_schema["properties"]
+    assert "reviewed_input_identity_sha256" not in generation_schema["required"]
 
 
-def test_a_model_authored_provenance_field_is_overwritten_not_trusted(tmp_path: Path) -> None:
-    """A model that invents non-claims must not carry that authority into delivery."""
+def test_a_model_authored_runner_field_is_refused(tmp_path: Path) -> None:
+    """A backend cannot author packet, input, or capability identities."""
     workspace, prompt, schema, capability, output, receipt = _inputs(tmp_path)
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
@@ -554,8 +558,8 @@ printf '%s\\n' '{{"kind":"review","reason":"invents","packet_sha256":"{"p" * 64}
     finally:
         os.environ["PATH"] = old_path
 
-    assert result.returncode == 0, result.stderr + result.stdout
-    published = json.loads(output.read_text(encoding="utf-8"))
-    assert published["reason"] == "invents"
-    assert published["capability_non_claims"] == []
-    assert published["capability_non_claims_sha256"] == EMPTY_NON_CLAIMS_SHA256
+    assert result.returncode == 1
+    record = json.loads(receipt.read_text(encoding="utf-8"))
+    assert record["status"] == "schema-invalid"
+    assert "runner-owned field" in record["error"]
+    assert not output.exists()
