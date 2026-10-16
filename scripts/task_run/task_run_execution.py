@@ -11,7 +11,7 @@ import signal
 import tempfile
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any, Mapping, NamedTuple, Sequence
 
 import yaml
 
@@ -38,6 +38,12 @@ from scripts.task_run import task_run_self_review as _self_review  # noqa: E402
 #: this alias keeps the historical execution-surface seam stable.
 run_self_review = _self_review.run_self_review
 
+
+class _LogWindow(NamedTuple):
+    path: Path
+    offset: int
+    byte_count: int
+
 _DESCENDANT_CLEANUP_SHELL = (
     'printf "%s\\n" "$$" > "$1"; shift; exec 3<&0; "$@" <&3 & '
     'child=$!; wait "$child"; status=$?; exit "$status"'
@@ -59,22 +65,60 @@ def _env_seconds(name: str, default: float) -> tuple[float, bool]:
     return (value, True) if math.isfinite(value) else (default, False)
 
 
-def _tail_text(path: Path, limit: int = 64 * 1024) -> str:
+def _tail_text(
+    path: Path,
+    limit: int = 64 * 1024,
+    *,
+    window: _LogWindow | None = None,
+) -> str:
     try:
         if not path.is_file():
             return ""
-        return path.read_bytes()[-limit:].decode("utf-8", errors="replace")
+        if window is not None and window.path != path:
+            raise ValueError("log window path does not match the requested log")
+        with path.open("rb") as handle:
+            handle.seek(0, os.SEEK_END)
+            file_end = handle.tell()
+            if window is None:
+                end = file_end
+                start = max(0, end - limit)
+            else:
+                if window.offset < 0 or window.byte_count < 0:
+                    raise ValueError("log window has a negative byte boundary")
+                end = min(file_end, window.offset + window.byte_count)
+                if end <= window.offset:
+                    return ""
+                start = max(window.offset, end - limit)
+            handle.seek(start)
+            return handle.read(end - start).decode("utf-8", errors="replace")
     except OSError:
         return ""
 
 
+def _log_window(path: Path, offset: int) -> _LogWindow:
+    """Bind one log's appended byte extent from an observed start offset."""
+    try:
+        end = path.stat().st_size if path.is_file() else offset
+    except OSError:
+        end = offset
+    return _LogWindow(path=path, offset=offset, byte_count=max(0, end - offset))
+
+
 def _executor_unavailable_reason(
-    result: dict[str, Any], stdout_log: Path, stderr_log: Path, executor: str
+    result: dict[str, Any],
+    stdout_log: Path,
+    stderr_log: Path,
+    event_window: _LogWindow,
 ) -> None:
     from scripts.task_run import task_run_state
 
-    logs = (stdout_log, stderr_log, stdout_log.with_name(f"{executor}.events.log"))
-    transcript = "\n".join(_tail_text(path) for path in logs)
+    transcript = "\n".join(
+        (
+            _tail_text(stdout_log),
+            _tail_text(stderr_log),
+            _tail_text(event_window.path, window=event_window),
+        )
+    )
     reason = task_run_state.executor_unavailable_reason(result, transcript)
     if reason:
         result["executor_unavailable"] = reason
@@ -176,6 +220,10 @@ def _execute_codex(
     resume_path = "initial"
     delivered_batch: list[Mapping[str, Any]] = []
     event_log = stdout_log.with_name(f"{executor}.events.log")
+    try:
+        event_log_offset = event_log.stat().st_size if event_log.is_file() else 0
+    except OSError:
+        event_log_offset = 0
     queue_path = _lane_runner.steer_queue_path(stdout_log.parent)
     try:
         invocation = 0
@@ -254,8 +302,14 @@ def _execute_codex(
                 _record_steer_delivery(queue_path, pending, resume_path)
     except OSError as exc:
         result["exec_error"] = str(exc)
-    _executor_unavailable_reason(result, stdout_log, stderr_log, executor)
-    _muse_stream_diagnostics(result, stdout_log, stderr_log, executor)
+    event_window = _log_window(event_log, event_log_offset)
+    result["event_log_window"] = {
+        "path": str(event_window.path),
+        "offset_bytes": event_window.offset,
+        "byte_count": event_window.byte_count,
+    }
+    _executor_unavailable_reason(result, stdout_log, stderr_log, event_window)
+    _muse_stream_diagnostics(result, stdout_log, stderr_log, executor, event_window)
     steer_messages = _lane_runner.read_steer_queue(queue_path)
     if steer_messages:
         result["steer_messages"] = steer_messages
@@ -422,15 +476,22 @@ def _retain_muse_events(stdout_log: Path, event_log: Path) -> None:
 
 
 def _muse_stream_diagnostics(
-    result: dict[str, Any], stdout_log: Path, stderr_log: Path, executor: str
+    result: dict[str, Any],
+    stdout_log: Path,
+    stderr_log: Path,
+    executor: str,
+    event_window: _LogWindow,
 ) -> None:
-    """Attach lane-cumulative muse stream retry/failure diagnostics (#886)."""
+    """Attach current-execution Muse diagnostics, including steering (#886)."""
     if executor != "muse":
         return
     from scripts.task_run import task_run_muse_events as _muse_events
 
-    event_log = stdout_log.with_name(f"{executor}.events.log")
-    events_text = _tail_text(event_log, limit=64 * 1024 * 1024)
+    events_text = _tail_text(
+        event_window.path,
+        limit=64 * 1024 * 1024,
+        window=event_window,
+    )
     if not _muse_events.has_muse_events(events_text):
         events_text = _tail_text(stdout_log, limit=64 * 1024 * 1024)
     result["stream_diagnostics"] = _muse_events.stream_diagnostics(
