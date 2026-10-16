@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 import sys
@@ -61,6 +62,18 @@ def test_self_review_filters_blank_evidence() -> None:
     )
 
     assert block["findings"]["fixed"][0]["evidence"] == ["path:2"]
+
+
+def test_self_review_prompt_and_schema_use_list_evidence() -> None:
+    schema = task_run_state.self_review_schema()
+    finding_schema = schema["properties"]["findings"]["items"]
+
+    assert finding_schema["properties"]["evidence"] == {
+        "type": "array", "items": {"type": "string"}
+    }
+    prompt = task_run_state.self_review_prompt("Review.", "base", ["file.py"])
+    assert '"evidence":["path/to/file.py:12"]' in prompt
+    assert "optional string evidence" not in prompt
 
 
 @pytest.mark.parametrize(
@@ -165,10 +178,12 @@ def test_self_review_runs_a_read_only_codex_pass_and_records_findings(tmp_path: 
     executable = tmp_path / "codex"
     runtime_root = tmp_path.parent / f"{tmp_path.name}-runtime"
     executable.write_text(
-        "#!/bin/sh\ncat >/dev/null\n"
+        "#!/bin/sh\n"
+        "printf '%s\\n' \"$@\" > \"$(dirname \"$0\")/args\"\n"
+        "cat >/dev/null\n"
         "printf '%s\\n' '{\"kind\":\"charness.task_self_review.v1\","
         "\"findings\":[{\"summary\":\"Keep the follow-up visible.\","
-        "\"disposition\":\"deferred\"}]}'\n",
+        "\"disposition\":\"deferred\",\"evidence\":[\"src/module.py:4\"]}]}'\n",
         encoding="utf-8",
     )
     executable.chmod(0o755)
@@ -188,6 +203,13 @@ def test_self_review_runs_a_read_only_codex_pass_and_records_findings(tmp_path: 
 
     assert block["state"] == "findings-received"
     assert block["findings"]["deferred"][0]["summary"] == "Keep the follow-up visible."
+    arguments = (tmp_path / "args").read_text(encoding="utf-8").splitlines()
+    schema_path = Path(arguments[arguments.index("--output-schema") + 1])
+    assert schema_path.is_file()
+    assert task_run_state.self_review_schema() == json.loads(
+        schema_path.read_text(encoding="utf-8")
+    )
+    assert block["findings"]["deferred"][0]["evidence"] == ["src/module.py:4"]
 
 
 def test_auto_policy_runs_for_boundary_signals_and_stays_off_for_ordinary_lanes() -> None:

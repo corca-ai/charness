@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 from typing import Any, Mapping
@@ -62,9 +63,14 @@ def run_self_review(payload: dict[str, Any]) -> dict[str, Any]:
         review_root.mkdir(parents=True, exist_ok=True)
         stdout_log, stderr_log = review_root / "codex.stdout.log", review_root / "codex.stderr.log"
         output_path = review_root / "codex.last-message.txt"
+        schema_path = review_root / "self-review.schema.json"
+        schema_path.write_text(json.dumps(task_run_state.self_review_schema()), encoding="utf-8")
         command = task_run_runtime.build_codex_command(executable, effort="medium")
         command[command.index("--sandbox") + 1] = "read-only"
-        command[-1:-1] = ["--json", "--output-last-message", str(output_path)]
+        command[-1:-1] = [
+            "--json", "--output-schema", str(schema_path),
+            "--output-last-message", str(output_path),
+        ]
         env = worktree_exec_lib.prepare_exec_environment(worktree, os.environ.copy(), runtime_root=runtime_path)
         env = task_run_support.scrubbed_lane_env(payload, env, "codex")
         result = _execution._execute_codex(

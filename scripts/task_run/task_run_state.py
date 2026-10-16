@@ -63,6 +63,28 @@ RESULT_EXIT_CODES = {
 SELF_REVIEW_DISPOSITIONS = ("fixed", "deferred", "disputed")
 SELF_REVIEW_STATES = ("not-requested", "findings-received", "unavailable-skip")
 _SELF_REVIEW_KIND = "charness.task_self_review.v1"
+_SELF_REVIEW_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "kind": {"const": _SELF_REVIEW_KIND},
+        "findings": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "string"},
+                    "summary": {"type": "string", "minLength": 1},
+                    "disposition": {"enum": list(SELF_REVIEW_DISPOSITIONS)},
+                    "evidence": {"type": "array", "items": {"type": "string"}},
+                },
+                "required": ["summary", "disposition"],
+                "additionalProperties": False,
+            },
+        },
+    },
+    "required": ["kind", "findings"],
+    "additionalProperties": False,
+}
 _BOUNDED_REVIEW_KIND = "charness.bounded_review.v1"
 _BOUNDARY_ACTION = re.compile(
     r"\b(?:push|publish|release)\b.{0,60}\b(?:to|the|branch|remote|package|artifact|release|version|site|registry|main|origin)\b"
@@ -133,11 +155,19 @@ def self_review_prompt(prompt: str, base_sha: str, changed_paths: list[str]) -> 
     return (
         f"Fresh-context self-review only. Do not edit or run mutating commands. Inspect diff from {base_sha} "
         f"for {json.dumps(changed_paths)} against this request:\n{prompt}\n"
-        f'Return only JSON shaped as {{"kind":"{_SELF_REVIEW_KIND}","findings":[]}} . '
-        "Findings contain summary, disposition (fixed/deferred/disputed), and optional string evidence. "
+        "Return only JSON matching this schema: "
+        f"{json.dumps(_SELF_REVIEW_SCHEMA, separators=(',', ':'))}. "
+        f'Example: {{"kind":"{_SELF_REVIEW_KIND}","findings":'
+        '[{"summary":"The follow-up remains open.","disposition":"deferred",'
+        '"evidence":["path/to/file.py:12"]}]}. '
         "Fixed means addressed, deferred means valid and unresolved, disputed means inapplicable. "
         "No findings does not claim independent review passed."
     )
+
+
+def self_review_schema() -> dict[str, Any]:
+    """Return the canonical constrained-output schema for the self-reviewer."""
+    return json.loads(json.dumps(_SELF_REVIEW_SCHEMA))
 
 
 def _nested_mappings(value: Any):
