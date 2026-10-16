@@ -17,7 +17,13 @@ from pathlib import Path
 
 import pytest
 
-from scripts.task_run import task_run, task_run_execution, task_run_runtime, task_run_support
+from scripts.task_run import (
+    task_run,
+    task_run_execution,
+    task_run_plan,
+    task_run_runtime,
+    task_run_support,
+)
 from skills.shared.scripts import reviewer_lifecycle
 
 from .test_task_run_fixtures import _codex, _git, _repo, _run
@@ -102,10 +108,16 @@ def test_task_result_keeps_partial_bounded_review_from_a_failed_delivery() -> No
 
 def test_task_result_exposes_schema_bearing_delivery_without_interpreting_it(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
+    report = (
+        "schema_version: charness.reviewer_lifecycle.v1\n"
+        "approval_eligible: false\n"
+        "delivery_state: findings-received\n"
+    )
     executable = _codex(
         tmp_path,
-        "printf 'VALUE = 2\\n' > module.py\nprintf 'schema_version: charness.reviewer_lifecycle.v1\\napproval_eligible: false\\ndelivery_state: findings-received\\n'",
+        "printf 'VALUE = 2\\n' > module.py",
         deliver=False,
+        last_message=report,
     )
 
     payload = _run(repo, tmp_path, executable, task_id="structured-review")
@@ -120,12 +132,72 @@ def test_task_result_exposes_schema_bearing_delivery_without_interpreting_it(tmp
     assert payload["reviewer_lifecycle"] == delivery["structured"]
 
 
-def test_task_result_reports_malformed_schema_bearing_delivery(tmp_path: Path) -> None:
+@pytest.mark.parametrize("last_message", [None, "final report\r\n"])
+def test_codex_events_without_current_last_message_are_not_delivered(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    last_message: str | None,
+) -> None:
     repo = _repo(tmp_path)
+    runtime_root = tmp_path / "runtime"
+    monkeypatch.setattr(task_run_plan, "_runtime_preview", lambda _repo: runtime_root)
+    task_id = "codex-final-message"
+    execution_runtime = runtime_root / "task-run" / task_id / "runtime"
+    execution_runtime.mkdir(parents=True)
+    stale_message = execution_runtime / "codex.last-message.txt"
+    stale_message.write_bytes(b"stale prior report\n")
+
+    raw_events = (
+        b'{"type":"thread.started","thread_id":"fake-thread"}\n'
+        b'{"type":"item.completed","item":{"type":"command_execution"}}\n'
+    )
     executable = _codex(
         tmp_path,
-        "printf 'VALUE = 2\\n' > module.py\nprintf 'schema_version: broken\\nvalue: [\\n'",
+        "printf 'VALUE = 2\\n' > module.py\n"
+        f"printf '%s' {shlex.quote(raw_events.decode('utf-8'))}",
         deliver=False,
+        last_message=last_message,
+    )
+
+    payload = _run(
+        repo,
+        tmp_path,
+        executable,
+        task_id=task_id,
+        require_change=False,
+    )
+
+    stdout_log = Path(payload["logs"]["stdout"])
+    events_log = stdout_log.with_name("codex.events.log")
+    delivery = payload["result_delivery"]
+    expected_status = "delivered" if last_message is not None else "non-delivery"
+    expected_report = last_message.encode("utf-8") if last_message is not None else b""
+    assert delivery["status"] == expected_status
+    assert stdout_log.read_bytes() == expected_report
+    assert events_log.read_bytes() == raw_events
+    assert not stale_message.exists()
+    full_report = Path(delivery["full_report"]["path"])
+    assert full_report.read_bytes() == expected_report
+    assert delivery["full_report"]["complete"] is True
+    assert payload["candidate"]["changed_paths"] == ["module.py"]
+    assert payload["candidate"]["status"] == "validated"
+    if last_message is None:
+        assert payload["candidate"]["carrier_kind"] == "worktree-only"
+        assert payload["keep_worktree"] is True
+        candidate_source = Path(payload["worktree_path"]) / "module.py"
+        assert candidate_source.read_text() == "VALUE = 2\n"
+    else:
+        assert payload["candidate"]["persist"]["status"] == "committed"
+
+
+def test_task_result_reports_malformed_schema_bearing_delivery(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    report = "schema_version: broken\nvalue: [\n"
+    executable = _codex(
+        tmp_path,
+        "printf 'VALUE = 2\\n' > module.py",
+        deliver=False,
+        last_message=report,
     )
 
     payload = _run(repo, tmp_path, executable, task_id="structured-invalid")
@@ -138,11 +210,12 @@ def test_task_result_rejects_non_json_yaml_without_breaking_terminal_receipt(
     tmp_path: Path,
 ) -> None:
     repo = _repo(tmp_path)
+    report = "schema_version: example.v1\nwhen: 2026-08-28\n"
     executable = _codex(
         tmp_path,
-        "printf 'VALUE = 2\\n' > module.py\n"
-        "printf 'schema_version: example.v1\\nwhen: 2026-08-28\\n'",
+        "printf 'VALUE = 2\\n' > module.py",
         deliver=False,
+        last_message=report,
     )
 
     payload = _run(repo, tmp_path, executable, task_id="non-json-yaml")
@@ -153,11 +226,11 @@ def test_task_result_rejects_non_json_yaml_without_breaking_terminal_receipt(
 
 
 def _reviewer_lifecycle_codex(tmp_path: Path, carrier: dict[str, object]) -> Path:
-    encoded = shlex.quote(json.dumps(carrier, separators=(",", ":")))
     return _codex(
         tmp_path,
-        f"printf '%s\\n' {encoded}\nprintf 'VALUE = 2\\n' > module.py",
+        "printf 'VALUE = 2\\n' > module.py",
         deliver=False,
+        last_message=json.dumps(carrier, separators=(",", ":")) + "\n",
     )
 
 

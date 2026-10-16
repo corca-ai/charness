@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import shlex
 import subprocess
 from pathlib import Path
 
@@ -42,10 +43,36 @@ def _commit(repo: Path, message: str, *paths: str) -> str:
     return _git(repo, "rev-parse", "HEAD").stdout.strip()
 
 
-def _codex(tmp_path: Path, body: str, *, deliver: bool = True) -> Path:
+def _codex(
+    tmp_path: Path,
+    body: str,
+    *,
+    deliver: bool = True,
+    last_message: str | None = None,
+) -> Path:
     executable = tmp_path / "codex"
-    delivery = "printf 'task complete\\n'" if deliver else ""
-    executable.write_text(f"#!/bin/sh\n{body}\n{delivery}\n", encoding="utf-8")
+    report = (
+        last_message
+        if last_message is not None
+        else "task complete\n" if deliver else None
+    )
+    output = ""
+    if report is not None:
+        output = (
+            "if [ -n \"$output_path\" ]; then printf '%s' "
+            f"{shlex.quote(report)} > \"$output_path\"; fi"
+        )
+    executable.write_text(
+        "#!/bin/sh\n"
+        "output_path=\n"
+        "want_output_path=0\n"
+        "for argument do\n"
+        "  if [ \"$want_output_path\" = 1 ]; then output_path=$argument; want_output_path=0; "
+        "elif [ \"$argument\" = '--output-last-message' ]; then want_output_path=1; fi\n"
+        "done\n"
+        f"{body}\n{output}\n",
+        encoding="utf-8",
+    )
     executable.chmod(0o755)
     return executable
 

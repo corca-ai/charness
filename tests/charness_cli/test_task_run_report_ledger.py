@@ -32,6 +32,7 @@ def test_task_result_returns_short_summary_and_complete_report_file(
         tmp_path,
         "python3 -c 'import sys; sys.stdout.write(\"full-report-line\\n\" * 70000)'",
         deliver=False,
+        last_message=report,
     )
 
     payload = _run(

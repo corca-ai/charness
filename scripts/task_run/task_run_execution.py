@@ -377,13 +377,22 @@ def _retain_invocation_events(
     """Keep one invocation's raw events and surface its terminal report."""
     if executor == "codex":
         raw_output = _tail_text(stdout_log, limit=64 * 1024 * 1024)
-        if raw_output:
-            with event_log.open("a", encoding="utf-8") as handle:
-                handle.write(raw_output)
-                if not raw_output.endswith("\n"):
-                    handle.write("\n")
-        if last_message_path is not None and last_message_path.is_file():
-            stdout_log.write_text(last_message_path.read_text(encoding="utf-8"), encoding="utf-8")
+        if stdout_log.is_file() and stdout_log.stat().st_size > 0:
+            with stdout_log.open("rb") as source, event_log.open("ab") as handle:
+                shutil.copyfileobj(source, handle)
+                source.seek(0, os.SEEK_END)
+                if source.tell() > 0:
+                    source.seek(-1, os.SEEK_END)
+                    if source.read(1) != b"\n":
+                        handle.write(b"\n")
+        if last_message_path is not None:
+            if last_message_path.is_file():
+                stdout_log.write_bytes(last_message_path.read_bytes())
+            else:
+                # Codex's --json stdout is a transport transcript, not a report.
+                # Without this invocation's terminal-message file there is no
+                # report to deliver; raw events remain in the forensic log above.
+                stdout_log.write_bytes(b"")
         return _codex_session_id(raw_output) or session_id
     if executor == "muse":
         _retain_muse_events(stdout_log, event_log)
