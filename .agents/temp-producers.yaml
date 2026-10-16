@@ -120,11 +120,6 @@ producers:
   symbol: handle
   disposition: anonymous-auto-delete-file
   rationale: Binding serialization uses an anonymous auto-delete file before the durable write boundary.
-- identity: skills/public/critique/scripts/run_review_promotion_storage.py::_copy_atomically::mkstemp
-  path: skills/public/critique/scripts/run_review_promotion_storage.py
-  symbol: mkstemp
-  disposition: atomic-sibling
-  rationale: Review promotion copies use an atomic sibling before replacement.
 - identity: skills/public/critique/scripts/run_review_promotion_storage.py::write_bytes_atomically::mkstemp
   path: skills/public/critique/scripts/run_review_promotion_storage.py
   symbol: mkstemp
