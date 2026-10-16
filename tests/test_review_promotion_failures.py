@@ -466,17 +466,18 @@ def test_carrier_write_and_stream_helpers_fail_closed_on_symlink_escape_and_mism
     tmp_path: Path,
 ) -> None:
     destination = tmp_path / "lifecycle.yaml"
-    CARRIER.write_promoted_yaml(SUPPORT, STORAGE, tmp_path, "lifecycle.yaml", {"state": "failed"})
+    STORAGE.write_promoted_yaml(tmp_path, "lifecycle.yaml", {"state": "failed"})
     assert yaml.safe_load(destination.read_text(encoding="utf-8")) == {"state": "failed"}
 
     outside = tmp_path.parent / "outside-lifecycle.yaml"
     outside.write_text("outside\n", encoding="utf-8")
     escaped = tmp_path / "escaped.yaml"
     escaped.symlink_to(outside)
-    with pytest.raises(SUPPORT.RunReviewError, match="lifecycle symlink"):
-        CARRIER.write_promoted_yaml(SUPPORT, STORAGE, tmp_path, "escaped.yaml", {})
-    with pytest.raises(SUPPORT.RunReviewError, match="escaped repository root"):
-        CARRIER.write_promoted_yaml(SUPPORT, STORAGE, tmp_path, "../outside-lifecycle.yaml", {})
+    storage_error = STORAGE._support().RunReviewError
+    with pytest.raises(storage_error, match="lifecycle symlink"):
+        STORAGE.write_promoted_yaml(tmp_path, "escaped.yaml", {})
+    with pytest.raises(storage_error, match="escaped repository root"):
+        STORAGE.write_promoted_yaml(tmp_path, "../outside-lifecycle.yaml", {})
 
     stream = tmp_path / "runner.stdout"
     report = tmp_path / "report.yaml"
@@ -666,22 +667,6 @@ def test_storage_path_replacements_and_symlinked_inputs_are_safe(tmp_path: Path)
     log_link.symlink_to(destination)
     with pytest.raises(ValueError, match="durable reviewer log"):
         STORAGE_DIRECT.promote_log(tmp_path, content, log_link)
-
-
-def test_storage_worker_report_destination_guards_refuse_symlinks_and_escape(
-    tmp_path: Path,
-) -> None:
-    runtime = tmp_path / "runtime-report.yaml"
-    runtime.write_text("status: runner-invalid\n", encoding="utf-8")
-    workers = tmp_path / STORAGE_DIRECT.DURABLE_WORKER_REPORTS
-    workers.mkdir(parents=True)
-    outside = tmp_path.parent / "worker-destination"
-    outside.mkdir()
-    (workers / "linked").symlink_to(outside, target_is_directory=True)
-    with pytest.raises(ValueError, match="worker directory symlink"):
-        STORAGE_DIRECT.promote_worker_report(tmp_path, "linked", runtime)
-    with pytest.raises(ValueError, match="escaped repository root"):
-        STORAGE_DIRECT.promote_worker_report(tmp_path, "../../../../worker-escape", runtime)
 
 
 def test_partial_scanner_finds_nested_result_and_rejects_wrong_identity(

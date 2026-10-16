@@ -205,23 +205,6 @@ def test_final_promotion_failure_never_approves_and_can_retry(tmp_path: Path, mo
         assert descriptor["sha256"] == support.sha256(tmp_path / manifest["files"][name])
 
 
-def test_promote_worker_report_copies_the_combined_report_atomically(tmp_path: Path) -> None:
-    promotion = _promotion()
-    runtime = tmp_path / ".charness" / "reviewer-round-attempt-1"
-    runtime.mkdir(parents=True)
-    (runtime / "worker-report.yaml").write_text("schema_version: charness.reviewer_worker_report.v1\n", encoding="utf-8")
-    (runtime / "runner.stderr").write_text("noise\n", encoding="utf-8")
-
-    dest = promotion.promote_worker_report(tmp_path, "attempt-1", runtime / "worker-report.yaml")
-
-    assert dest == tmp_path / "charness-artifacts" / "critique" / "workers" / "attempt-1" / "worker-report.yaml"
-    assert dest.read_text(encoding="utf-8") == "schema_version: charness.reviewer_worker_report.v1\n"
-    assert not (dest.parent / "runner.stderr").exists()
-    assert promotion.promote_worker_report(tmp_path, "attempt-1", runtime / "missing.yaml") is None
-    with pytest.raises(ValueError, match="overwrite existing durable worker report"):
-        promotion.promote_worker_report(tmp_path, "attempt-1", runtime / "worker-report.yaml")
-
-
 def test_load_and_promote_report_rewrites_the_emitted_report_path(tmp_path: Path) -> None:
     promotion = _promotion()
     runtime = tmp_path / ".charness" / "reviewer-round-ok"
@@ -496,15 +479,6 @@ def test_promotion_never_approves_a_report_bound_to_foreign_run_plan(tmp_path: P
     assert manifest["approval_eligible"] is False
     assert manifest["identity_binding"] == "consumer-required"
     assert manifest["identity_check"]["status"] == "mismatch"
-
-
-def test_promote_worker_report_refuses_a_destination_outside_the_repo(tmp_path: Path) -> None:
-    promotion = _promotion()
-    runtime = tmp_path / "worker-report.yaml"
-    runtime.write_text("schema_version: v1\n", encoding="utf-8")
-
-    with pytest.raises(ValueError, match="escaped repository root"):
-        promotion.promote_worker_report(tmp_path, "/tmp/outside-attempt", runtime)
 
 
 def test_promotion_reuses_an_already_loaded_support_module() -> None:

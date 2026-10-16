@@ -6,11 +6,12 @@ import hashlib
 import importlib.util
 import json
 import os
-import shutil
 import sys
 import tempfile
 from pathlib import Path
 from typing import Any
+
+import yaml
 
 DURABLE_WORKER_REPORTS = Path("charness-artifacts") / "critique" / "workers"
 PROMOTED_METADATA = (
@@ -92,22 +93,6 @@ def _bounded_result_shape(payload: dict[str, Any]) -> str:
     return _REVIEWER_CONTRACT.bounded_result_shape(payload)
 
 
-def _copy_atomically(source: Path, destination: Path) -> None:
-    """Copy a bounded carrier without exposing a half-written durable file."""
-    fd, temporary = tempfile.mkstemp(
-        prefix=f".{destination.name}.", suffix=".tmp", dir=destination.parent
-    )
-    temporary_path = Path(temporary)
-    try:
-        with source.open("rb") as source_handle, os.fdopen(fd, "wb") as destination_handle:
-            shutil.copyfileobj(source_handle, destination_handle)
-            destination_handle.flush()
-            os.fsync(destination_handle.fileno())
-        os.replace(temporary_path, destination)
-    finally:
-        temporary_path.unlink(missing_ok=True)
-
-
 def copy_or_verify(source: Path, destination: Path) -> None:
     """Copy a durable input, or accept an identical prior promotion."""
     write_or_verify(destination, source.read_bytes())
@@ -129,34 +114,6 @@ def write_or_verify(destination: Path, payload: bytes) -> None:
         return
     destination.parent.mkdir(parents=True, exist_ok=True)
     write_bytes_atomically(destination, payload)
-
-
-def promote_worker_report(root: Path, attempt: str, runtime_report: Path) -> Path | None:
-    """Copy the combined report into visible knowledge for older callers."""
-    if not runtime_report.is_file():
-        return None
-    lexical_dest_dir = root / DURABLE_WORKER_REPORTS / attempt
-    if lexical_dest_dir.is_symlink():
-        raise _support().RunReviewError(
-            "stale-artifact-refused",
-            f"refusing to write through durable worker directory symlink: {lexical_dest_dir}",
-        )
-    dest_dir = lexical_dest_dir.resolve()
-    try:
-        dest_dir.relative_to(root.resolve())
-    except ValueError as exc:
-        raise _support().RunReviewError(
-            "path-invalid", "durable worker report directory escaped repository root"
-        ) from exc
-    dest_dir.mkdir(parents=True, exist_ok=True)
-    dest = dest_dir / "worker-report.yaml"
-    if dest.exists() or dest.is_symlink():
-        raise _support().RunReviewError(
-            "stale-artifact-refused",
-            f"refusing to overwrite existing durable worker report: {dest}",
-        )
-    _copy_atomically(runtime_report, dest)
-    return dest
 
 
 def promote_semantic_inputs(
@@ -237,6 +194,26 @@ def semantic_path_replacements(
         if durable is not None:
             replacements[_support().relative(root, source)] = durable
     return replacements
+
+
+def write_promoted_yaml(root: Path, relative_path: str, payload: dict[str, Any]) -> None:
+    """Atomically rewrite a promoted lifecycle carrier after path rebinding."""
+    support = _support()
+    lexical_destination = root / relative_path
+    if lexical_destination.is_symlink():
+        raise support.RunReviewError(
+            "stale-artifact-refused",
+            f"refusing to write through lifecycle symlink: {lexical_destination}",
+        )
+    destination = lexical_destination.resolve()
+    try:
+        destination.relative_to(root.resolve())
+    except ValueError as exc:
+        raise support.RunReviewError(
+            "path-invalid", "promoted lifecycle path escaped repository root"
+        ) from exc
+    encoded = yaml.safe_dump(payload, allow_unicode=True, sort_keys=False).encode("utf-8")
+    write_bytes_atomically(destination, encoded)
 
 
 def write_json_atomically(destination: Path, payload: object) -> None:

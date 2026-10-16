@@ -5,8 +5,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-import yaml
-
 
 def refresh_manifest_integrity(
     support: Any, storage: Any, root: Path, manifest_relative: str
@@ -45,27 +43,6 @@ def refresh_manifest_integrity(
             "promotion-readback-failed", "promoted attempt manifest integrity did not read back"
         )
     return integrity
-
-
-def write_promoted_yaml(
-    support: Any, storage: Any, root: Path, relative_path: str, payload: dict[str, Any]
-) -> None:
-    """Atomically rewrite a promoted lifecycle carrier after path rebinding."""
-    lexical_destination = root / relative_path
-    if lexical_destination.is_symlink():
-        raise support.RunReviewError(
-            "stale-artifact-refused",
-            f"refusing to write through lifecycle symlink: {lexical_destination}",
-        )
-    destination = lexical_destination.resolve()
-    try:
-        destination.relative_to(root.resolve())
-    except ValueError as exc:
-        raise support.RunReviewError(
-            "path-invalid", "promoted lifecycle path escaped repository root"
-        ) from exc
-    encoded = yaml.safe_dump(payload, allow_unicode=True, sort_keys=False).encode("utf-8")
-    storage.write_bytes_atomically(destination, encoded)
 
 
 def compare_report_stream(support: Any, stream_path: Path, report_path: Path) -> dict[str, Any]:
@@ -321,7 +298,7 @@ def finalize_carrier(
     carrier["paths"] = dict(bound)
     summary = promoted.get("lifecycle.yaml")
     if summary is not None:
-        write_promoted_yaml(support, promotion.STORAGE, root, summary, carrier)
+        promotion.STORAGE.write_promoted_yaml(root, summary, carrier)
         saved_summary = support.load_mapping(root / summary)
         if not isinstance(saved_summary, dict):
             raise support.RunReviewError(
