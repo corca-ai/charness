@@ -359,11 +359,6 @@ def validate_delivered_worker_report(
     expected = {
         "schema_version": "charness.reviewer_worker_report.v1",
         "delivery_state": "findings-received",
-        "collection_ready": True,
-        "provenance_ok": True,
-        "receipt_ok": True,
-        "ledger_ok": True,
-        "result_schema_ok": True,
     }
     mismatches = [
         f"{field}={report.get(field)!r} (expected {value!r})"
@@ -391,6 +386,8 @@ def validate_delivered_worker_report(
     ):
         if not isinstance(report.get(field), str) or not report[field].strip():
             raise WorkerCarrierError(f"worker report has no explicit {field}")
+    # These report flags remain useful diagnostics, but the retained receipt,
+    # result, and ledger bytes below are the authority for this consumer.
     receipt, result, output_hash = _validate_delivery_chain(
         repo_root=repo_root, report=report, require_pass=False, owned_root=owned_root
     )

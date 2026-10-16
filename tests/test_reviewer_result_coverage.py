@@ -356,10 +356,27 @@ def test_collection_carries_the_declared_floor_into_the_report(tmp_path: Path) -
     assert report["expected_targets"] == _E2E_TARGETS
     assert report["expected_targets_sha256"] == declared_targets_digest(_E2E_TARGETS)
     assert files["report"]["findings_identity"] == report["findings_identity"]
-    receipt, result, _ = validate_delivered_worker_report(
-        repo_root=tmp_path, report=report
-    )
+    validated_chain = validate_delivered_worker_report(repo_root=tmp_path, report=report)
+    receipt, result, _ = validated_chain
     assert result["verdict"] == "pass"
+    diagnostic_flags = (
+        "collection_ready",
+        "provenance_ok",
+        "receipt_ok",
+        "ledger_ok",
+        "result_schema_ok",
+    )
+    absent_flags_report = dict(report)
+    false_flags_report = dict(report)
+    for field in diagnostic_flags:
+        absent_flags_report.pop(field, None)
+        false_flags_report[field] = False
+    assert validate_delivered_worker_report(
+        repo_root=tmp_path, report=absent_flags_report
+    ) == validated_chain
+    assert validate_delivered_worker_report(
+        repo_root=tmp_path, report=false_flags_report
+    ) == validated_chain
 
 
 def test_durable_carrier_rejects_a_thin_file_despite_the_report(tmp_path: Path) -> None:
