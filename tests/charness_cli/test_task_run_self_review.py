@@ -17,9 +17,9 @@ def test_self_review_findings_are_grouped_by_disposition() -> None:
     block = task_run_state.self_review_block(
         "findings-received",
         findings=[
-            {"id": "f-1", "summary": "The boundary is covered.", "disposition": "fixed"},
-            {"summary": "The follow-up remains open.", "disposition": "deferred"},
-            {"summary": "The reported risk does not apply.", "disposition": "disputed"},
+            {"summary": "The boundary is covered.", "disposition": "fixed", "evidence": ["src/a.py:2"]},
+            {"summary": "The follow-up remains open.", "disposition": "deferred", "evidence": []},
+            {"summary": "The reported risk does not apply.", "disposition": "disputed", "evidence": []},
         ],
     )
 
@@ -48,6 +48,11 @@ def test_self_review_findings_are_grouped_by_disposition() -> None:
             [{"summary": "risk", "disposition": "fixed", "evidence": ["file.py", 3]}],
             "evidence must be a list",
         ),
+        (
+            "findings-received",
+            [{"summary": "risk", "disposition": "fixed"}],
+            "evidence must be a list",
+        ),
     ],
 )
 def test_self_review_rejects_malformed_findings(state: str, findings: object, message: str) -> None:
@@ -68,11 +73,15 @@ def test_self_review_prompt_and_schema_use_list_evidence() -> None:
     schema = task_run_state.self_review_schema()
     finding_schema = schema["properties"]["findings"]["items"]
 
+    assert schema["required"] == list(schema["properties"])
+    assert schema["properties"]["kind"]["enum"] == ["charness.task_self_review.v1"]
     assert finding_schema["properties"]["evidence"] == {
         "type": "array", "items": {"type": "string"}
     }
     prompt = task_run_state.self_review_prompt("Review.", "base", ["file.py"])
-    assert '"evidence":["path/to/file.py:12"]' in prompt
+    assert finding_schema["required"] == list(finding_schema["properties"])
+    assert "minLength" not in json.dumps(schema)
+    assert "use [] when there is no evidence" in prompt
     assert "optional string evidence" not in prompt
 
 

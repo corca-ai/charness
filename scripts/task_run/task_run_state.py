@@ -66,18 +66,17 @@ _SELF_REVIEW_KIND = "charness.task_self_review.v1"
 _SELF_REVIEW_SCHEMA = {
     "type": "object",
     "properties": {
-        "kind": {"const": _SELF_REVIEW_KIND},
+        "kind": {"enum": [_SELF_REVIEW_KIND]},
         "findings": {
             "type": "array",
             "items": {
                 "type": "object",
                 "properties": {
-                    "id": {"type": "string"},
-                    "summary": {"type": "string", "minLength": 1},
+                    "summary": {"type": "string"},
                     "disposition": {"enum": list(SELF_REVIEW_DISPOSITIONS)},
                     "evidence": {"type": "array", "items": {"type": "string"}},
                 },
-                "required": ["summary", "disposition"],
+                "required": ["summary", "disposition", "evidence"],
                 "additionalProperties": False,
             },
         },
@@ -115,14 +114,10 @@ def self_review_block(
             if not isinstance(summary, str) or not summary.strip():
                 raise ValueError("self-review finding summary must be non-empty")
             finding: dict[str, Any] = {"summary": summary.strip(), "disposition": disposition}
-            finding_id = item.get("id")
-            if isinstance(finding_id, str) and finding_id.strip():
-                finding["id"] = finding_id.strip()
             evidence = item.get("evidence")
-            if evidence is not None:
-                if not isinstance(evidence, list) or not all(isinstance(value, str) for value in evidence):
-                    raise ValueError("self-review finding evidence must be a list of strings")
-                finding["evidence"] = [value for value in evidence if value.strip()]
+            if not isinstance(evidence, list) or not all(isinstance(value, str) for value in evidence):
+                raise ValueError("self-review finding evidence must be a list of strings")
+            finding["evidence"] = [value for value in evidence if value.strip()]
             grouped[disposition].append(finding)
     return {
         "kind": _SELF_REVIEW_KIND,
@@ -157,9 +152,7 @@ def self_review_prompt(prompt: str, base_sha: str, changed_paths: list[str]) -> 
         f"for {json.dumps(changed_paths)} against this request:\n{prompt}\n"
         "Return only JSON matching this schema: "
         f"{json.dumps(_SELF_REVIEW_SCHEMA, separators=(',', ':'))}. "
-        f'Example: {{"kind":"{_SELF_REVIEW_KIND}","findings":'
-        '[{"summary":"The follow-up remains open.","disposition":"deferred",'
-        '"evidence":["path/to/file.py:12"]}]}. '
+        "Every finding includes summary, disposition, and evidence as an array of strings; use [] when there is no evidence. "
         "Fixed means addressed, deferred means valid and unresolved, disputed means inapplicable. "
         "No findings does not claim independent review passed."
     )
