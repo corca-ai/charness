@@ -1,80 +1,53 @@
 # Release Surface Check
-Date: 2026-10-01
+<!-- charness-release-state:prepared-awaiting-claims-review -->
+Date: 2026-10-17
 
 ## Scope
 
-Advanced `charness` toward release `8.14.6` (tag `v8.14.6`) through the repo-owned release helper.
+Advanced `charness` toward release `8.14.7` (tag `v8.14.7`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `8.14.5`
-- target version: `8.14.6`
+- previous version: `8.14.6`
+- target version: `8.14.7`
 - git branch: `main`
 - git remote: `origin`
 
 ## Verification
 
-- `./scripts/run-quality.sh --release --read-only` exited 0 in 539.4s at `post-claims-review, pre-push`, measured by this helper (`./scripts/run-quality.sh --release --read-only --receipt-json=/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/release-prepush-quality/2630276-1790818493922184458/semantic-quality.json`).
-- pre-push quality receipt: `charness-artifacts/release/8.14.6-prepush-quality.json` (sha256: `ab4b368cac46abc266b056c27ea6f3468f1eec4c9d6c132e81f317490c3002fb`).
-- `current_release.py` reported no version drift across 4 versioned surface(s), with 1 presence-only surface(s) not version-checked against target `8.14.6`, checked at `post-claims-review, pre-push`.
-- Validated tree: commit `fb5820d5c9863284ceb36dd6274d284ed67a13f5` (tree `e5dbf5b20433c1bfa528713667495abbb13f56ed`); a pushed tag or branch that does not contain this tree was not what this check validated.
-- initial release push carried the release branch update and tag from the release helper.
-- post-publish artifact push recorded the verified public release state on the release branch.
+- `./scripts/run-quality.sh --release --read-only` exited 0 in 101.2s at `post-bump, pre-commit`, measured by this helper (`./scripts/run-quality.sh --release --read-only --release-prepare`); quality unestablished: pytest-release pending final resume.
+- pre-push quality receipt: NOT recorded by this helper invocation, so the quality sentence above cites no durable receipt.
+- `current_release.py` reported no version drift across 4 versioned surface(s), with 1 presence-only surface(s) not version-checked against target `8.14.7`, checked at `post-bump, pre-commit`.
+- Validated tree: commit `acf8d6d94f6ffd39eeb5e259b820b3b7f451f160` (tree `b98f2d6c269742974794167c2672f5cfec0f05d0`); a pushed tag or branch that does not contain this tree was not what this check validated.
 
 ## Release State
 
 - local release mutation: complete
-- branch/tag push: complete
-- GitHub release record: verified URL `https://github.com/corca-ai/charness/releases/tag/v8.14.6`
-- public release surface verification: verified
+- branch/tag push: pending independent claims review.
+- GitHub release record: pending independent claims review before creation
+- public release surface verification: pending independent claims review
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by the release backend.
-
-## Distinct-Channel Verification
-
-- Rung-2 distinct-channel verdict: `confirmed` via `https-fetch` (a channel distinct from `gh release view`).
-- Response content checked for: `v8.14.6`
-- What this confirms: public-page-reachable-and-names-the-tag
-- What it does NOT confirm: that a GitHub RELEASE exists for this tag — the same page returns 200 for a pushed tag with no release, and the tag is pushed before the release is created
-- Observer identity: unauthenticated-http (credential-free; same host/process as publisher)
-- Channel URL: `https://github.com/corca-ai/charness/releases/tag/v8.14.6`
-- HTTP status: `200`
-- Rung-1 floor: a per-surface verdict is recorded (presence), so issue closeout was not silent; the honesty of this verdict is the human rung-2 disposition review.
-
-## Published Notes Audit
-
-- Published release body audit: `unauthored` (advisory; never blocks a publish).
-- The published body carries no authored notes (83 body bytes) — this release shipped with a generated changelog line and nothing else. `gh release edit` is the remedy; the release itself is unaffected.
-- Disposition reason: published body carries no authored notes (generated changelog line only); `gh release edit` is the remedy
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Release Adapter Preflight
 
 - Release adapter focused preflight status: `not_required`.
 - Reason: release adapter did not change in the release delta
 - Focused preflight commands: none planned.
-- Focused preflight execution: NOT recorded by this helper invocation; this record does not establish that the commands above ran.
+- Focused preflight execution: `not_run`.
+- This is a recorded absence, not a passing preflight: no focused adapter check is claimed to have completed successfully for this release.
+  - Reason: focused preflight status is `not_required`; no commands were required
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/v8146-critique.md`.
+- Review proof: `charness-artifacts/critique/2026-10-17-v8.14.7-release-critique.md`.
 
 ## Claims Review
 
-- Claims review record: `charness-artifacts/release-review/2026-10-01-v8.14.6-prepared-claims-review.json`.
-- Claims review verdict: `pass`.
-- Observer distinctness: `separate-agent-context`.
-- Recorded signal: native subagent claims-8146 final answer with pass verdict and 5 advisories in session log
-- Review narrative: `charness-artifacts/release-review/2026-10-01-v8.14.6-claims-review.md`.
-- Verdict scope: 70 blocking path(s) gated this tag; 2 advisory path(s) (session narrative) were reviewed but did not.
-- Advisory findings: 5 finding(s) recorded in advisory scope and carried into this release record without gating this tag:
-  - fresh-checkout passed rests on helper timing alone with no durable receipt
-  - bare validator command is vacuous on clean tree; explicit --paths run is the genuine green
-  - verbatim-move shorthand compresses the disclosed re-pointings
-  - strictly-additive compresses the disclosed failure.message content change
-  - v8.14.6 tag named but not yet existing until push
+- Claims review: not yet performed -- THIS record is the subject of the pending independent review, and publication is stopped until that review is committed.
 
 ## Requested Review Gate
 
@@ -83,75 +56,16 @@ Advanced `charness` toward release `8.14.6` (tag `v8.14.6`) through the repo-own
 - Policy: `advisory-only`.
 - Configured command count: `0`.
 
-## Post-Publish Proof
-
-- Public release check: `gh release view v8.14.6`.
-
 ## Install Refresh
 
-- Post-publish install refresh status: `refreshed`.
-- Command: `charness update`
-- Return code: `0`
-- Elapsed seconds: `8.074`
-- Stdout tail: `de to load or
-    refresh charness.
-grok_host_guidance:
-  status: installed
-  manual_action_required: false
-  message: Grok plugin tree is present at `~/.grok/plugins/charness`. List `charness`
-    in `[plugins].enabled` (do not add a marketplace), then restart Grok Build.
-host_next_steps:
-  codex: Codex host install markers are present. Start a new Codex session to load
-    charness.
-  claude: Claude host install markers are present. Restart Claude Code to load or
-    refresh charness.
-  grok: Grok plugin tree is present at `~/.grok/plugins/charness`. List `charness`
-    in `[plugins].enabled` (do not add a marketplace), then restart Grok Build.
-repo_onboarding:
-  status: skipped
-  manual_action_required: false
-  message: null
-  reason: skipped during update unless --target-repo-root is provided
-next_action:
-  kind: restart
-  host: codex
-  status: installed
-  manual_action_required: false
-  message: Codex host install markers are present. Start a new Codex session to load
-    charness.
-  source: codex_host_guidance
-session_staleness:
-  message: Updated plugin caches were rotated. Active Codex/Claude sessions may have
-    stale absolute skill paths injected into their system prompt. Restart those sessions,
-    or re-resolve a stale charness skill path with `python3 /home/hwidong/.agents/src/charness/scripts/adapters/capability_catalog.py
-    resolve-skill-path --repo-root <repo> --skill-id <id> --reported-path <stale>
-    [--marketplace <m> --plugin <p>]`.
-  affected_count: 1`
-- Stderr tail: `STEP: refreshing source checkout
-STEP: refreshing install surface
-STEP: refreshing Codex host cache
-DONE: update complete`
+- Post-publish install refresh: pending final publish verification.
 
 ## Release Runtime
 
 - `requested_review_gate`: 0.007s
-- `cli_skill_surface_gate`: 2.199s
-- `quality_command`: 539.406s
-- `fresh_checkout_probes_resume`: 6.907s
-- `push_create_verify_release`: 483.742s
-- `distinct_channel_verification`: 0.600s
-- `published_notes_audit`: 0.491s
-- `post_publish_install_refresh`: 8.075s
-- `post_publish_installed_readback`: 0.885s
-- `release_observer`: 0.001s
-- `issue_closeout_carrier`: 16.370s
-- `issue_closeout`: 1.504s
-
-## Release Observer Record
-
-- Durable observer record: `charness-artifacts/probe/2026-10-01-v8.14.6-release-observer.json`.
-- Installed readback disposition: `observed`.
-- Verdict ownership: this record embeds `distinct_channel_verification`; it does not declare a second release-success verdict.
+- `cli_skill_surface_gate`: 2.129s
+- `quality_command`: 101.240s
+- `fresh_checkout_probes_initial`: 6.767s
 
 ## Fresh Checkout Probes
 
@@ -162,11 +76,7 @@ DONE: update complete`
 
 ## Issue Closeout
 
-- Issue closeout verification: `state-verified`.
-- GitHub repo: `corca-ai/charness`
-- Issue #886: `CLOSED` (https://github.com/corca-ai/charness/issues/886)
-  - carrier: `direct_post_publish_commit_body`
-  - manual fallback used: `True`
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
@@ -176,5 +86,5 @@ DONE: update complete`
 
 ## Bump Rationale
 
-- Bump: `8.14.5` -> `8.14.6` (`publish-current`).
-> patch, not minor: the muse --json observability repair restores a documented receipt contract with strictly additive receipt detail, and the self-review move is a verbatim relocation; no command, flag, skill, or install surface moved.
+- Bump: `8.14.6` -> `8.14.7` (`patch`).
+> patch: this release repairs existing task-run, review-delivery, inventory, packaging, and completion behavior without changing command compatibility or requiring migration.
