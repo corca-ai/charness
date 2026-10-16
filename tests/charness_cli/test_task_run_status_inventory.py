@@ -230,6 +230,29 @@ def test_unreadable_task_store_enumeration_makes_inventory_partial(
     assert payload["unknown_reasons"] == {}
 
 
+def test_non_directory_and_symlink_task_stores_make_inventory_partial(
+    tmp_path: Path,
+) -> None:
+    keys_root, key_a, key_b = _keys(tmp_path)
+    external_root = tmp_path / "external-key"
+    _write_record(external_root, "outside-lane", _running("outside-lane", _LIVE_PID))
+
+    non_directory_store = key_a / "task-run"
+    non_directory_store.rmdir()
+    non_directory_store.write_text("not a directory", encoding="utf-8")
+
+    symlink_store = key_b / "task-run"
+    symlink_store.rmdir()
+    symlink_store.symlink_to(external_root / "task-run", target_is_directory=True)
+
+    payload = task_run_runtime.running_inventory_for_keys_root(keys_root)
+
+    assert payload["running_count"] == 0
+    assert payload["completeness"] == "partial"
+    assert len(payload["completeness_reasons"]) == 2
+    assert all("task-run store" in reason for reason in payload["completeness_reasons"])
+
+
 def test_nested_private_stores_are_not_double_counted(tmp_path: Path) -> None:
     """A key inside a key and a lane-private runtime are not task-run stores."""
     keys_root, key_a, _key_b = _keys(tmp_path)
