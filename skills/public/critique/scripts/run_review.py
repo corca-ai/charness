@@ -33,6 +33,9 @@ def _load_support() -> Any:
 
 
 SUPPORT = _load_support()
+SEMANTIC_INPUT = SUPPORT.load_module(
+    SCRIPT_DIR / "semantic_review_input.py", "charness_semantic_review_input"
+)
 PACKET = SUPPORT.load_module(SCRIPT_DIR / "run_review_packet.py", "charness_run_review_packet")
 INVOCATION = SUPPORT.load_module(
     SCRIPT_DIR / "run_review_invocation.py", "charness_run_review_invocation"
@@ -135,8 +138,8 @@ def _materialize_semantic_input(
     root: Path, packet: dict[str, Any], run_dir: Path, *, owner: Any = None
 ) -> dict[str, Any]:
     try:
-        return PACKET.materialize_semantic_input(root, packet, run_dir, owner=owner)
-    except PACKET.SemanticInputError as exc:
+        return SEMANTIC_INPUT.materialize_semantic_input(root, packet, run_dir, owner=owner)
+    except SEMANTIC_INPUT.SemanticInputError as exc:
         raise SUPPORT.RunReviewError(exc.code, str(exc), details=exc.details) from exc
 
 
@@ -186,6 +189,7 @@ def main(argv: list[str] | None = None) -> int:
         read_only_boundary_mode=READ_ONLY_BOUNDARY_MODE,
         lifecycle_semantic_input=_lifecycle_semantic_input,
         materialize_semantic_input=_materialize_semantic_input,
+        semantic_review_paths=SEMANTIC_INPUT.semantic_review_paths,
         adapter_name=_adapter_name,
     )
 

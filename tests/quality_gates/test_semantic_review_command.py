@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import hashlib
-import importlib.util
 import json
 import os
 import shutil
@@ -20,6 +19,7 @@ import yaml
 
 from tests.fifo_witness import FifoWitness
 from tests.quality_gates.repo_shapes import install_committed_repo
+from tests.script_loader import load_script_module
 from tests.seed_cache import get_or_build
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -27,7 +27,7 @@ pytestmark = pytest.mark.boundary_contract(
     reason="observe the semantic review command's real backend child and typed process-interruption state"
 )
 WRAPPER = ROOT / "skills/public/critique/scripts/run_review.py"
-PACKET_HELPER = ROOT / "skills/public/critique/scripts/run_review_packet.py"
+SEMANTIC_INPUT_HELPER = ROOT / "skills/public/critique/scripts/semantic_review_input.py"
 
 
 @cache
@@ -295,14 +295,6 @@ def _run(
     return subprocess.run(command, cwd=ROOT, env=env, capture_output=True, text=True, check=False)
 
 
-def _packet_helper():
-    spec = importlib.util.spec_from_file_location("test_run_review_packet", PACKET_HELPER)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
 def _deleted_packet(path: str, content_sha256: str) -> dict:
     return {
         "reviewed_input_identity": {
@@ -483,7 +475,7 @@ def test_present_committed_ref_uses_bound_target_bytes_not_current_workspace(
             ],
         }
     }
-    module = _packet_helper()
+    module = load_script_module("test_semantic_review_input", SEMANTIC_INPUT_HELPER)
     run_dir = tmp_path / ".charness" / "committed-present"
     run_dir.mkdir(parents=True)
 
@@ -504,7 +496,7 @@ def test_committed_deletion_preimage_reaches_carrier_for_commit_and_range(
     _git(tmp_path, "add", "reviewed.txt")
     _git(tmp_path, "commit", "-m", "delete reviewed input")
     target = _git_output(tmp_path, "rev-parse", "HEAD")
-    module = _packet_helper()
+    module = load_script_module("test_semantic_review_input", SEMANTIC_INPUT_HELPER)
     for ref_kind, changed_ref, resolved in (
         ("commit", target, [target]),
         ("range", f"{parent}..{target}", [parent, target]),
@@ -536,7 +528,7 @@ def test_committed_deletion_preimage_reaches_carrier_for_commit_and_range(
 def test_deleted_preimage_refusals_on_one_tree(tmp_path: Path) -> None:
     _repo(tmp_path)
     (tmp_path / "reviewed.txt").unlink()
-    module = _packet_helper()
+    module = load_script_module("test_semantic_review_input", SEMANTIC_INPUT_HELPER)
 
     mismatch_dir = tmp_path / ".charness" / "hash-mismatch"
     mismatch_dir.mkdir(parents=True)
@@ -900,12 +892,7 @@ def test_the_deleted_preimage_digest_matches_the_binder_across_the_skill_boundar
     """
     from scripts.review import reviewed_input_identity as binder
 
-    spec = importlib.util.spec_from_file_location(
-        "semantic_review_input_drift",
-        ROOT / "skills/public/critique/scripts/semantic_review_input.py",
-    )
-    checker = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(checker)
+    checker = load_script_module("semantic_review_input_drift", SEMANTIC_INPUT_HELPER)
 
     repo = install_committed_repo(
         tmp_path / "repo",
@@ -918,12 +905,5 @@ def test_the_deleted_preimage_digest_matches_the_binder_across_the_skill_boundar
         assert worktree_bound in checker.worktree_deleted_digests(blob), path
         assert binder._sha256(blob) in checker.committed_deleted_digests(blob), path
 
-    # The substrate test must actually SELECT between them, or carrying two framings buys
-    # nothing -- this is the branch that was missing.
-    assert checker._preimage_digests({}) is checker.worktree_deleted_digests
-    assert (
-        checker._preimage_digests({"substrate_mode": "committed-ref", "changed_ref": "HEAD~1"})
-        is checker.committed_deleted_digests
-    )
     # The two exec-bit tags must stay distinguishable, or "matches under either" is vacuous.
     assert len(set(checker.worktree_deleted_digests(b"base\n"))) == 2

@@ -105,6 +105,7 @@ def test_live_runner_disposes_terminal_failure_without_losing_retry_inputs(tmp_p
         carrier_module=carrier, script_dir=SCRIPT_ROOT, read_only_boundary_mode="read-only",
         lifecycle_semantic_input=lambda x: x,
         materialize_semantic_input=lambda *args, **kwargs: {},
+        semantic_review_paths=lambda _packet: ([], []),
         adapter_name=lambda *args: "adapter.yaml",
     )
     assert result == (1 if fault == "identity" else 2)

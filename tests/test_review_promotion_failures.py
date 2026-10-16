@@ -249,20 +249,13 @@ def test_packet_preparation_preserves_followup_range_and_reports_producer_failur
     assert caught.value.details["stderr"] == "producer failed"
 
 
-def test_packet_loader_failures_and_prompt_carrier_mismatch_are_typed(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    monkeypatch.setattr(PACKET.importlib.util, "spec_from_file_location", lambda *_a, **_k: None)
-    with pytest.raises(RuntimeError, match="semantic review input"):
-        PACKET._load_semantic_input()
-    with pytest.raises(RuntimeError, match="follow-up scope"):
-        PACKET._load_followup_scope()
-
+def test_prompt_carrier_mismatch_is_refused(tmp_path: Path) -> None:
     packet = _packet_payload()
     with pytest.raises(ValueError, match="carriers do not exactly match"):
         PACKET.write_prompt(
             tmp_path / "prompt.md",
             packet,
+            semantic_review_paths=RUN_REVIEW.SEMANTIC_INPUT.semantic_review_paths,
             scope="scope",
             lens="lens",
             semantic_input={"entries": []},
@@ -273,14 +266,14 @@ def test_run_review_helper_boundaries_preserve_typed_semantic_errors(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     assert RUN_REVIEW._adapter_name(tmp_path, {"path": "../outside.yaml"}) == "../outside.yaml"
-    semantic_error = RUN_REVIEW.PACKET.SemanticInputError(
+    semantic_error = RUN_REVIEW.SEMANTIC_INPUT.SemanticInputError(
         "preimage-unavailable", "pre-image unavailable", details={"path": "deleted.txt"}
     )
 
     def fail_materialize(*_args, **_kwargs):  # noqa: ANN002, ANN003
         raise semantic_error
 
-    monkeypatch.setattr(RUN_REVIEW.PACKET, "materialize_semantic_input", fail_materialize)
+    monkeypatch.setattr(RUN_REVIEW.SEMANTIC_INPUT, "materialize_semantic_input", fail_materialize)
     with pytest.raises(SUPPORT.RunReviewError) as caught:
         RUN_REVIEW._materialize_semantic_input(tmp_path, {}, tmp_path / "run")
     assert caught.value.code == "preimage-unavailable"

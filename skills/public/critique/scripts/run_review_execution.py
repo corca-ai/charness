@@ -19,6 +19,7 @@ def run_live(  # noqa: C901, PLR0915
     read_only_boundary_mode: str,
     lifecycle_semantic_input: Any,
     materialize_semantic_input: Any,
+    semantic_review_paths: Any,
     adapter_name: Any,
 ) -> int:  # noqa: C901, PLR0915
     """Run a reviewer and retain every terminal carrier, including failures."""
@@ -102,6 +103,7 @@ def run_live(  # noqa: C901, PLR0915
         capability_sha = decision.envelope_sha256
         packet.write_prompt(
             paths["prompt"], packet_payload, scope=args.scope, lens=args.lens,
+            semantic_review_paths=semantic_review_paths,
             goal_lineage=goal_lineage,
             semantic_input=semantic_input,
             expected_targets=getattr(args, "expected_target", None),

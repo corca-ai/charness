@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import hashlib
-import importlib.util
 import json
 import re
 import sys
@@ -33,35 +32,6 @@ REFUSAL_DETAIL_FIELDS = (
     "max_bytes",
     "substrate_mode",
 )
-
-
-def _load_semantic_input() -> Any:
-    path = Path(__file__).with_name("semantic_review_input.py")
-    spec = importlib.util.spec_from_file_location("charness_semantic_review_input", path)
-    if spec is None or spec.loader is None:
-        raise RuntimeError(f"cannot load semantic review input helper: {path}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-def _load_followup_scope() -> Any:
-    path = Path(__file__).with_name("followup_scope_consumer.py")
-    spec = importlib.util.spec_from_file_location("charness_followup_scope_consumer", path)
-    if spec is None or spec.loader is None:
-        raise RuntimeError(f"cannot load follow-up scope consumer: {path}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-SEMANTIC_INPUT = _load_semantic_input()
-FOLLOWUP_SCOPE = _load_followup_scope()
-MAX_PREIMAGE_BYTES = SEMANTIC_INPUT.MAX_PREIMAGE_BYTES
-MAX_SEMANTIC_INPUT_BYTES = SEMANTIC_INPUT.MAX_SEMANTIC_INPUT_BYTES
-SemanticInputError = SEMANTIC_INPUT.SemanticInputError
-materialize_semantic_input = SEMANTIC_INPUT.materialize_semantic_input
-_semantic_review_paths = SEMANTIC_INPUT.semantic_review_paths
 
 
 def _semantic_input_refusal(
@@ -231,7 +201,10 @@ def read_packet(
     _semantic_input_refusal(support, root, payload, packet)
     identity = payload.get("reviewed_input_identity")
     reviewed_paths = identity.get("reviewed_paths", []) if isinstance(identity, dict) else []
-    FOLLOWUP_SCOPE.refuse_if_unbound(support, payload, reviewed_paths)
+    followup_scope = support.load_module(
+        Path(__file__).with_name("followup_scope_consumer.py"), "charness_followup_scope_consumer"
+    )
+    followup_scope.refuse_if_unbound(support, payload, reviewed_paths)
     identity_sha = identity.get("identity_sha256") if isinstance(identity, dict) else None
     if not isinstance(identity_sha, str) or not re.fullmatch(r"[0-9a-f]{64}", identity_sha):
         raise support.RunReviewError("packet-invalid", "packet-file has no valid reviewed input identity")
@@ -297,6 +270,7 @@ def write_prompt(
     path: Path,
     packet: dict[str, Any],
     *,
+    semantic_review_paths: Any,
     scope: str,
     lens: str,
     goal_lineage: dict[str, Any] | None = None,
@@ -304,7 +278,7 @@ def write_prompt(
     expected_targets: Sequence[str] | None = None,
     reviewer_tier: str | None = None,
 ) -> None:
-    readable_paths, deleted_paths = _semantic_review_paths(packet)
+    readable_paths, deleted_paths = semantic_review_paths(packet)
     semantic_lines = [
         "Every explicitly declared `--reviewed-path` and every auto-bound path below is semantic review input.",
         "The packet owns identity and provenance; the inline payload below carries the identity-checked semantic bytes.",
