@@ -27,10 +27,12 @@ SCRIPT = "scripts/mutation/release_changed_line_coverage.py"
 
 
 @pytest.fixture()
-def gate():
+def gate(monkeypatch):
     from tests.script_loader import load_script_module
 
-    return load_script_module("release_changed_line_coverage_under_test", ROOT / SCRIPT)
+    module = load_script_module("release_changed_line_coverage_under_test", ROOT / SCRIPT)
+    monkeypatch.setattr(module, "staged_invisible_pool_changes", lambda *_args: [])
+    return module
 
 
 def _recommendation(**overrides) -> dict:
