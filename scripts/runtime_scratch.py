@@ -175,7 +175,7 @@ def observe_owner_lock(lock_path: Path) -> bool | None:
     basis.
     """
     try:
-        handle = lock_path.open("a+")
+        handle = lock_path.open("r")
     except OSError:
         return None
     try:
@@ -183,12 +183,10 @@ def observe_owner_lock(lock_path: Path) -> bool | None:
             return None
         try:
             fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except (BlockingIOError, OSError):
+        except BlockingIOError:
             return True
-        try:
-            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
         except OSError:
-            pass
+            return None
         return False
     finally:
         handle.close()
