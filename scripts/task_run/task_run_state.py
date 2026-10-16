@@ -66,14 +66,17 @@ _SELF_REVIEW_KIND = "charness.task_self_review.v1"
 _SELF_REVIEW_SCHEMA = {
     "type": "object",
     "properties": {
-        "kind": {"enum": [_SELF_REVIEW_KIND]},
+        "kind": {"type": "string", "enum": [_SELF_REVIEW_KIND]},
         "findings": {
             "type": "array",
             "items": {
                 "type": "object",
                 "properties": {
                     "summary": {"type": "string"},
-                    "disposition": {"enum": list(SELF_REVIEW_DISPOSITIONS)},
+                    "disposition": {
+                        "type": "string",
+                        "enum": list(SELF_REVIEW_DISPOSITIONS),
+                    },
                     "evidence": {"type": "array", "items": {"type": "string"}},
                 },
                 "required": ["summary", "disposition", "evidence"],
