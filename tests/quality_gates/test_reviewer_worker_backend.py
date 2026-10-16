@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -384,3 +385,24 @@ def test_runtime_delegates_backend_construction_execution_and_normalization() ->
         assert f"def {symbol}" not in runtime_source
         assert f"def {symbol}" in backend_source
     assert "execute_backend(" in runtime_source
+
+
+def test_owned_runner_refuses_hardlinked_input_and_inode_aliasing(tmp_path: Path) -> None:
+    owner_dir = tmp_path / "owner"
+    owner_dir.mkdir()
+    outside = tmp_path / "outside.txt"
+    outside.write_text("outside bytes\n", encoding="utf-8")
+    linked = owner_dir / "prompt.md"
+    os.link(outside, linked)
+    owner = SimpleNamespace(path=owner_dir.resolve())
+    with pytest.raises(ValueError, match="hardlinked"):
+        runner_support.resolve_runner_path(tmp_path, linked, label="prompt file", owner=owner)
+    first = owner_dir / "a.txt"
+    second = owner_dir / "b.txt"
+    first.write_text("shared\n", encoding="utf-8")
+    os.link(first, second)
+    with pytest.raises(ValueError, match="distinct files"):
+        runner_support.require_distinct_runner_paths((first.resolve(), second.resolve()))
+    third = owner_dir / "c.txt"
+    third.write_text("other\n", encoding="utf-8")
+    runner_support.require_distinct_runner_paths((first.resolve(), third.resolve()))
