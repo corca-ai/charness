@@ -8,6 +8,7 @@ live Codex or Muse behavior.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import subprocess
 import sys
@@ -43,17 +44,22 @@ def test_guard_queue_delivery_precedes_resumed_fake_executor_edit(tmp_path: Path
     """The lower-level harness sees transcript-before-next-invocation-edit."""
     repo = _repo(tmp_path)
     base_sha = _git(repo, "rev-parse", "HEAD").stdout.strip()
-    runtime = tmp_path / "runtime"
+    runtime = tmp_path / "runtime with spaces"
     runtime.mkdir()
     stdout_log = runtime / "codex.stdout.log"
     stderr_log = runtime / "codex.stderr.log"
     queue = runtime / "steer.queue.jsonl"
     order_log = tmp_path / "order.log"
+    invocations_log = tmp_path / "invocations.jsonl"
+    writable_dirs = (tmp_path / "first grant directory", tmp_path / "second grant directory")
     fake = tmp_path / "fake-codex"
     fake.write_text(
         f"#!{sys.executable}\n"
         "import json, os, pathlib, sys\n"
         "args = sys.argv[1:]\n"
+        "prompt = sys.stdin.read()\n"
+        "with pathlib.Path(os.environ['INVOCATIONS_LOG']).open('a') as handle:\n"
+        "    handle.write(json.dumps({'executable': sys.argv[0], 'args': args, 'cwd': os.getcwd(), 'prompt': prompt}) + '\\n')\n"
         "output = pathlib.Path(args[args.index('--output-last-message') + 1])\n"
         "if 'resume' not in args:\n"
         f"    queue = pathlib.Path({str(queue)!r})\n"
@@ -64,10 +70,12 @@ def test_guard_queue_delivery_precedes_resumed_fake_executor_edit(tmp_path: Path
         "'disposition': 'accepted', 'reason_code': None, 'resume_path': None}) + '\\n')\n"
         "    output.write_text('first turn\\n')\n"
         "else:\n"
-        "    prompt = sys.stdin.read()\n"
         f"    transcript = pathlib.Path({str(stderr_log)!r}).read_text()\n"
-        "    pathlib.Path(os.environ['ORDER_LOG']).write_text("
-        "('transcript-before-edit\\n' if 'STEER [message-1]' in transcript else 'missing-steer\\n') + prompt)\n"
+        "    with pathlib.Path(os.environ['ORDER_LOG']).open('a') as handle:\n"
+        "        handle.write(('transcript-before-edit\\n' if 'STEER [message-' in transcript else 'missing-steer\\n') + prompt + '\\n')\n"
+        "    if len(pathlib.Path(os.environ['INVOCATIONS_LOG']).read_text().splitlines()) == 2:\n"
+        f"        with pathlib.Path({str(queue)!r}).open('a') as handle:\n"
+        "            handle.write(json.dumps({'kind': 'charness.task_steer.v1', 'message_id': 'message-2', 'task_id': 'lane-1', 'message': 'Keep the output path stable.', 'queued_at': '2026-09-24T00:00:01Z', 'delivered_at': None, 'disposition': 'accepted', 'reason_code': None, 'resume_path': None}) + '\\n')\n"
         f"    pathlib.Path({str(repo / 'module.py')!r}).write_text('VALUE = 2\\n')\n"
         "    print(json.dumps({'type': 'item.completed', 'item': {'type': 'agent_message', 'text': 'TESTING'}}), flush=True)\n"
         "    output.write_text('resumed turn\\n')\n",
@@ -77,10 +85,10 @@ def test_guard_queue_delivery_precedes_resumed_fake_executor_edit(tmp_path: Path
     command = task_run_lane_runner.lane_command(
         executor="codex",
         executable=str(fake),
-        effort="medium",
+        effort="xhigh",
         prompt="Implement the lane request.",
         execution_runtime_path=runtime,
-        writable_dirs=(),
+        writable_dirs=writable_dirs,
         worktree=repo,
     )
     watch = task_run_progress.build_progress_watch(
@@ -95,7 +103,11 @@ def test_guard_queue_delivery_precedes_resumed_fake_executor_edit(tmp_path: Path
         command,
         prompt="Implement the lane request.",
         target_path=repo,
-        configured_env={**os.environ, "ORDER_LOG": str(order_log)},
+        configured_env={
+            **os.environ,
+            "ORDER_LOG": str(order_log),
+            "INVOCATIONS_LOG": str(invocations_log),
+        },
         stdout_log=stdout_log,
         stderr_log=stderr_log,
         timeout_seconds=5,
@@ -106,13 +118,43 @@ def test_guard_queue_delivery_precedes_resumed_fake_executor_edit(tmp_path: Path
     assert execution["exit_code"] == 0
     assert (repo / "module.py").read_text(encoding="utf-8") == "VALUE = 2\n"
     order = order_log.read_text(encoding="utf-8")
-    assert order.startswith("transcript-before-edit\n")
+    assert order.count("transcript-before-edit\n") == 2
     assert "Keep the public API stable." in order
+    assert "Keep the output path stable." in order
+    invocations = [
+        json.loads(line) for line in invocations_log.read_text(encoding="utf-8").splitlines()
+    ]
+    assert len(invocations) == 3
+    assert invocations[0]["args"] == command[1:]
+    runtime_options_start = command.index("--json")
+    expected_resume = [
+        *command[:runtime_options_start],
+        "resume",
+        "session-1",
+        *command[runtime_options_start:],
+    ]
+    assert invocations[1]["args"] == expected_resume[1:]
+    assert invocations[2]["args"] == expected_resume[1:]
+    assert all(item["executable"] == str(fake) for item in invocations)
+    assert all(item["cwd"] == str(repo) for item in invocations)
+    assert invocations[0]["prompt"] == "Implement the lane request."
+    assert "Keep the public API stable." in invocations[1]["prompt"]
+    assert "Keep the output path stable." in invocations[2]["prompt"]
+    for item in invocations:
+        args = item["args"]
+        add_dir_values = [
+            args[index + 1] for index, value in enumerate(args) if value == "--add-dir"
+        ]
+        assert add_dir_values == [str(path.resolve()) for path in writable_dirs]
+        assert args[args.index("--output-last-message") + 1] == str(
+            runtime / "codex.last-message.txt"
+        )
+        assert args[-1] == "-"
     messages = execution["steer_messages"]
-    assert len(messages) == 1
-    assert messages[0]["queued_at"] and messages[0]["delivered_at"]
-    assert messages[0]["disposition"] == "accepted"
-    assert messages[0]["resume_path"] == "session-resume"
+    assert len(messages) == 2
+    assert all(message["queued_at"] and message["delivered_at"] for message in messages)
+    assert all(message["disposition"] == "accepted" for message in messages)
+    assert all(message["resume_path"] == "session-resume" for message in messages)
 
 
 def test_progress_poll_records_timestamped_typed_envelopes(tmp_path: Path) -> None:
@@ -523,8 +565,21 @@ def test_load_train_lib_inserts_missing_repo_root(monkeypatch) -> None:
     assert sys.path[0] == str(repo)
 
 
-def test_steered_invocation_uses_resume_when_available_and_falls_back_in_place() -> None:
-    initial = ["codex", "exec", "--output-last-message", "/tmp/last.txt", "-"]
+def test_steered_invocation_preserves_complete_codex_command_and_fallback(
+    tmp_path: Path,
+) -> None:
+    runtime = tmp_path / "runtime with spaces"
+    runtime.mkdir()
+    writable_dirs = (tmp_path / "first grant directory", tmp_path / "second grant directory")
+    initial = task_run_lane_runner.lane_command(
+        executor="codex",
+        executable="codex",
+        effort="xhigh",
+        prompt="Original prompt.",
+        execution_runtime_path=runtime,
+        writable_dirs=writable_dirs,
+        worktree=tmp_path,
+    )
     message = {
         "message_id": "m-1",
         "queued_at": "2026-09-24T00:00:00Z",
@@ -534,7 +589,13 @@ def test_steered_invocation_uses_resume_when_available_and_falls_back_in_place()
     resumed, prompt, path = task_run_lane_runner.steered_lane_invocation(
         "codex", initial, "Original prompt.", [message], "session-1"
     )
-    assert resumed[2:4] == ["resume", "session-1"]
+    runtime_options_start = initial.index("--json")
+    assert resumed == [
+        *initial[:runtime_options_start],
+        "resume",
+        "session-1",
+        *initial[runtime_options_start:],
+    ]
     assert "Keep names stable." in prompt
     assert path == "session-resume"
 
@@ -543,6 +604,37 @@ def test_steered_invocation_uses_resume_when_available_and_falls_back_in_place()
     )
     assert relaunched == initial
     assert path == "relaunch-in-place"
+
+
+def test_steered_muse_invocation_keeps_command_and_updates_prompt_file(
+    tmp_path: Path,
+) -> None:
+    runtime = tmp_path / "runtime"
+    initial = task_run_lane_runner.lane_command(
+        executor="muse",
+        executable="muse",
+        effort="medium",
+        prompt="Original prompt.",
+        execution_runtime_path=runtime,
+        writable_dirs=(),
+        worktree=tmp_path,
+    )
+    message = {
+        "message_id": "muse-1",
+        "queued_at": "2026-09-24T00:00:00Z",
+        "message": "Keep the prompt file current.",
+    }
+
+    resumed, prompt, path = task_run_lane_runner.steered_lane_invocation(
+        "muse", initial, "Original prompt.", [message], "muse-session"
+    )
+
+    assert resumed == initial
+    assert Path(initial[initial.index("--prompt-file") + 1]).read_text(
+        encoding="utf-8"
+    ) == prompt
+    assert "Keep the prompt file current." in prompt
+    assert path == "session-resume"
 
 
 def test_enqueue_steer_records_reason_and_actor(tmp_path: Path) -> None:
