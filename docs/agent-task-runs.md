@@ -141,6 +141,38 @@ Status reads the external result store. Each record adds read-time `liveness`
 (`runner_pid` and advisory `alive`); a dead pid on a `running` record is stale,
 while a live pid on a terminal record is normal during retention.
 
+### Aggregate running-task inventory
+
+An admission consumer (parallel fan-out deciding whether another lane may
+start) needs the canonical running count across repos and parent worktrees,
+independent of task-id prefix. The canonical owner exposes one explicit
+aggregate scope for exactly that: `task_status(..., all_repos=True)` in
+`scripts/task_run/task_run_runtime.py`, served by `cmd_task_status` with
+`all_repos` (CLI spelling `--all-repos`; the one-line parser wiring in the
+root entry is residual work owned by primary integration, so this page states
+no runnable `charness` carrier for it until that lands).
+
+The boundary comes from the existing runtime owner: this repo's key under
+`<base>/charness/runtime` (`scripts/runtime_bootstrap.py`, `keys_root_of` in
+`scripts/gates_support/runtime_root_retention.py`). Only the immediate sibling
+keys' top-level `task-run/*/result.json` stores are read, each with the
+canonical `runner_liveness` check; nested keys under `xdg-cache` and
+lane-private `runtime/` dirs are never recursed, so one task is never
+double-counted. A custom standalone runtime root has no sibling keys, so the
+inventory honestly narrows to `scope: single-runtime-root` with its limitation
+stated; `machine_global` is always false, never a whole-machine claim.
+
+Classification is canonical: `running` with a live runner counts;
+terminal-with-live-runner is normal retention and does not count; `running`
+with a dead runner is `stale`. Records that cannot be classified (unreadable,
+malformed, missing, or `running` with no confirmable runner) return as
+`unknown` with a typed `reason_code` and force `completeness: partial`, so a
+partial inventory can never read as zero capacity use. Entries carry only
+identity, repo, runtime, phase, and liveness; terminal lanes contribute a
+count, never whole records. Status never repairs or rewrites result files;
+an admission consumer must check `completeness` and `running_count` together,
+with no guessed fallback.
+
 Complete schema-bearing JSON/YAML delivery is exposed as `result_delivery.structured`;
 review-lifecycle input is also projected as `reviewer_lifecycle`. Bounded review
 JSON stays reusable as `reviewer_result`, including partial, deferred, blocked,

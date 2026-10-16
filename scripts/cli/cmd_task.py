@@ -39,9 +39,28 @@ from scripts.cli.tool_response import (  # noqa: E402
 )
 
 
+def add_task_status_aggregate_arg(parser: argparse.ArgumentParser) -> None:
+    """Attach the aggregate inventory scope to the existing status parser.
+
+    Defined beside its command body so the one-line wiring in the root entry
+    stays a call; the root entry owns that call.
+    """
+    parser.add_argument(
+        "--all-repos",
+        dest="all_repos",
+        action="store_true",
+        help=(
+            "Report the compact canonical running-task inventory across the "
+            "current managed runtime tree instead of this repo's results."
+        ),
+    )
+
+
 def cmd_task_status(args: argparse.Namespace) -> int:
     repo_root = args.repo_root.resolve()
-    payload = _load_task_run_lib(args).task_status(repo_root, args.task_id)
+    payload = _load_task_run_lib(args).task_status(
+        repo_root, args.task_id, all_repos=bool(getattr(args, "all_repos", False))
+    )
     emit_yaml(payload)
     return 1 if payload.get("status") == "missing" else 0
 
