@@ -19,7 +19,7 @@ from pathlib import Path
 import pytest
 
 from scripts.cli import cmd_task as task_payload
-from scripts.task_run import task_run, task_run_runtime
+from scripts.task_run import task_run, task_run_inventory, task_run_runtime
 
 _LIVE_PID = os.getpid()
 
@@ -81,7 +81,7 @@ def test_two_sibling_keys_with_non_s33_ids_count_together(tmp_path: Path) -> Non
     )
     snapshot = {path: path.read_bytes() for path in (before_a, before_b)}
 
-    payload = task_run_runtime.running_inventory_for_keys_root(keys_root)
+    payload = task_run_inventory.running_inventory_for_keys_root(keys_root)
 
     assert payload["event"] == "task-status-inventory"
     assert payload["scope"] == "managed-runtime-tree"
@@ -164,17 +164,17 @@ def test_live_terminal_stale_and_unknown_are_distinct(
         {"task_id": "future-status", "status": "unexpected-state", "runner_pid": live_pid},
     )
 
-    payload = task_run_runtime.running_inventory_for_keys_root(keys_root)
+    payload = task_run_inventory.running_inventory_for_keys_root(keys_root)
 
     assert payload["running_count"] == 1
     assert [task["task_id"] for task in payload["running_tasks"]] == ["live-lane"]
     assert payload["terminal_count"] == 4
     assert payload["stale_count"] == 1
     assert payload["unknown_reasons"] == {
-        task_run_runtime.UNKNOWN_MALFORMED: 2,
-        task_run_runtime.UNKNOWN_RUNNER_UNCONFIRMED: 1,
-        task_run_runtime.UNKNOWN_STATUS: 1,
-        task_run_runtime.UNKNOWN_UNREADABLE: 1,
+        task_run_inventory.UNKNOWN_MALFORMED: 2,
+        task_run_inventory.UNKNOWN_RUNNER_UNCONFIRMED: 1,
+        task_run_inventory.UNKNOWN_STATUS: 1,
+        task_run_inventory.UNKNOWN_UNREADABLE: 1,
     }
     # The archive has no canonical result record, so it contributes no unknown.
     assert payload["unknown_count"] == 5
@@ -199,10 +199,10 @@ def test_result_disappearing_after_enumeration_stays_unknown(
 
     monkeypatch.setattr(Path, "read_text", disappear)
 
-    entry = task_run_runtime.inventory_entry_for_result(result, tmp_path / "key")
+    entry = task_run_inventory.inventory_entry_for_result(result, tmp_path / "key")
 
     assert entry["inventory_state"] == "unknown"
-    assert entry["reason_code"] == task_run_runtime.UNKNOWN_RECORD_MISSING
+    assert entry["reason_code"] == task_run_inventory.UNKNOWN_RECORD_MISSING
 
 
 def test_unreadable_task_store_enumeration_makes_inventory_partial(
@@ -220,7 +220,7 @@ def test_unreadable_task_store_enumeration_makes_inventory_partial(
 
     monkeypatch.setattr(os, "scandir", fail_store)
 
-    payload = task_run_runtime.running_inventory_for_keys_root(keys_root)
+    payload = task_run_inventory.running_inventory_for_keys_root(keys_root)
 
     assert payload["running_count"] == 0
     assert payload["unknown_count"] == 0
@@ -245,7 +245,7 @@ def test_non_directory_and_symlink_task_stores_make_inventory_partial(
     symlink_store.rmdir()
     symlink_store.symlink_to(external_root / "task-run", target_is_directory=True)
 
-    payload = task_run_runtime.running_inventory_for_keys_root(keys_root)
+    payload = task_run_inventory.running_inventory_for_keys_root(keys_root)
 
     assert payload["running_count"] == 0
     assert payload["completeness"] == "partial"
@@ -265,14 +265,14 @@ def test_nested_private_stores_are_not_double_counted(tmp_path: Path) -> None:
         json.dumps(_running("outer-lane", _LIVE_PID)), encoding="utf-8"
     )
 
-    payload = task_run_runtime.running_inventory_for_keys_root(keys_root)
+    payload = task_run_inventory.running_inventory_for_keys_root(keys_root)
 
     assert payload["running_count"] == 1
 
 
 def test_all_repos_rejects_a_task_id_without_touching_git() -> None:
     with pytest.raises(task_run.TaskRunError, match="--all-repos cannot be combined"):
-        task_run_runtime.task_status(Path("/nonexistent"), "some-id", all_repos=True)
+        task_run_inventory.task_status(Path("/nonexistent"), "some-id", all_repos=True)
 
 
 def test_explicit_standalone_root_states_its_limitation(
@@ -285,7 +285,7 @@ def test_explicit_standalone_root_states_its_limitation(
         task_run_runtime._git_owner, "_require_git_root", lambda root: Path(root).resolve()
     )
 
-    payload = task_run_runtime.task_status(tmp_path, all_repos=True)
+    payload = task_run_inventory.task_status(tmp_path, all_repos=True)
 
     assert payload["scope"] == "single-runtime-root"
     assert payload["keys_root"] is None
@@ -306,7 +306,7 @@ def test_managed_wrapper_carries_repo_and_runtime(
         task_run_runtime._git_owner, "_require_git_root", lambda root: Path(root).resolve()
     )
 
-    payload = task_run_runtime.task_status(tmp_path, all_repos=True)
+    payload = task_run_inventory.task_status(tmp_path, all_repos=True)
 
     assert payload["keys_root"] == str(keys_root)
     assert payload["runtime_root"] == str(key_a)
