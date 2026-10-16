@@ -174,13 +174,13 @@ def test_task_status_reads_the_self_review_receipt(tmp_path: Path, monkeypatch: 
     assert status["self_review"] == block
 
 
-def test_run_task_rejects_unknown_self_review_policy(tmp_path: Path) -> None:
+def test_run_task_rejects_retired_auto_self_review_policy(tmp_path: Path) -> None:
     result = task_run.run_task(
-        tmp_path, scopes=["module.py"], prompt="Review this candidate.", self_review_policy="disabled"
+        tmp_path, scopes=["module.py"], prompt="Review this candidate.", self_review_policy="auto"
     )
 
     assert result["status"] == "fail"
-    assert "self_review_policy must be auto or always" in result["error"]
+    assert "self_review_policy must be never or always" in result["error"]
 
 
 def test_self_review_runs_a_read_only_codex_pass_and_records_findings(tmp_path: Path) -> None:
@@ -221,20 +221,29 @@ def test_self_review_runs_a_read_only_codex_pass_and_records_findings(tmp_path: 
     assert block["findings"]["deferred"][0]["evidence"] == ["src/module.py:4"]
 
 
-def test_auto_policy_runs_for_boundary_signals_and_stays_off_for_ordinary_lanes() -> None:
-    no_persistence_risk = {"findings": [], "blocking": False}
+def test_default_policy_skips_gateway_path_and_push_prompt(tmp_path: Path) -> None:
+    marker = tmp_path / "review-ran"
+    executable = tmp_path / "codex"
+    executable.write_text(
+        f"#!/bin/sh\ntouch '{marker}'\ncat >/dev/null\nprintf '{{}}\\n'\n", encoding="utf-8"
+    )
+    executable.chmod(0o755)
 
-    assert not task_run_state.self_review_requested(
-        "auto", "Update a local helper.", ["src/helper.py"], ["src/helper.py"], no_persistence_risk
+    block = task_run_execution.run_self_review(
+        {
+            "_self_review_prompt": "Push this branch to origin after the change.",
+            "executor": {"kind": "codex", "command": [str(executable)], "timeout_seconds": 30},
+            "scopes": ["gateway/lease.py"],
+            "candidate": {"changed_paths": ["gateway/lease.py"]},
+            "persistence": {"findings": [], "blocking": False},
+            "base_sha": "base-sha",
+            "execution_runtime_root": str(tmp_path / "runtime"),
+            "worktree_path": str(tmp_path),
+        }
     )
-    assert task_run_state.self_review_requested(
-        "auto", "Push this branch to origin after the change.", ["src/helper.py"],
-        ["src/helper.py"], no_persistence_risk
-    )
-    assert task_run_state.self_review_requested(
-        "auto", "Update a local helper.", ["src/store.py"], ["src/store.py"],
-        {"findings": [{"shape": "unscoped-delete"}], "blocking": True}
-    )
+
+    assert block["state"] == "not-requested"
+    assert not marker.exists()
 
 
 def test_self_review_module_imports_before_execution() -> None:

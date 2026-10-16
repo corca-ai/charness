@@ -30,15 +30,11 @@ def run_self_review(payload: dict[str, Any]) -> dict[str, Any]:
     candidate = payload.get("candidate")
     candidate = candidate if isinstance(candidate, Mapping) else {}
     changed_paths = candidate.get("changed_paths") or []
-    persistence = payload.get("persistence")
-    persistence = persistence if isinstance(persistence, Mapping) else {}
     policy = str(payload.get("self_review_policy", "never"))
-    scopes = payload.get("scopes", [])
-    if not isinstance(scopes, list):
-        scopes = []
-    if not task_run_state.self_review_requested(policy, prompt, scopes, changed_paths, persistence):
-        reason = "self-review is disabled for this invocation" if policy == "never" else "no irreversible-boundary signal; use --self-review to opt in"
-        return task_run_state.self_review_block("not-requested", reason=reason)
+    if policy != "always":
+        return task_run_state.self_review_block(
+            "not-requested", reason="self-review is disabled for this invocation"
+        )
     executor_info = payload.get("executor")
     executor_info = executor_info if isinstance(executor_info, Mapping) else {}
     if executor_info.get("kind") != "codex":

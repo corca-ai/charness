@@ -1865,8 +1865,8 @@ def build_parser() -> argparse.ArgumentParser:
         dest="self_review_policy",
         action="store_const",
         const="always",
-        default="auto",
-        help="Run self-review for every lane; irreversible-boundary lanes are reviewed automatically.",
+        default="never",
+        help="Run an explicit read-only self-review pass; findings do not provide approval.",
     )
     task_run_parser.add_argument(
         "--critical-lane",

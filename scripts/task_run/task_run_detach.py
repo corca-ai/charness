@@ -151,7 +151,7 @@ def _mode_argv(args: argparse.Namespace) -> list[str]:
     ):
         if getattr(args, flag[0], False):
             argv.append(flag[1])
-    if getattr(args, "self_review_policy", "auto") == "always":
+    if getattr(args, "self_review_policy", "never") == "always":
         argv.append("--self-review")
     if args.acceptance_skeleton is not None:
         argv += ["--acceptance-skeleton", args.acceptance_skeleton]
