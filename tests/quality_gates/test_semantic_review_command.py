@@ -168,15 +168,11 @@ if sleep_for:
     child = subprocess.Popen([sys.executable, "-c", child_source])
     time.sleep(sleep_for)
 prompt = sys.stdin.read()
-packet = re.search(r"^Packet identity \\(copy exactly\\): ([0-9a-f]{64})$", prompt, re.MULTILINE).group(1)
-reviewed = re.search(r"^Reviewed input identity \\(copy exactly\\): ([0-9a-f]{64})$", prompt, re.MULTILINE).group(1)
 lens = re.search(r"^Lens: (.+)$", prompt, re.MULTILINE).group(1)
 out = Path(sys.argv[sys.argv.index("-o") + 1])
 payload = {
     "kind": "charness.bounded_review.v1",
     "lens": lens,
-    "packet_sha256": packet,
-    "reviewed_input_identity_sha256": reviewed,
     "verdict": os.environ.get("FAKE_REVIEW_VERDICT", "pass"),
     "target_observations": json.loads(os.environ["FAKE_REVIEW_OBSERVATIONS"])
     if os.environ.get("FAKE_REVIEW_OBSERVATIONS")
