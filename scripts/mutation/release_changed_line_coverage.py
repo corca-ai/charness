@@ -90,7 +90,10 @@ REPO_ROOT = repo_root_from_script(__file__)
 from scripts.core.subprocess_guard import run_monitored_phase  # noqa: E402
 from scripts.gates_support import changed_line_run_trust as _trust  # noqa: E402
 from scripts.gates_support import changed_line_verdict_codes as _verdict_codes  # noqa: E402
-from scripts.gates_support.changed_line_staged_head import STAGED_HEAD  # noqa: E402
+from scripts.gates_support.changed_line_staged_head import (  # noqa: E402
+    STAGED_HEAD,
+    staged_invisible_pool_changes,
+)
 from scripts.mutation import mutation_coverage_producer as _producer  # noqa: E402
 from scripts.mutation import suggest_mutation_coverage_command as _suggest  # noqa: E402
 from scripts.mutation.sample_mutation_files import list_eligible  # noqa: E402
@@ -348,6 +351,34 @@ def main(argv: list[str] | None = None) -> int:
         # beside the warning three lines up, which is the whole finding: a lane that
         # analyzed nothing wore the verdict of a lane that analyzed everything.
         return PARTIAL_EXIT
+
+    # The release refusal can reject a known staged-invisible candidate before the
+    # focused producer starts. Keep advisory runs available; the later trust check
+    # below still catches pool edits made while coverage is running.
+    staged_invisible = staged_invisible_pool_changes(
+        repo_root, set(list_eligible(repo_root))
+    )
+    if staged_invisible is None:
+        reason = "could not inspect the worktree for staged-invisible mutation-pool changes"
+        _warn(f"{reason}; no changed-line verdict was rendered. This is NOT a pass.")
+        emit_yaml({"status": "no-verdict", "reason": reason, "base_sha": base_sha})
+        return NO_VERDICT_EXIT
+    if staged_invisible and args.refuse_unestablished:
+        reason = (
+            "coverage production was refused: the staged candidate cannot see "
+            f"{len(staged_invisible)} mutation-pool file(s): {', '.join(staged_invisible)}. "
+            "Update the staged index for those paths and rerun for a verdict."
+        )
+        payload = {
+            "status": UNESTABLISHED_STATUS,
+            "reason": reason,
+            "base_sha": base_sha,
+            "uncommitted_pool_files": staged_invisible,
+        }
+        _warn(f"this run established no changed-line verdict: {reason}")
+        _warn("refusing release: an unestablished changed-line result is not a pass.")
+        emit_yaml(payload)
+        return 1
 
     command = _focused_pytest_command(recommendation)
     coverage_json = (
