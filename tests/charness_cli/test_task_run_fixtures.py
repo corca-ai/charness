@@ -49,28 +49,46 @@ def _codex(
     *,
     deliver: bool = True,
     last_message: str | None = None,
+    capture_last_message: bool = False,
+    record_arguments: bool = False,
 ) -> Path:
     executable = tmp_path / "codex"
-    report = (
-        last_message
-        if last_message is not None
-        else "task complete\n" if deliver else None
-    )
+    report = last_message
+    if report is None and deliver and not capture_last_message:
+        report = "task complete\n"
     output = ""
     if report is not None:
         output = (
             "if [ -n \"$output_path\" ]; then printf '%s' "
             f"{shlex.quote(report)} > \"$output_path\"; fi"
         )
+    if capture_last_message:
+        output = (
+            'if [ -n "$output_path" ]; then cp "$transcript_path" "$output_path"; fi'
+        )
+    record = (
+        f"printf '%s\\n' \"$@\" > {shlex.quote(str(tmp_path / 'args'))}\n"
+        if record_arguments
+        else ""
+    )
     executable.write_text(
         "#!/bin/sh\n"
+        f"{record}"
         "output_path=\n"
         "want_output_path=0\n"
         "for argument do\n"
         "  if [ \"$want_output_path\" = 1 ]; then output_path=$argument; want_output_path=0; "
         "elif [ \"$argument\" = '--output-last-message' ]; then want_output_path=1; fi\n"
         "done\n"
-        f"{body}\n{output}\n",
+        'transcript_path="$(dirname "$0")/last-message.capture"\n'
+        + (
+            f"sh -c {shlex.quote(body)} > \"$transcript_path\"\nstatus=$?\n"
+            "cat \"$transcript_path\"\n"
+            + output
+            + "\nexit $status\n"
+            if capture_last_message
+            else f"{body}\n{output}\n"
+        ),
         encoding="utf-8",
     )
     executable.chmod(0o755)

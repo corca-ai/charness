@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 
 from scripts.task_run import task_run, task_run_execution, task_run_runtime, task_run_self_review
+from tests.charness_cli.test_task_run_fixtures import _codex
 
 
 def test_self_review_findings_are_grouped_by_disposition() -> None:
@@ -171,18 +172,17 @@ def test_run_task_rejects_retired_auto_self_review_policy(tmp_path: Path) -> Non
 
 
 def test_self_review_runs_a_read_only_codex_pass_and_records_findings(tmp_path: Path) -> None:
-    executable = tmp_path / "codex"
-    runtime_root = tmp_path.parent / f"{tmp_path.name}-runtime"
-    executable.write_text(
-        "#!/bin/sh\n"
-        "printf '%s\\n' \"$@\" > \"$(dirname \"$0\")/args\"\n"
-        "cat >/dev/null\n"
-        "printf '%s\\n' '{\"kind\":\"charness.task_self_review.v1\","
-        "\"findings\":[{\"summary\":\"Keep the follow-up visible.\","
-        "\"disposition\":\"deferred\",\"evidence\":[\"src/module.py:4\"]}]}'\n",
-        encoding="utf-8",
+    executable = _codex(
+        tmp_path,
+        "cat >/dev/null",
+        last_message=(
+            '{"kind":"charness.task_self_review.v1",'
+            '"findings":[{"summary":"Keep the follow-up visible.",'
+            '"disposition":"deferred","evidence":["src/module.py:4"]}]}'
+        ),
+        record_arguments=True,
     )
-    executable.chmod(0o755)
+    runtime_root = tmp_path.parent / f"{tmp_path.name}-runtime"
     block = task_run_execution.run_self_review(
         {
             "self_review_policy": "always",

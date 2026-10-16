@@ -11,7 +11,7 @@ import yaml
 import scripts.cli.cmd_task as task_payload
 from scripts.task_run import task_run_attempts, task_run_plan, task_run_runtime, task_run_state
 from tests.charness_cli.support import CLI, load_cli_module
-from tests.charness_cli.test_task_run_fixtures import _repo, _run
+from tests.charness_cli.test_task_run_fixtures import _codex, _repo, _run
 
 
 def _executable(path: Path, contents: str) -> Path:
@@ -133,10 +133,10 @@ def test_usage_limit_falls_from_muse_to_codex(tmp_path: Path, monkeypatch) -> No
         "printf '%s\\n' 'Usage limit reached. Try again after 2099-05-06T07:08:09Z' >&2\n"
         "exit 1",
     )
-    codex = _executable(
-        bindir / "codex",
+    codex = _codex(
+        tmp_path,
         f"printf '%s\\n' codex >> {str(order_log)!r}\n"
-        "cat >/dev/null\nprintf 'VALUE = 2\\n' > module.py\nprintf 'task complete\\n'",
+        "cat >/dev/null\nprintf 'VALUE = 2\\n' > module.py",
     )
     monkeypatch.setenv("PATH", f"{bindir}{os.pathsep}{os.defpath}")
 

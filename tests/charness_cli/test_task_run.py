@@ -142,7 +142,12 @@ def test_execute_codex_records_keyboard_interrupt_and_stops_the_group(
         timeout_seconds=1,
     )
 
-    assert result == {"exit_code": None, "timed_out": False, "interrupted": True}
+    assert {key: result[key] for key in ("exit_code", "timed_out", "interrupted")} == {
+        "exit_code": None,
+        "timed_out": False,
+        "interrupted": True,
+    }
+    assert result["event_log_window"]["byte_count"] == 0
     assert killed == [(31415, signal.SIGKILL)]
 
 

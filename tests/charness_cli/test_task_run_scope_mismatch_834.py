@@ -27,6 +27,7 @@ def test_declared_editing_without_a_diff_does_not_prove_candidate_reversal(tmp_p
         tmp_path,
         'echo "CONTRACT-READ"\necho "EDITING"\necho "TESTING"\n'
         'echo "BLOCKED: scope mismatch - real owner other.py is outside declared scope"',
+        capture_last_message=True,
     )
     payload = _run(repo, tmp_path, executable)
 
