@@ -256,7 +256,8 @@ options:
 ## `charness task status`
 
 ```text
-usage: charness task status [-h] [--repo-root REPO_ROOT] [task_id]
+usage: charness task status [-h] [--repo-root REPO_ROOT] [--all-repos]
+                            [task_id]
 
 positional arguments:
   task_id
@@ -265,6 +266,8 @@ options:
   -h, --help            show this help message and exit
   --repo-root REPO_ROOT
                         Parent repo whose external task-run runtime is read.
+  --all-repos           Report the compact running-task inventory across this
+                        repo's managed runtime tree.
 ```
 
 ## `charness task report`

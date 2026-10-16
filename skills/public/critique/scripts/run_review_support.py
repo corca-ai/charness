@@ -204,19 +204,19 @@ def hold_out(root: Path, relative_paths: list[str]) -> Any:
 
 
 def relative(root: Path, path: Path) -> str:
-    """Repo-relative spelling of a path, WITHOUT following a symlink.
+    """Repo-relative spelling for repo paths and absolute spelling outside it.
 
     `.resolve()` here renamed a declared `latest.md` to whatever record it points
     at, so the declared set carried the target while the range carried the
     pointer and the two could never match. `repo_path` has already proven the
-    path lies inside the root, so resolving again buys nothing and costs the
-    caller's own name for it.
+    source path lies inside the root. External transient paths keep their honest
+    absolute spelling; durable/source paths remain repo-relative.
     """
     absolute = path if path.is_absolute() else root / path
     try:
         return absolute.relative_to(root.resolve()).as_posix()
     except ValueError:
-        return absolute.resolve().relative_to(root.resolve()).as_posix()
+        return str(absolute.resolve())
 
 
 def load_goal_lineage(root: Path, path_value: str | None, *, reason: str) -> dict[str, Any]:
@@ -309,13 +309,12 @@ def select_backend(
 
 
 def new_run_owner(root: Path, attempt: str) -> Any:
-    """Open a repo-local reviewer scratch owner for the worker path contract."""
+    """Open the default external reviewer scratch owner for one attempt."""
     run_id = "review-" + hashlib.sha256(attempt.encode("utf-8")).hexdigest()[:32]
     owner = owned_scratch(
         root,
         "critique-review",
         run_id=run_id,
-        runtime_root_path=root / ".charness",
     )
     try:
         owner.open()

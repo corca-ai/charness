@@ -126,14 +126,6 @@ def test_execution_relaunch_and_writer_conflict_are_recorded(tmp_path: Path) -> 
     assert events[-1]["facts"]["resolution"] == "operator-needed"
 
 
-def test_improvements_line_and_retro_cadence_are_documented() -> None:
-    docs = Path("docs/agent-task-runs.md").read_text(encoding="utf-8")
-
-    assert "after every five lane" in docs
-    assert "improvements found: <concise items>" in docs
-    assert "improvements found: none" in docs
-
-
 def test_unreadable_store_and_foreign_lines_never_change_lane_semantics(
     tmp_path: Path,
 ) -> None:

@@ -253,7 +253,15 @@ def _run(
     scope: str = "semantic command",
     observations: object | None = None,
 ) -> subprocess.CompletedProcess[str]:
-    env = {**os.environ, "PATH": f"{bin_dir}:{os.environ['PATH']}", "FAKE_REVIEW_VERDICT": verdict}
+    runtime = repo.parent / f"{repo.name}-external-runtime"
+    env = {
+        **os.environ,
+        "PATH": f"{bin_dir}:{os.environ['PATH']}",
+        "FAKE_REVIEW_VERDICT": verdict,
+        "CHARNESS_RUNTIME_ROOT": str(runtime),
+    }
+    env.pop("CHARNESS_RUNTIME_ROOT_AUTO", None)
+    env.pop("CHARNESS_RUNTIME_REPO_KEY", None)
     if sleep is not None:
         env["FAKE_REVIEW_SLEEP"] = str(sleep)
     if observations is not None:
@@ -624,6 +632,7 @@ def test_delivered_pass_and_block_are_distinct_from_runner_failure(tmp_path: Pat
     blocked = _payload(
         _run(tmp_path, bin_dir, "delivered-block", verdict="block", packet_file=packet_file)
     )
+    assert not (tmp_path / ".charness" / "scratch").exists()
 
     assert passed["execution_state"] == "terminal"
     assert passed["reviewer_started"] is True
@@ -649,7 +658,7 @@ def test_worker_timeout_keeps_started_and_non_approval_state(tmp_path: Path) -> 
     result = _run(tmp_path, bin_dir, "backend-timeout", sleep=10)
     payload = _payload(result)
 
-    assert result.returncode == 1, result.stderr
+    assert result.returncode == 1, result.stderr + result.stdout
     assert payload["reviewer_started"] is True
     assert payload["delivery_state"] == "timed-out"
     assert payload["verdict_state"] == "not-applicable"
@@ -668,8 +677,9 @@ def test_worker_timeout_keeps_started_and_non_approval_state(tmp_path: Path) -> 
     assert manifest["use_class"] == "diagnostic-retryable"
     assert (durable / "review-prompt.md").is_file()
     assert (durable / "run-plan.json").is_file()
+    assert not (tmp_path / ".charness" / "scratch").exists()
     assert all(
-        not (isinstance(path, str) and path.startswith(".charness/scratch/"))
+        not (isinstance(path, str) and "/scratch/critique-review/" in path)
         for path in payload["paths"].values()
     )
 
@@ -819,13 +829,23 @@ def test_parent_interrupt_returns_typed_state_and_kills_backend_descendant(tmp_p
     bin_dir.mkdir()
     _fake_codex(bin_dir / "codex")
     packet_file = _install_cached_working_tree_packet(tmp_path)
+    runtime = tmp_path.parent / f"{tmp_path.name}-external-runtime"
+    runtime.mkdir()
+    sentinel = runtime / "keep-user-runtime-file.txt"
+    sentinel.write_text("preserve\n", encoding="utf-8")
+    user_change = tmp_path / "user-change.txt"
+    user_change.write_text("candidate-visible\n", encoding="utf-8")
+    run_id = "review-" + hashlib.sha256(b"parent-interrupt").hexdigest()[:32]
     with FifoWitness(tmp_path / "witness") as witness:
         env = {
             **os.environ,
             "PATH": f"{bin_dir}:{os.environ['PATH']}",
             "FAKE_REVIEW_SLEEP": "30",
             "FAKE_REVIEW_WITNESS": str(witness.path),
+            "CHARNESS_RUNTIME_ROOT": str(runtime),
         }
+        env.pop("CHARNESS_RUNTIME_ROOT_AUTO", None)
+        env.pop("CHARNESS_RUNTIME_REPO_KEY", None)
         command = [
             sys.executable,
             str(WRAPPER),
@@ -859,6 +879,11 @@ def test_parent_interrupt_returns_typed_state_and_kills_backend_descendant(tmp_p
         assert payload["delivery_state"] == "interrupted"
         assert payload["approval_eligible"] is False
         witness.wait_eof()
+        assert not (runtime / "scratch" / "critique-review" / run_id).exists()
+        assert sentinel.read_text(encoding="utf-8") == "preserve\n"
+        assert user_change.read_text(encoding="utf-8") == "candidate-visible\n"
+        assert "?? user-change.txt" in _git_output(tmp_path, "status", "--porcelain")
+        assert not (tmp_path / ".charness" / "scratch").exists()
 
 
 def test_the_deleted_preimage_digest_matches_the_binder_across_the_skill_boundary(

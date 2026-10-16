@@ -1693,6 +1693,11 @@ def build_parser() -> argparse.ArgumentParser:
         default=Path.cwd(),
         help="Parent repo whose external task-run runtime is read.",
     )
+    task_status_parser.add_argument(
+        "--all-repos",
+        action="store_true",
+        help="Report the compact running-task inventory across this repo's managed runtime tree.",
+    )
     task_status_parser.add_argument("task_id", nargs="?")
     task_status_parser.set_defaults(func=cmd_task_status)
 

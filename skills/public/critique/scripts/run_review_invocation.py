@@ -24,6 +24,8 @@ def runner_command(
     boundary_sha: str | None,
     expected_targets: Sequence[str] | None = None,
     reviewer_tier: str | None = None,
+    owner_run_id: str,
+    owner_receipt: Path,
 ) -> list[str]:
     """Bind one worker process to the prepared packet and artifact paths.
 
@@ -60,6 +62,8 @@ def runner_command(
         "--stdout-file", relative("backend_stdout"),
         "--stderr-file", relative("backend_stderr"),
         "--run-id", "run-" + attempt,
+        "--owner-run-id", owner_run_id,
+        "--owner-receipt-file", str(owner_receipt),
     ]
     if boundary_sha is not None:
         command.extend(["--boundary-fingerprint", boundary_sha])

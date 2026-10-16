@@ -165,6 +165,43 @@ def _lock_is_active(lock_path: Path) -> bool:
         handle.close()
 
 
+def observe_owner_lock(lock_path: Path) -> bool | None:
+    """Observe whether an owner lock is held without acquiring the lease.
+
+    Returns True when the lock is held, False when it is free, and None
+    when the state cannot be verified.  Unreadable errors are unverifiable
+    here: ``_lock_is_active`` treats them as active for conservative GC,
+    but an authorization decision must not admit external I/O on that
+    basis.
+    """
+    try:
+        handle = lock_path.open("r")
+    except OSError:
+        return None
+    try:
+        if fcntl is None:
+            return None
+        try:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            return True
+        except OSError:
+            return None
+        return False
+    finally:
+        handle.close()
+
+
+def _require_held_owner_lock(lock_path: Path) -> None:
+    """Refuse external I/O unless the owner lock is observably held."""
+    state = observe_owner_lock(lock_path)
+    if state is True:
+        return
+    if state is False:
+        raise ScratchError("owned scratch producer lock is not held")
+    raise ScratchError("owned scratch producer lock cannot be verified")
+
+
 def _pid_is_alive(value: object) -> bool:
     if not isinstance(value, int) or value <= 0:
         return False
@@ -460,6 +497,67 @@ class OwnedScratch:
     def __exit__(self, exc_type: object, exc: object, traceback: object) -> bool:
         self.close(state="failed" if exc_type is not None else "succeeded")
         return False
+
+
+def validate_owned_scratch_reference(
+    repo_root: str | Path,
+    receipt_path: str | Path,
+    *,
+    producer: str,
+    run_id: str,
+    expected_fields: dict[str, Any],
+    runtime_environment: dict[str, str] | None = None,
+) -> tuple[OwnedScratch, dict[str, Any]]:
+    """Validate a live external owner reference without acquiring its lock.
+
+    The caller must already possess the producer lease. This is the read-only
+    proof used by a child runner to admit paths in that exact run directory.
+    """
+    repo = Path(repo_root).expanduser().resolve()
+    expected_runtime_root = runtime_root(repo, runtime_environment)
+    owner = OwnedScratch(
+        repo, producer, run_id=run_id, runtime_root_path=expected_runtime_root
+    )
+    raw_receipt = Path(receipt_path).expanduser()
+    if not raw_receipt.is_absolute() or raw_receipt != owner.receipt_path:
+        raise ScratchError("owner receipt is not the exact default external runtime owner")
+    try:
+        owner.path.relative_to(repo)
+    except ValueError:
+        pass
+    else:
+        raise ScratchError("owned scratch path is inside the reviewed repository")
+
+    current = owner.runtime_root
+    for part in (SCRATCH_DIR_NAME, owner.producer, owner.run_id, OWNER_RECEIPT_NAME):
+        current = current / part
+        if current.is_symlink():
+            raise ScratchError(f"owned scratch reference crosses a symlink: {current}")
+    if not owner.receipt_path.is_file():
+        raise ScratchError("owned scratch receipt is missing or not a regular file")
+    record = _read_owner(owner.receipt_path)
+    if record is None or not _RECEIPT_CORE_FIELDS.issubset(record):
+        raise ScratchError("owned scratch receipt is unreadable or incomplete")
+    if (
+        record.get("schema") != SCHEMA
+        or record.get("owner") != "charness"
+        or record.get("repo_root") != str(repo)
+        or record.get("repo_identity") != _repo_identity(repo)
+        or record.get("producer") != owner.producer
+        or record.get("run_id") != owner.run_id
+    ):
+        raise ScratchError("owned scratch receipt identity does not match this run")
+    if record.get("state") != "active" or record.get("retention") != "scratch":
+        raise ScratchError("owned scratch receipt is not an active disposable run")
+    if not _pid_is_alive(record.get("pid")):
+        raise ScratchError("owned scratch producer process is not alive")
+    if not owner.lock_path.is_file() or owner.lock_path.is_symlink():
+        raise ScratchError("owned scratch producer lock record is missing or unsafe")
+    _require_held_owner_lock(owner.lock_path)
+    for field, expected in expected_fields.items():
+        if record.get(field) != expected:
+            raise ScratchError(f"owned scratch receipt {field} does not match the run plan")
+    return owner, record
 
 
 def owned_scratch(

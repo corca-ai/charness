@@ -9,6 +9,7 @@ exit) are each pinned with the WIP candidate they must or must not commit.
 """
 from __future__ import annotations
 
+import errno
 import json
 import os
 import shlex
@@ -367,6 +368,31 @@ def test_task_status_projects_an_advisory_runner_pid_check(
     monkeypatch.setattr(task_run_runtime.os, "kill", kill_forbidden)
     # Another user's live process answers EPERM, not ESRCH: it exists.
     assert task_run_runtime.runner_liveness({"runner_pid": 1, "phase": "exec"})["alive"] is True
+
+    huge_pid = 1 << 2048
+    invalid_pid = 123
+    probed: list[int] = []
+
+    def kill_invalid(pid: int, sig: int) -> None:
+        probed.append(pid)
+        if pid == huge_pid:
+            raise OverflowError("pid does not fit the OS interface")
+        raise OSError(errno.EINVAL, "invalid pid")
+
+    monkeypatch.setattr(task_run_runtime.os, "kill", kill_invalid)
+    unknown_liveness = {"runner_pid": None, "alive": None}
+    assert task_run_runtime.runner_liveness({"runner_pid": True}) == unknown_liveness
+    assert probed == []
+    assert task_run_runtime.runner_liveness({"runner_pid": huge_pid}) == {
+        "runner_pid": huge_pid,
+        "alive": None,
+    }
+    assert task_run_runtime.runner_liveness({"runner_pid": invalid_pid}) == {
+        "runner_pid": invalid_pid,
+        "alive": None,
+    }
+    assert probed == [huge_pid, invalid_pid]
+
     monkeypatch.setattr(task_run_runtime.os, "kill", kill)
     assert task_run_runtime.runner_liveness({"phase": "exec"}) == {
         "runner_pid": None,

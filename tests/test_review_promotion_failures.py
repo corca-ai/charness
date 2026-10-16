@@ -265,8 +265,6 @@ def test_packet_loader_failures_and_prompt_carrier_mismatch_are_typed(
             packet,
             scope="scope",
             lens="lens",
-            packet_sha="p" * 64,
-            input_sha="i" * 64,
             semantic_input={"entries": []},
         )
 
@@ -535,10 +533,19 @@ def test_failure_carrier_projects_details_when_lifecycle_exists() -> None:
 
 
 def test_promoted_paths_remove_scratch_aliases_and_rebind_partial_artifacts() -> None:
+    run_dir = Path("/tmp/charness-runtime/scratch/critique-review/run-a")
+    runtime_paths = {
+        key: str(run_dir / name)
+        for key, name in (
+            ("report", "report.yaml"),
+            ("ledger", "delivery.json"),
+            ("runner_stderr", "runner.stderr"),
+        )
+    }
     context = {
         "paths": {
-            "report": ".charness/scratch/critique-review/report.yaml",
-            "ledger": ".charness/scratch/critique-review/delivery.json",
+            "report": runtime_paths["report"],
+            "ledger": runtime_paths["ledger"],
             "stable": "charness-artifacts/critique/stable.json",
         }
     }
@@ -547,18 +554,18 @@ def test_promoted_paths_remove_scratch_aliases_and_rebind_partial_artifacts() ->
         "delivery.json": "charness-artifacts/critique/workers/a/delivery.json",
         "runner.stderr": "charness-artifacts/critique/workers/a/runner.stderr",
     }
-    bound = CARRIER.bind_promoted_paths(context, promoted, PROMOTION)
+    bound = CARRIER.bind_promoted_paths(context, promoted, PROMOTION, run_dir=run_dir)
     assert bound["report"] == promoted["worker-report.yaml"]
     assert "runtime_report" not in bound
     assert bound["ledger"] == promoted["delivery.json"]
 
     carrier = {
-        "partial_outputs": [None, {"path": ".charness/scratch/critique-review/runner.stderr"}],
-        "output": {"artifacts": [{"path": ".charness/scratch/critique-review/runner.stderr"}]},
+        "partial_outputs": [None, {"path": runtime_paths["runner_stderr"]}],
+        "output": {"artifacts": [{"path": runtime_paths["runner_stderr"]}]},
     }
     CARRIER.rebind_partial_artifacts(
         carrier,
-        {"runner_stderr": ".charness/scratch/critique-review/runner.stderr"},
+        {"runner_stderr": runtime_paths["runner_stderr"]},
         {"runner_stderr": promoted["runner.stderr"]},
         PROMOTION,
     )

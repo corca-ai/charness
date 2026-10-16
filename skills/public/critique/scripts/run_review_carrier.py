@@ -141,7 +141,9 @@ def failure_carrier(
     return carrier
 
 
-def bind_promoted_paths(context: dict[str, Any], promoted: dict[str, str], promotion: Any) -> dict[str, str]:
+def bind_promoted_paths(
+    context: dict[str, Any], promoted: dict[str, str], promotion: Any, *, run_dir: Path | None = None
+) -> dict[str, str]:
     """Replace runtime-only paths with their durable receipt paths."""
     bound = context.setdefault("paths", {})
     old_paths = dict(bound)
@@ -161,8 +163,19 @@ def bind_promoted_paths(context: dict[str, Any], promoted: dict[str, str], promo
         if relative is not None:
             bound[source_key] = relative
     for key, value in list(bound.items()):
-        if isinstance(value, str) and Path(value).parts[:2] == (".charness", "scratch"):
+        if not isinstance(value, str):
+            continue
+        path = Path(value)
+        if path.parts[:2] == (".charness", "scratch"):
             bound.pop(key, None)
+            continue
+        if run_dir is not None and path.is_absolute():
+            try:
+                path.resolve().relative_to(run_dir.resolve())
+            except ValueError:
+                pass
+            else:
+                bound.pop(key, None)
     return bound
 
 
@@ -201,6 +214,65 @@ def replace_exact_strings(value: Any, replacements: dict[str, str]) -> Any:
     return value
 
 
+def validate_promoted_chain(
+    support: Any,
+    promotion: Any,
+    root: Path,
+    attempt: str,
+    paths: dict[str, str],
+    context: dict[str, Any],
+    carrier: dict[str, Any],
+) -> dict[str, Any]:
+    package = support.package_paths(Path(__file__).parent)
+    carrier_validation = support.load_module(
+        package["carrier_validation"], "charness_reviewer_worker_carrier_support_finalization"
+    )
+    retained_inputs = support.load_module(
+        Path(__file__).with_name("run_review_recovery_inputs.py"),
+        "charness_run_review_recovery_inputs_finalization",
+    )
+    result = retained_inputs.validate_promoted_chain_integrity(
+        root,
+        paths,
+        carrier,
+        {
+            "attempt_id": attempt,
+            "packet_sha256": context.get("packet_sha256"),
+            "reviewed_input_identity_sha256": context.get("reviewed_input_identity_sha256"),
+            "parent_receipt_identity": context.get("parent_receipt_identity"),
+        },
+        support=support,
+        carrier_validation=carrier_validation,
+        promotion=promotion,
+    )
+    result.pop("_manifest_approval_eligible", None)
+    return result
+
+
+def require_valid_promoted_chain(
+    support: Any,
+    approval: bool,
+    binding: dict[str, Any],
+    promoted_chain: dict[str, Any],
+    recovery_validation: dict[str, Any] | None,
+) -> tuple[bool, dict[str, Any]]:
+    if promoted_chain.get("ok"):
+        return approval, binding
+    if recovery_validation is None:
+        raise support.RunReviewError(
+            "promotion-readback-failed",
+            f"promoted reviewer chain did not validate: {promoted_chain.get('reason')}",
+        )
+    return False, {
+        **binding,
+        "approval": {
+            "status": "mismatch",
+            "matches": False,
+            "reason": "promoted reviewer chain did not validate",
+        },
+    }
+
+
 def finalize_carrier(
     support: Any,
     promotion: Any,
@@ -211,7 +283,7 @@ def finalize_carrier(
     carrier: dict[str, Any],
     report: dict[str, Any] | None,
     recovery_validation: dict[str, Any] | None = None,
-) -> None:
+) -> dict[str, Any]:
     """Promote all terminal bytes, then emit paths that survive owner cleanup."""
     old_paths = dict(context.setdefault("paths", {}))
     promoted = promotion.promote_attempt_metadata(
@@ -244,7 +316,7 @@ def finalize_carrier(
         carrier["semantic_input"] = replace_exact_strings(
             carrier.get("semantic_input"), semantic_replacements
         )
-    bound = bind_promoted_paths(context, promoted, promotion)
+    bound = bind_promoted_paths(context, promoted, promotion, run_dir=run_dir)
     rebind_partial_artifacts(carrier, old_paths, bound, promotion)
     carrier["paths"] = dict(bound)
     summary = promoted.get("lifecycle.yaml")
@@ -293,6 +365,20 @@ def finalize_carrier(
             "promotion-readback-failed",
             "promoted reviewer manifest approval does not match the final lifecycle carrier",
         )
+    promoted_chain = None
+    if approval or recovery_validation is not None:
+        promoted_chain = validate_promoted_chain(
+            support,
+            promotion,
+            root,
+            promotion_attempt,
+            bound,
+            context,
+            carrier,
+        )
+        approval, binding = require_valid_promoted_chain(
+            support, approval, binding, promoted_chain, recovery_validation
+        )
     # This atomic replacement is the commit point. Every fallible lifecycle
     # write and integrity readback above observes a non-approval manifest.
     manifest.update(
@@ -302,6 +388,7 @@ def finalize_carrier(
         identity_check=binding,
     )
     promotion.STORAGE.write_json_atomically(root / manifest_path, manifest)
+    return {"promoted_chain": promoted_chain, "manifest": manifest}
 
 
 def owner_terminal_state(status: str, carrier: dict[str, Any]) -> str:

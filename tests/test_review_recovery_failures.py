@@ -20,6 +20,7 @@ RUN_REVIEW = load_script_module(
 SUPPORT = RUN_REVIEW.SUPPORT
 PACKET = RUN_REVIEW.PACKET
 PROMOTION = RUN_REVIEW.PROMOTION
+CARRIER = RUN_REVIEW.CARRIER
 RECOVERY = load_script_module(
     "review_recovery_under_test", SCRIPT_ROOT / "run_review_recovery.py"
 )
@@ -46,8 +47,10 @@ class _PacketReader:
 
 
 def _retained_fixture(tmp_path: Path) -> dict[str, object]:
+    repo = tmp_path / "repo"
+    repo.mkdir()
     attempt = "retained-1"
-    run_dir = tmp_path / ".charness" / "scratch" / "critique-review" / attempt
+    run_dir = tmp_path / "external-runtime" / "scratch" / "critique-review" / attempt
     semantic_dir = run_dir / "semantic-input"
     semantic_dir.mkdir(parents=True)
     content = b"immutable review input\n"
@@ -66,16 +69,20 @@ def _retained_fixture(tmp_path: Path) -> dict[str, object]:
             ],
         },
     }
-    packet_path = tmp_path / "packet.json"
+    packet_path = repo / "packet.json"
     packet_path.write_text(json.dumps(packet_payload, sort_keys=True) + "\n", encoding="utf-8")
     packet_sha = hashlib.sha256(packet_path.read_bytes()).hexdigest()
 
+    prompt_path = run_dir / "review-prompt.md"
+    prompt_path.write_text("bounded review prompt\n", encoding="utf-8")
+    prompt_sha = hashlib.sha256(prompt_path.read_bytes()).hexdigest()
     plan = {
         "kind": "charness.review_run_plan.v1",
         "attempt_id": attempt,
         "packet_path": "packet.json",
         "packet_sha256": packet_sha,
         "reviewed_input_identity_sha256": "i" * 64,
+        "prompt_sha256": prompt_sha,
         "scope": "retained recovery",
         "lens": "identity",
     }
@@ -86,6 +93,7 @@ def _retained_fixture(tmp_path: Path) -> dict[str, object]:
     paths = {
         "run_dir": run_dir,
         "plan": plan_path,
+        "prompt": prompt_path,
         "receipt": run_dir / "receipt.json",
         "ledger": run_dir / "delivery.json",
         "output": run_dir / "result.json",
@@ -132,7 +140,7 @@ def _retained_fixture(tmp_path: Path) -> dict[str, object]:
         "entries": [
             {
                 "path": "reviewed.txt",
-                "carrier_path": SUPPORT.relative(tmp_path, content_path),
+                "carrier_path": SUPPORT.relative(repo, content_path),
                 "content_sha256": content_sha,
             }
         ]
@@ -161,6 +169,7 @@ def _retained_fixture(tmp_path: Path) -> dict[str, object]:
         "paths": paths,
         "owner_receipt": owner_receipt,
         "package": {"verify_packet": tmp_path / "verify_packet.py"},
+        "repo": repo,
         "packet_module": _PacketReader,
         "identity_verification": _IdentityVerification,
         "content_path": content_path,
@@ -185,7 +194,7 @@ def test_retained_input_validation_rebinds_all_identity_and_semantic_bytes(
 ) -> None:
     fixture = _retained_fixture(tmp_path)
     result = RECOVERY_INPUTS.validate_retained_inputs(
-        tmp_path,
+        fixture["repo"],
         fixture["plan"],
         fixture["packet"],
         fixture["paths"],
@@ -199,6 +208,25 @@ def test_retained_input_validation_rebinds_all_identity_and_semantic_bytes(
     assert result["status"] == "verified"
     assert result["ok"] is True
     assert result["checks"]["semantic_input"] == {"status": "verified", "entries": 1}
+
+
+def test_retained_prompt_tamper_refuses_before_recovery(tmp_path: Path) -> None:
+    fixture = _retained_fixture(tmp_path)
+    fixture["paths"]["prompt"].write_text("tampered prompt\n", encoding="utf-8")
+    result = RECOVERY_INPUTS.validate_retained_inputs(
+        fixture["repo"],
+        fixture["plan"],
+        fixture["packet"],
+        fixture["paths"],
+        attempt=fixture["attempt"],
+        owner_receipt=fixture["owner_receipt"],
+        package=fixture["package"],
+        support=SUPPORT,
+        packet_module=fixture["packet_module"],
+        identity_verification=fixture["identity_verification"],
+    )
+    assert result["ok"] is False
+    assert result["reason"] == "retained prompt bytes do not match the run plan"
 
 
 @pytest.mark.parametrize(
@@ -227,7 +255,7 @@ def test_retained_input_validation_refuses_tampering_before_recovery(
         SUPPORT.write_json(manifest, {"entries": []})
 
     result = RECOVERY_INPUTS.validate_retained_inputs(
-        tmp_path,
+        fixture["repo"],
         fixture["plan"],
         fixture["packet"],
         fixture["paths"],
@@ -299,9 +327,165 @@ def test_promoted_chain_reopens_durable_files_and_checks_integrity(tmp_path: Pat
     assert "integrity check failed" in invalid["reason"]
 
 
+@pytest.mark.parametrize("fault", ["pass", "chain"])
+def test_finalizer_validates_promoted_chain_before_approval_commit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, fault: str
+) -> None:
+    durable = tmp_path / "charness-artifacts" / "critique" / "workers" / "attempt"
+    durable.mkdir(parents=True)
+    summary = durable / "lifecycle.yaml"
+    report_path = durable / "worker-report.yaml"
+    receipt_path = durable / "receipt.json"
+    ledger_path = durable / "delivery.json"
+    output_path = durable / "result.json"
+    manifest = durable / "attempt-manifest.json"
+    report = {
+        "attempt_id": "attempt",
+        "packet_identity": "p",
+        "reviewed_input_identity": "i",
+        "parent_receipt_identity": "parent",
+        "delivery_state": "findings-received",
+        "review_verdict": "pass",
+        "approval_eligible": True,
+    }
+    SUPPORT.write_yaml(report_path, report)
+    SUPPORT.write_json(receipt_path, {"attempt_id": "attempt"})
+    SUPPORT.write_json(ledger_path, {"attempt_id": "attempt"})
+    SUPPORT.write_json(output_path, {"attempt_id": "attempt"})
+    files = {
+        "worker-report.yaml": SUPPORT.relative(tmp_path, report_path),
+        "receipt.json": SUPPORT.relative(tmp_path, receipt_path),
+        "delivery.json": SUPPORT.relative(tmp_path, ledger_path),
+        "result.json": SUPPORT.relative(tmp_path, output_path),
+        "lifecycle.yaml": SUPPORT.relative(tmp_path, summary),
+    }
+    SUPPORT.write_json(
+        manifest,
+        {
+            "attempt_id": "attempt",
+            "approval_eligible": False,
+            "use_class": "diagnostic-retryable",
+            "identity_binding": "consumer-required",
+            "files": files,
+        },
+    )
+    carrier = {
+        "schema_version": "charness.reviewer_lifecycle.v1",
+        "execution_state": "terminal",
+        "lifecycle_state": "terminal",
+        "delivery_state": "findings-received",
+        "approval_eligible": True,
+        "identity_check": {"matches": True},
+        "runner_stream": {"consistent": True},
+        "ok": True,
+        "carrier_ok": True,
+    }
+    paths = {
+        "report": report_path,
+        "receipt": receipt_path,
+        "ledger": ledger_path,
+        "output": output_path,
+        "summary": tmp_path / "runtime-lifecycle.yaml",
+        "run_dir": tmp_path / "run",
+    }
+    paths["run_dir"].mkdir()
+    context = {
+        "packet_sha256": "p",
+        "reviewed_input_identity_sha256": "i",
+        "parent_receipt_identity": "parent",
+        "paths": {},
+    }
+    validation_states: list[bool] = []
+    carrier_validation = SimpleNamespace(validate_delivered_worker_report=lambda **_kwargs: None)
+
+    def validate_chain(*_args, **_kwargs):
+        visible = json.loads(manifest.read_text(encoding="utf-8"))
+        validation_states.append(visible["approval_eligible"])
+        if fault == "chain":
+            output_path.write_text("corrupted after integrity readback\n", encoding="utf-8")
+        return RECOVERY_INPUTS.validate_promoted_chain_integrity(
+            tmp_path,
+            {"report": files["worker-report.yaml"], "receipt": files["receipt.json"],
+             "ledger": files["delivery.json"], "output": files["result.json"],
+             "summary": files["lifecycle.yaml"]},
+            carrier,
+            {"attempt_id": "attempt", "packet_sha256": "p",
+             "reviewed_input_identity_sha256": "i", "parent_receipt_identity": "parent"},
+            support=SUPPORT,
+            carrier_validation=carrier_validation,
+            promotion=PROMOTION,
+        )
+
+    monkeypatch.setattr(
+        SUPPORT,
+        "package_paths",
+        lambda _script_dir: {"carrier_validation": tmp_path / "carrier.py"},
+    )
+    monkeypatch.setattr(SUPPORT, "load_module", lambda path, _name: (
+        SimpleNamespace(validate_promoted_chain_integrity=validate_chain)
+        if path.name == "run_review_recovery_inputs.py"
+        else carrier_validation
+    ))
+    promotion = SimpleNamespace(
+        STORAGE=PROMOTION.STORAGE,
+        SOURCE_KEYS=PROMOTION.SOURCE_KEYS,
+        LOG_SOURCE_KEYS=PROMOTION.LOG_SOURCE_KEYS,
+        identity_binding=PROMOTION.identity_binding,
+        promote_attempt_metadata=lambda *_args, **_kwargs: {
+            "worker-report.yaml": files["worker-report.yaml"],
+            "receipt.json": files["receipt.json"],
+            "delivery.json": files["delivery.json"],
+            "result.json": files["result.json"],
+            "lifecycle.yaml": SUPPORT.relative(tmp_path, summary),
+            "attempt-manifest.json": SUPPORT.relative(tmp_path, manifest),
+        },
+        refresh_manifest_integrity=PROMOTION.refresh_manifest_integrity,
+        approval_for=lambda *_args, **_kwargs: (True, {"matches": True}),
+    )
+    result = CARRIER.finalize_carrier(
+        SUPPORT,
+        promotion,
+        tmp_path,
+        "attempt",
+        paths,
+        context,
+        carrier,
+        {"delivery_state": "findings-received"},
+        recovery_validation={"ok": True},
+    )
+
+    saved = json.loads(manifest.read_text(encoding="utf-8"))
+    assert result["manifest"] == saved
+    assert validation_states == [False]
+    if fault == "pass":
+        assert result["promoted_chain"]["ok"] is True
+        assert result["manifest"]["approval_eligible"] is True
+        assert saved["approval_eligible"] is True
+        consumed = RECOVERY_INPUTS.validate_promoted_chain(
+            tmp_path,
+            {"report": files["worker-report.yaml"], "receipt": files["receipt.json"],
+             "ledger": files["delivery.json"], "output": files["result.json"],
+             "summary": files["lifecycle.yaml"]},
+            carrier,
+            {"attempt_id": "attempt", "packet_sha256": "p",
+             "reviewed_input_identity_sha256": "i", "parent_receipt_identity": "parent"},
+            support=SUPPORT,
+            carrier_validation=carrier_validation,
+            promotion=PROMOTION,
+        )
+        assert consumed["ok"] is True
+    else:
+        assert result["promoted_chain"]["ok"] is False
+        assert "integrity check failed" in result["promoted_chain"]["reason"]
+        assert result["manifest"]["approval_eligible"] is False
+        assert saved["approval_eligible"] is False
+    assert saved["use_class"] == ("approval" if fault == "pass" else "diagnostic-retryable")
+
+
 class _RecoveryOwner:
     def __init__(self, path: Path):
         self.path = path
+        self.run_id = path.name
         self.receipt_path = path / ".charness-owner.json"
         self.closed: list[dict[str, object]] = []
         self.reopened = False
@@ -316,7 +500,7 @@ class _RecoveryOwner:
 def test_recovery_emits_refusal_and_retains_scratch_when_inputs_do_not_bind(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    run_dir = tmp_path / ".charness" / "scratch" / "critique-review" / "retained"
+    run_dir = tmp_path.parent / f"{tmp_path.name}-runtime" / "scratch" / "critique-review" / "retained"
     run_dir.mkdir(parents=True)
     (tmp_path / "packet.json").write_text("{}\n", encoding="utf-8")
     SUPPORT.write_json(
