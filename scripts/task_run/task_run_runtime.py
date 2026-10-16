@@ -7,6 +7,7 @@ import json
 import os
 import re
 import shutil
+import stat
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
@@ -354,6 +355,7 @@ UNKNOWN_UNREADABLE = "unreadable-result"
 UNKNOWN_MALFORMED = "malformed-result"
 UNKNOWN_RUNNER_UNCONFIRMED = "runner-unconfirmed"
 UNKNOWN_RECORD_MISSING = "record-missing"
+UNKNOWN_STATUS = "unknown-status"
 
 
 def _compact_inventory_entry(
@@ -414,6 +416,13 @@ def inventory_entry_for_result(result_path: Path, runtime_root: Path) -> dict[st
     fallback_id = result_path.parent.name
     try:
         text = result_path.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        return _unknown_inventory_entry(
+            task_id=fallback_id,
+            runtime_root=runtime_root,
+            result_path=result_path,
+            reason_code=UNKNOWN_RECORD_MISSING,
+        )
     except OSError:
         return _unknown_inventory_entry(
             task_id=fallback_id,
@@ -452,7 +461,31 @@ def inventory_entry_for_result(result_path: Path, runtime_root: Path) -> dict[st
     liveness = runner_liveness(payload)
     raw_repo = payload.get("repo_root")
     repo_text = raw_repo if isinstance(raw_repo, str) and raw_repo else None
-    if status != "running":
+    if status == "running":
+        if liveness.get("alive") is True:
+            state: str = "running"
+            reason: str | None = None
+        elif liveness.get("alive") is False:
+            state = "stale"
+            reason = None
+        else:
+            state = "unknown"
+            reason = UNKNOWN_RUNNER_UNCONFIRMED
+    else:
+        from scripts.task_run.task_run_state import is_known_terminal_status
+
+        if not is_known_terminal_status(status):
+            return _compact_inventory_entry(
+                task_id=task_id,
+                repo_root=repo_text,
+                runtime_root=runtime_root,
+                result_path=result_path,
+                status=status,
+                phase=phase_text,
+                liveness=liveness,
+                inventory_state="unknown",
+                reason_code=UNKNOWN_STATUS,
+            )
         return _compact_inventory_entry(
             task_id=task_id,
             repo_root=repo_text,
@@ -464,15 +497,6 @@ def inventory_entry_for_result(result_path: Path, runtime_root: Path) -> dict[st
             inventory_state="terminal",
             reason_code=None,
         )
-    if liveness.get("alive") is True:
-        state: str = "running"
-        reason: str | None = None
-    elif liveness.get("alive") is False:
-        state = "stale"
-        reason = None
-    else:
-        state = "unknown"
-        reason = UNKNOWN_RUNNER_UNCONFIRMED
     return _compact_inventory_entry(
         task_id=task_id,
         repo_root=repo_text,
@@ -484,6 +508,73 @@ def inventory_entry_for_result(result_path: Path, runtime_root: Path) -> dict[st
         inventory_state=state,
         reason_code=reason,
     )
+
+
+def _result_in_task_dir(
+    task_dir: os.DirEntry[str], key_root: Path
+) -> tuple[Path | None, dict[str, Any] | None]:
+    """Check only the exact canonical result path without following symlinks."""
+    result_path = Path(task_dir.path) / "result.json"
+    try:
+        result_stat = result_path.lstat()
+    except FileNotFoundError:
+        return None, None
+    except OSError:
+        return None, _unknown_inventory_entry(
+            task_id=task_dir.name,
+            runtime_root=key_root,
+            result_path=result_path,
+            reason_code=UNKNOWN_UNREADABLE,
+        )
+    if stat.S_ISREG(result_stat.st_mode):
+        return result_path, None
+    return None, _unknown_inventory_entry(
+        task_id=task_dir.name,
+        runtime_root=key_root,
+        result_path=result_path,
+        reason_code=UNKNOWN_UNREADABLE,
+    )
+
+
+def _enumerate_task_results(
+    key_root: Path,
+) -> tuple[list[Path], list[dict[str, Any]], list[str]]:
+    """Enumerate immediate task result files without following symlinks."""
+    store = key_root / "task-run"
+    results: list[Path] = []
+    unknown: list[dict[str, Any]] = []
+    reasons: list[str] = []
+    try:
+        store_stat = store.lstat()
+    except FileNotFoundError:
+        return results, unknown, reasons
+    except OSError as exc:
+        return results, unknown, [f"unreadable task-run store under {key_root}: {exc}"]
+    if not stat.S_ISDIR(store_stat.st_mode):
+        return results, unknown, reasons
+
+    try:
+        with os.scandir(store) as task_dirs:
+            for task_dir in task_dirs:
+                try:
+                    task_dir_stat = task_dir.stat(follow_symlinks=False)
+                except FileNotFoundError:
+                    continue
+                except OSError as exc:
+                    reasons.append(
+                        f"unreadable task-run entry under {key_root}: {exc}"
+                    )
+                    continue
+                if not stat.S_ISDIR(task_dir_stat.st_mode):
+                    continue
+                result_path, unknown_entry = _result_in_task_dir(task_dir, key_root)
+                if result_path is not None:
+                    results.append(result_path)
+                if unknown_entry is not None:
+                    unknown.append(unknown_entry)
+    except OSError as exc:
+        reasons.append(f"unreadable task-run store under {key_root}: {exc}")
+    return results, unknown, reasons
 
 
 def _inventory_for_key(
@@ -499,35 +590,9 @@ def _inventory_for_key(
     """
     running: list[dict[str, Any]] = []
     stale: list[dict[str, Any]] = []
-    unknown: list[dict[str, Any]] = []
+    results, unknown, reasons = _enumerate_task_results(key_root)
     terminal_count = 0
-    store = key_root / "task-run"
-    if not store.is_dir():
-        return running, stale, unknown, terminal_count, []
-    try:
-        records = sorted(store.iterdir())
-    except OSError as exc:
-        return (
-            running,
-            stale,
-            unknown,
-            terminal_count,
-            [f"unreadable task-run store under {key_root}: {exc}"],
-        )
-    for record in records:
-        if record.is_symlink() or not record.is_dir():
-            continue
-        result_path = record / "result.json"
-        if not result_path.exists():
-            unknown.append(
-                _unknown_inventory_entry(
-                    task_id=record.name,
-                    runtime_root=key_root,
-                    result_path=result_path,
-                    reason_code=UNKNOWN_RECORD_MISSING,
-                )
-            )
-            continue
+    for result_path in sorted(results):
         entry = inventory_entry_for_result(result_path, key_root)
         state = entry["inventory_state"]
         if state == "running":
@@ -538,7 +603,37 @@ def _inventory_for_key(
             unknown.append(entry)
         else:
             terminal_count += 1
-    return running, stale, unknown, terminal_count, []
+    return running, stale, unknown, terminal_count, reasons
+
+
+def _inventory_counts(
+    running: list[dict[str, Any]],
+    stale: list[dict[str, Any]],
+    unknown: list[dict[str, Any]],
+    terminal_count: int,
+    completeness_reasons: list[str],
+) -> dict[str, Any]:
+    """Build the compact shared counts and completeness portion of inventory."""
+    reasons = list(completeness_reasons)
+    if unknown:
+        reasons.append(
+            f"{len(unknown)} task record(s) could not be classified; see unknown_reasons"
+        )
+    running.sort(key=lambda entry: (entry["task_id"], entry["runtime_root"]))
+    unknown_reasons: dict[str, int] = {}
+    for entry in unknown:
+        reason = entry["reason_code"]
+        unknown_reasons[reason] = unknown_reasons.get(reason, 0) + 1
+    return {
+        "running_count": len(running),
+        "stale_count": len(stale),
+        "terminal_count": terminal_count,
+        "unknown_count": len(unknown),
+        "completeness": "partial" if (unknown or reasons) else "complete",
+        "completeness_reasons": reasons,
+        "running_tasks": running,
+        "unknown_reasons": unknown_reasons,
+    }
 
 
 def running_inventory_for_keys_root(keys_root: Path) -> dict[str, Any]:
@@ -554,7 +649,6 @@ def running_inventory_for_keys_root(keys_root: Path) -> dict[str, Any]:
     stale: list[dict[str, Any]] = []
     unknown: list[dict[str, Any]] = []
     terminal_count = 0
-    scanned_keys: list[str] = []
     completeness_reasons: list[str] = []
     try:
         children = sorted(keys_root.iterdir())
@@ -571,43 +665,27 @@ def running_inventory_for_keys_root(keys_root: Path) -> dict[str, Any]:
             "unknown_count": 0,
             "completeness": "partial",
             "completeness_reasons": [f"unreadable keys root {keys_root}: {exc}"],
-            "scanned_keys": [],
             "running_tasks": [],
-            "stale_tasks": [],
-            "unknown_tasks": [],
+            "unknown_reasons": {"unreadable-keys-root": 1},
         }
     for key in children:
         if key.is_symlink() or not key.is_dir():
             continue
-        scanned_keys.append(key.name)
         key_running, key_stale, key_unknown, key_terminal, reasons = _inventory_for_key(key)
         running.extend(key_running)
         stale.extend(key_stale)
         unknown.extend(key_unknown)
         terminal_count += key_terminal
         completeness_reasons.extend(reasons)
-    if unknown:
-        completeness_reasons.append(
-            f"{len(unknown)} task record(s) could not be classified; see unknown_tasks"
-        )
-    for entries in (running, stale, unknown):
-        entries.sort(key=lambda entry: (entry["task_id"], entry["runtime_root"]))
     return {
         "schema_version": SCHEMA_VERSION,
         "event": INVENTORY_EVENT,
         "keys_root": str(keys_root),
         "scope": MANAGED_TREE_SCOPE,
         "machine_global": False,
-        "running_count": len(running),
-        "stale_count": len(stale),
-        "terminal_count": terminal_count,
-        "unknown_count": len(unknown),
-        "completeness": "partial" if (unknown or completeness_reasons) else "complete",
-        "completeness_reasons": completeness_reasons,
-        "scanned_keys": scanned_keys,
-        "running_tasks": running,
-        "stale_tasks": stale,
-        "unknown_tasks": unknown,
+        **_inventory_counts(
+            running, stale, unknown, terminal_count, completeness_reasons
+        ),
     }
 
 
@@ -629,12 +707,6 @@ def task_running_inventory(repo_root: Path) -> dict[str, Any]:
         keys_root = keys_root_of(runtime_path.resolve())
     except ValueError:
         running, stale, unknown, terminal_count, reasons = _inventory_for_key(runtime_path)
-        if unknown:
-            reasons.append(
-                f"{len(unknown)} task record(s) could not be classified; see unknown_tasks"
-            )
-        for entries in (running, stale, unknown):
-            entries.sort(key=lambda entry: (entry["task_id"], entry["runtime_root"]))
         return {
             "schema_version": SCHEMA_VERSION,
             "event": INVENTORY_EVENT,
@@ -648,16 +720,7 @@ def task_running_inventory(repo_root: Path) -> dict[str, Any]:
                 "single runtime root, never the managed tree and never the machine"
             ),
             "machine_global": False,
-            "running_count": len(running),
-            "stale_count": len(stale),
-            "terminal_count": terminal_count,
-            "unknown_count": len(unknown),
-            "completeness": "partial" if (unknown or reasons) else "complete",
-            "completeness_reasons": reasons,
-            "scanned_keys": [],
-            "running_tasks": running,
-            "stale_tasks": stale,
-            "unknown_tasks": unknown,
+            **_inventory_counts(running, stale, unknown, terminal_count, reasons),
         }
     payload = running_inventory_for_keys_root(keys_root)
     payload["repo_root"] = str(resolved_repo)

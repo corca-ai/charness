@@ -249,11 +249,19 @@ _RESULT_KIND_BY_STATUS = {
     "pass": ResultKind.SUCCESS,
     "failed": ResultKind.FAILED,
     "fail": ResultKind.FAILED,
+    "timed-out": ResultKind.FAILED,
+    "interrupted": ResultKind.FAILED,
+    "non-delivery": ResultKind.FAILED,
     "premise-blocked": ResultKind.PREMISE_BLOCKED,
     "validated-partial-result": ResultKind.VALIDATED_PARTIAL,
     "executor-unavailable": ResultKind.EXECUTOR_UNAVAILABLE,
     "completed-needs-review": ResultKind.COMPLETED_NEEDS_REVIEW,
 }
+
+
+def is_known_terminal_status(status: object) -> bool:
+    """Whether a persisted lane status belongs to the canonical result vocabulary."""
+    return isinstance(status, str) and status in _RESULT_KIND_BY_STATUS
 
 
 def result_kind_for_status(status: object) -> ResultKind:

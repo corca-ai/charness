@@ -12,6 +12,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import runpy
+import sys
 from pathlib import Path
 
 import pytest
@@ -20,23 +22,6 @@ from scripts.cli import cmd_task as task_payload
 from scripts.task_run import task_run, task_run_runtime
 
 _LIVE_PID = os.getpid()
-
-
-def _probe_dead(pid: int) -> bool:
-    try:
-        os.kill(pid, 0)
-    except ProcessLookupError:
-        return True
-    except PermissionError:
-        return False
-    return False
-
-
-def _dead_pid() -> int:
-    for pid in range(4_000_001, 4_000_101):
-        if _probe_dead(pid):
-            return pid
-    raise AssertionError("no observably dead pid in probe range")
 
 
 def _write_record(
@@ -128,10 +113,24 @@ def test_two_sibling_keys_with_non_s33_ids_count_together(tmp_path: Path) -> Non
     assert {path: path.read_bytes() for path in snapshot} == snapshot
 
 
-def test_live_terminal_stale_and_unknown_are_distinct(tmp_path: Path) -> None:
+def test_live_terminal_stale_and_unknown_are_distinct(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     keys_root, key_a, key_b = _keys(tmp_path)
-    dead = _dead_pid()
-    _write_record(key_a, "live-lane", _running("live-lane", _LIVE_PID))
+    live_pid, dead_pid = 101, 202
+    monkeypatch.setattr(
+        task_run_runtime,
+        "runner_liveness",
+        lambda record: {
+            "runner_pid": record.get("runner_pid"),
+            "alive": (
+                True
+                if record.get("runner_pid") == live_pid
+                else False if record.get("runner_pid") == dead_pid else None
+            ),
+        },
+    )
+    _write_record(key_a, "live-lane", _running("live-lane", live_pid))
     _write_record(
         key_a,
         "terminal-live-runner",
@@ -139,47 +138,96 @@ def test_live_terminal_stale_and_unknown_are_distinct(tmp_path: Path) -> None:
             "task_id": "terminal-live-runner",
             "status": "completed",
             "phase": "terminal",
-            "runner_pid": _LIVE_PID,
+            "runner_pid": live_pid,
         },
     )
-    _write_record(key_a, "stale-lane", _running("stale-lane", dead, phase="exec"))
+    for status in ("interrupted", "timed-out", "non-delivery"):
+        _write_record(
+            key_a,
+            f"terminal-{status}",
+            {"task_id": f"terminal-{status}", "status": status, "runner_pid": live_pid},
+        )
+    _write_record(key_a, "stale-lane", _running("stale-lane", dead_pid, phase="exec"))
     _write_record(
         key_b, "no-pid-lane", {"task_id": "no-pid-lane", "status": "running", "phase": "exec"}
     )
     _write_record(key_b, "malformed-lane", "{not json")
     _write_record(key_b, "list-lane", "[]\n")
-    empty = key_b / "task-run" / "missing-lane"
-    empty.mkdir(parents=True)
+    archive = key_b / "task-run" / ".failed-launch-archive"
+    archive.mkdir()
     as_dir = key_b / "task-run" / "dir-result"
     as_dir.mkdir(parents=True)
     (as_dir / "result.json").mkdir()
+    _write_record(
+        key_b,
+        "future-status",
+        {"task_id": "future-status", "status": "unexpected-state", "runner_pid": live_pid},
+    )
 
     payload = task_run_runtime.running_inventory_for_keys_root(keys_root)
 
     assert payload["running_count"] == 1
     assert [task["task_id"] for task in payload["running_tasks"]] == ["live-lane"]
-    assert payload["terminal_count"] == 1
-    assert [task["task_id"] for task in payload["stale_tasks"]] == ["stale-lane"]
-    assert payload["stale_tasks"][0]["liveness"] == {"runner_pid": dead, "alive": False}
-    by_id = {task["task_id"]: task for task in payload["unknown_tasks"]}
-    assert set(by_id) == {
-        "no-pid-lane",
-        "malformed-lane",
-        "list-lane",
-        "missing-lane",
-        "dir-result",
+    assert payload["terminal_count"] == 4
+    assert payload["stale_count"] == 1
+    assert payload["unknown_reasons"] == {
+        task_run_runtime.UNKNOWN_MALFORMED: 2,
+        task_run_runtime.UNKNOWN_RUNNER_UNCONFIRMED: 1,
+        task_run_runtime.UNKNOWN_STATUS: 1,
+        task_run_runtime.UNKNOWN_UNREADABLE: 1,
     }
-    assert by_id["no-pid-lane"]["reason_code"] == task_run_runtime.UNKNOWN_RUNNER_UNCONFIRMED
-    assert by_id["malformed-lane"]["reason_code"] == task_run_runtime.UNKNOWN_MALFORMED
-    assert by_id["list-lane"]["reason_code"] == task_run_runtime.UNKNOWN_MALFORMED
-    assert by_id["missing-lane"]["reason_code"] == task_run_runtime.UNKNOWN_RECORD_MISSING
-    assert by_id["dir-result"]["reason_code"] == task_run_runtime.UNKNOWN_UNREADABLE
-    # Unknown evidence forces partial completeness: never a silent zero-use claim.
+    # The archive has no canonical result record, so it contributes no unknown.
     assert payload["unknown_count"] == 5
     assert payload["completeness"] == "partial"
     assert payload["completeness_reasons"] == [
-        "5 task record(s) could not be classified; see unknown_tasks"
+        "5 task record(s) could not be classified; see unknown_reasons"
     ]
+
+
+def test_result_disappearing_after_enumeration_stays_unknown(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    result = _write_record(
+        tmp_path / "key", "vanished", _running("vanished", _LIVE_PID)
+    )
+    original = Path.read_text
+
+    def disappear(path: Path, *args: object, **kwargs: object) -> str:
+        if path == result:
+            path.unlink()
+        return original(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", disappear)
+
+    entry = task_run_runtime.inventory_entry_for_result(result, tmp_path / "key")
+
+    assert entry["inventory_state"] == "unknown"
+    assert entry["reason_code"] == task_run_runtime.UNKNOWN_RECORD_MISSING
+
+
+def test_unreadable_task_store_enumeration_makes_inventory_partial(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    keys_root, key_a, _key_b = _keys(tmp_path)
+    _write_record(key_a, "hidden-lane", _running("hidden-lane", _LIVE_PID))
+    store = key_a / "task-run"
+    original_scandir = os.scandir
+
+    def fail_store(path: int | os.PathLike[str] | str) -> os.ScandirIterator[str]:
+        if not isinstance(path, int) and Path(path) == store:
+            raise PermissionError("injected task-store read denial")
+        return original_scandir(path)
+
+    monkeypatch.setattr(os, "scandir", fail_store)
+
+    payload = task_run_runtime.running_inventory_for_keys_root(keys_root)
+
+    assert payload["running_count"] == 0
+    assert payload["unknown_count"] == 0
+    assert payload["completeness"] == "partial"
+    assert len(payload["completeness_reasons"]) == 1
+    assert "unreadable task-run store" in payload["completeness_reasons"][0]
+    assert payload["unknown_reasons"] == {}
 
 
 def test_nested_private_stores_are_not_double_counted(tmp_path: Path) -> None:
@@ -197,7 +245,6 @@ def test_nested_private_stores_are_not_double_counted(tmp_path: Path) -> None:
     payload = task_run_runtime.running_inventory_for_keys_root(keys_root)
 
     assert payload["running_count"] == 1
-    assert payload["scanned_keys"] == [key_a.name, _key_b.name]
 
 
 def test_all_repos_rejects_a_task_id_without_touching_git() -> None:
@@ -293,3 +340,20 @@ def test_cmd_status_all_repos_emits_running_count(
     assert code == 0
     assert emitted[-1]["event"] == "task-status-list"
     assert [task["task_id"] for task in emitted[-1]["tasks"]] == ["lane-a"]
+
+
+def test_root_cli_parser_accepts_all_repos(tmp_path: Path) -> None:
+    root = Path(__file__).resolve().parents[2]
+    bytecode_setting = sys.dont_write_bytecode
+    try:
+        parser = runpy.run_path(str(root / "charness"))["build_parser"]()
+    finally:
+        sys.dont_write_bytecode = bytecode_setting
+
+    args = parser.parse_args(
+        ["task", "status", "--repo-root", str(tmp_path), "--all-repos"]
+    )
+
+    assert args.all_repos is True
+    assert args.task_id is None
+    assert callable(args.func)
