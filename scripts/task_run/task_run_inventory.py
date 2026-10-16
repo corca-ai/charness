@@ -8,20 +8,8 @@ import stat
 from pathlib import Path
 from typing import Any
 
-
-def _load_repo_runtime_bootstrap():
-    pathlib, sys = __import__("pathlib"), __import__("sys")
-    marker = ("scripts", "adapter_lib.py")
-    parents = pathlib.Path(__file__).resolve().parents
-    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
-    if root is not None and str(root) not in sys.path:
-        sys.path.insert(0, str(root))
-
-
-_load_repo_runtime_bootstrap()
-
-from scripts.task_run import task_run_git as _git_owner  # noqa: E402
-from scripts.task_run import task_run_runtime as _runtime  # noqa: E402
+from scripts.task_run import task_run_git as _git_owner
+from scripts.task_run import task_run_runtime as _runtime
 from scripts.task_run.task_run_contract import (  # noqa: E402
     SCHEMA_VERSION,
     TaskRunError,
