@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 from types import ModuleType, SimpleNamespace
 
 import pytest
 
+from scripts.worktree import worktree_cleanup_lib
+from tests.charness_cli.worktree_fixtures import copy_worktree_seed
+from tests.quality_gates.seeding_support import git as fixture_git
 from tests.script_main import load_script_module
 from tests.test_review_promotion_failures import (
     CARRIER,
@@ -25,6 +29,96 @@ def stable_support_identity(monkeypatch):
     monkeypatch.setattr(PROMOTION, "_support", lambda: SUPPORT)
     monkeypatch.setattr(PROMOTION, "SUPPORT", SUPPORT)
     monkeypatch.setattr(STORAGE, "_support", lambda: SUPPORT)
+
+
+def _closure_files(root: Path) -> dict[str, bytes]:
+    return {
+        path.relative_to(root).as_posix(): path.read_bytes()
+        for path in sorted(root.rglob("*"))
+        if path.is_file()
+    }
+
+
+@pytest.mark.boundary_contract(
+    reason="A real Git linked worktree and cleanup are the lifetime boundary under review."
+)
+def test_linked_review_closure_survives_worktree_cleanup(tmp_path: Path) -> None:
+    primary = copy_worktree_seed(tmp_path, "primary")
+    (primary / ".gitignore").write_text("charness-artifacts/critique/\n", encoding="utf-8")
+    fixture_git(primary, "add", ".gitignore")
+    fixture_git(primary, "commit", "-m", "ignore critique runtime")
+    linked = tmp_path / "linked"
+    fixture_git(primary, "worktree", "add", "-b", "review-closure", str(linked))
+
+    packet_relative = Path("charness-artifacts/critique/review-closure-packet.json")
+    packet = linked / packet_relative
+    packet.parent.mkdir(parents=True)
+    content = b"reviewed exact bytes\n"
+    content_sha = hashlib.sha256(content).hexdigest()
+    packet_payload = {
+        "kind": "charness.critique_prepare_packet",
+        "reviewed_input_identity": {
+            "identity_sha256": "a" * 64,
+            "reviewed_content": [
+                {"path": "reviewed.txt", "content_sha256": content_sha}
+            ],
+        },
+    }
+    packet.write_text(json.dumps(packet_payload, sort_keys=True) + "\n", encoding="utf-8")
+    attempt_relative = PROMOTION.DURABLE_WORKER_REPORTS / "review-closure"
+    attempt = linked / attempt_relative
+    semantic = attempt / "semantic-input"
+    semantic.mkdir(parents=True)
+    (attempt / "result.json").write_bytes(b'{"verdict":"pass"}\n')
+    (semantic / "0000-content.bin").write_bytes(content)
+    semantic_manifest = {
+        "entries": [
+            {
+                "path": "reviewed.txt",
+                "carrier_path": "charness-artifacts/critique/workers/review-closure/semantic-input/0000-content.bin",
+                "content_sha256": content_sha,
+            }
+        ]
+    }
+    (semantic / "manifest.json").write_text(
+        json.dumps(semantic_manifest, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    (attempt / "attempt-manifest.json").write_bytes(b'{"approval_eligible":true}\n')
+    expected_attempt = _closure_files(attempt)
+
+    first = PROMOTION.PRIMARY_PROMOTION.promote_finalized_closure(
+        SUPPORT,
+        STORAGE,
+        PROMOTION.DURABLE_WORKER_REPORTS,
+        linked,
+        "review-closure",
+        {"packet": packet},
+    )
+    second = PROMOTION.PRIMARY_PROMOTION.promote_finalized_closure(
+        SUPPORT,
+        STORAGE,
+        PROMOTION.DURABLE_WORKER_REPORTS,
+        linked,
+        "review-closure",
+        {"packet": packet},
+    )
+
+    assert first["status"] == second["status"] == "promoted-to-primary"
+    cleanup = worktree_cleanup_lib.run_cleanup(
+        primary, target_path=linked, yes=True
+    )
+    assert cleanup["status"] == worktree_cleanup_lib.PASS, cleanup
+    assert not linked.exists()
+    preserved_attempt = primary / attempt_relative
+    assert json.loads((primary / packet_relative).read_text()) == packet_payload
+    assert _closure_files(preserved_attempt) == expected_attempt
+    preserved_semantic = json.loads(
+        (preserved_attempt / "semantic-input/manifest.json").read_text()
+    )
+    preserved_content = preserved_attempt / "semantic-input/0000-content.bin"
+    assert hashlib.sha256(preserved_content.read_bytes()).hexdigest() == (
+        preserved_semantic["entries"][0]["content_sha256"]
+    )
 
 
 @pytest.mark.parametrize("fault", ["directory", "partial_symlink", "partial_json", "partial_changed", "manifest_existing", "manifest_json", "manifest_identity"])

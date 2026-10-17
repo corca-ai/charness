@@ -6,6 +6,7 @@ import hashlib
 import importlib.util
 import json
 import sys
+from functools import partial
 from pathlib import Path
 from typing import Any
 
@@ -34,6 +35,9 @@ STORAGE = SUPPORT.load_module(
     Path(__file__).with_name("run_review_promotion_storage.py"),
     "charness_run_review_promotion_storage",
 )
+PRIMARY_PROMOTION = SUPPORT.load_module(
+    Path(__file__).with_name("run_review_primary_promotion.py"), "charness_run_review_primary_promotion"
+)
 CARRIER = SUPPORT.load_module(
     Path(__file__).with_name("run_review_carrier.py"), "charness_run_review_carrier"
 )
@@ -43,6 +47,7 @@ SOURCE_KEYS = STORAGE.SOURCE_KEYS
 LOG_SOURCE_KEYS = STORAGE.LOG_SOURCE_KEYS
 identity_binding = IDENTITY.identity_binding
 approval_for = IDENTITY.approval_for
+promote_finalized_closure = partial(PRIMARY_PROMOTION.promote_finalized_closure, SUPPORT, STORAGE, DURABLE_WORKER_REPORTS)
 
 
 def refresh_manifest_integrity(root: Path, manifest_relative: str) -> dict[str, Any]:

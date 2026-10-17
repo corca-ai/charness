@@ -441,6 +441,7 @@ def test_finalizer_validates_promoted_chain_before_approval_commit(
         },
         refresh_manifest_integrity=PROMOTION.refresh_manifest_integrity,
         approval_for=lambda *_args, **_kwargs: (True, {"matches": True}),
+        promote_finalized_closure=lambda *_args: {},
     )
     result = CARRIER.finalize_carrier(
         SUPPORT,

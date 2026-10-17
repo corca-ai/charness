@@ -365,6 +365,7 @@ def finalize_carrier(
         identity_check=binding,
     )
     promotion.STORAGE.write_json_atomically(root / manifest_path, manifest)
+    promotion.promote_finalized_closure(root, promotion_attempt, paths)
     return {"promoted_chain": promoted_chain, "manifest": manifest}
 
 

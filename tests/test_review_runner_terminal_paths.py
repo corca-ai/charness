@@ -7,9 +7,12 @@ from types import SimpleNamespace as NS
 
 import pytest
 
+from tests.charness_cli.worktree_fixtures import copy_worktree_seed
+from tests.quality_gates.seeding_support import git as fixture_git
 from tests.test_review_recovery_failures import (
     EXECUTION,
     PACKET,
+    PROMOTION,
     RECOVERY,
     SCRIPT_ROOT,
     SUPPORT,
@@ -27,6 +30,127 @@ class Owner(_RecoveryOwner):
 
     def retain_with(self, **kwargs):
         self.retained.append(kwargs)
+
+
+@pytest.mark.boundary_contract(
+    reason="A real linked checkout is required to route final review bytes to its primary worktree."
+)
+def test_primary_collision_preserves_original_and_retains_reviewer_scratch(tmp_path):
+    primary = copy_worktree_seed(tmp_path, "primary")
+    (primary / ".gitignore").write_text("charness-artifacts/critique/\n", encoding="utf-8")
+    fixture_git(primary, "add", ".gitignore")
+    fixture_git(primary, "commit", "-m", "ignore critique runtime")
+    linked = tmp_path / "linked"
+    fixture_git(primary, "worktree", "add", "-b", "review-collision", str(linked))
+
+    run = tmp_path / "runtime"
+    run.mkdir()
+    owner = Owner(run)
+    canonical = tmp_path / "schema.json"
+    canonical.write_text("{}")
+    packet_relative = Path("charness-artifacts/critique/collision-packet.json")
+    packet_path = linked / packet_relative
+    packet_path.parent.mkdir(parents=True)
+    packet_path.write_bytes(b'{"packet":"bound"}\n')
+    primary_packet = primary / packet_relative
+    primary_packet.parent.mkdir(parents=True)
+    primary_packet.write_bytes(packet_path.read_bytes())
+    primary_attempt = primary / PROMOTION.DURABLE_WORKER_REPORTS / "a"
+    primary_attempt.mkdir(parents=True)
+    original = b"original primary proof\n"
+    (primary_attempt / "result.json").write_bytes(original)
+    (primary_attempt / "attempt-manifest.json").write_bytes(b"{}\n")
+    for name in ("receipt.json", "delivery.json", "result.json", "worker-report.yaml", "lifecycle.yaml"):
+        (run / name).write_text("{}")
+
+    emitted = []
+
+    def finalize(_support, _promotion, root, attempt_id, paths, *_args):
+        linked_attempt = root / PROMOTION.DURABLE_WORKER_REPORTS / attempt_id
+        linked_attempt.mkdir(parents=True, exist_ok=True)
+        (linked_attempt / "result.json").write_bytes(b"new linked proof\n")
+        (linked_attempt / "attempt-manifest.json").write_bytes(b"{}\n")
+        PROMOTION.PRIMARY_PROMOTION.promote_finalized_closure(
+            SUPPORT,
+            PROMOTION.STORAGE,
+            PROMOTION.DURABLE_WORKER_REPORTS,
+            root,
+            attempt_id,
+            paths,
+        )
+
+    support = _support(
+        emit=emitted.append,
+        load_goal_lineage=lambda *args, **kwargs: None,
+        package_paths=lambda _path: {
+            "schema": canonical,
+            "partial_output": canonical,
+            "resolve_adapter": canonical,
+        },
+        load_runtime=lambda _package: (
+            NS(build_lifecycle=lambda **kwargs: {**kwargs, "approval_eligible": True}),
+            NS(validate_capability_envelope=lambda *args, **kwargs: NS(envelope_sha256="cap")),
+        ),
+        load_module=lambda *args: NS(collect_run_logs=lambda *args, **kwargs: []),
+        resolve_adapter=lambda *args: {"data": {"packet_sections": [{}]}},
+        select_backend=lambda *args, **kwargs: ("codex_exec", 1),
+        new_run_owner=lambda *args: owner,
+        run_runner_held_out=lambda *args, **kwargs: (0, "runner-completed", True, None),
+        classify_runner_output=lambda *args, **kwargs: (0, "runner-completed", True, None),
+    )
+    packet = NS(
+        manifest_paths=lambda *args: [],
+        select_packet=lambda *args: (packet_path, {}, "packet", "input", {}),
+        run_paths=PACKET.run_paths,
+        default_capability=lambda _root: {},
+        write_prompt=lambda path, *args, **kwargs: Path(path).write_text("prompt\n"),
+    )
+    carrier = NS(
+        failure_carrier=lambda *args, **kwargs: {
+            "approval_eligible": False,
+            "reason_code": kwargs["code"],
+        },
+        finalize_carrier=finalize,
+        compare_report_stream=lambda *args: {"consistent": True, "reason": None},
+        owner_terminal_state=lambda *args: "failed",
+    )
+
+    result = EXECUTION.run_live(
+        NS(
+            attempt_id="a",
+            artifact_key="a",
+            scope="test",
+            lens="collision",
+            goal_lineage_file=None,
+            backend=None,
+            dry_run=False,
+            reviewed_paths_file=None,
+            reviewed_path=[],
+            hold_out=[],
+        ),
+        linked,
+        support=support,
+        packet=packet,
+        invocation=NS(runner_command=lambda *args, **kwargs: []),
+        promotion=NS(
+            DURABLE_WORKER_REPORTS=PROMOTION.DURABLE_WORKER_REPORTS,
+            load_and_promote_report=lambda *args: {"delivery_state": "findings-received"},
+            identity_binding=lambda *args: {"matches": False},
+        ),
+        carrier_module=carrier,
+        script_dir=SCRIPT_ROOT,
+        read_only_boundary_mode="read-only",
+        lifecycle_semantic_input=lambda value: value,
+        materialize_semantic_input=lambda *args, **kwargs: {},
+        semantic_review_paths=lambda _packet: ([], []),
+        adapter_name=lambda *args: "adapter.yaml",
+    )
+
+    assert result == 2
+    assert (primary_attempt / "result.json").read_bytes() == original
+    assert owner.closed == [{"state": "failed"}]
+    assert len(owner.retained) == 1
+    assert emitted[-1]["durable_promotion"]["status"] == "failed"
 
 
 def _support(**overrides):

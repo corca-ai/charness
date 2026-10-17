@@ -213,6 +213,12 @@ promotion. Invalid recovery emits a typed `status: refused` result and retains
 the scratch evidence for diagnosis or retry; only verified promotion may remove
 retained runtime bytes.
 
+For a linked Git worktree, terminal finalization copy-or-verifies the packet and
+complete worker attempt into the primary worktree's matching
+`charness-artifacts/critique/` paths before scratch cleanup. Identical bytes are
+idempotent; a conflicting primary artifact refuses finalization and retains the
+scratch run for diagnosis or retry.
+
 ## Out Of Scope For This Contract
 
 - Charness does not classify section roles (`source` / `derived` /
