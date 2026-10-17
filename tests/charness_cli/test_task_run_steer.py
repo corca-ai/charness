@@ -128,14 +128,30 @@ def test_guard_queue_delivery_precedes_resumed_fake_executor_edit(tmp_path: Path
     assert len(invocations) == 3
     assert invocations[0]["args"] == command[1:]
     runtime_options_start = command.index("--json")
+    model_option_start = command.index("-m")
     expected_resume = [
-        *command[:runtime_options_start],
+        *command[:model_option_start],
         "resume",
         "session-1",
+        *command[model_option_start:runtime_options_start],
         *command[runtime_options_start:],
     ]
     assert invocations[1]["args"] == expected_resume[1:]
     assert invocations[2]["args"] == expected_resume[1:]
+    for invocation in invocations[1:]:
+        args = invocation["args"]
+        resume_index = args.index("resume")
+        assert args[resume_index + 1] == "session-1"
+        assert args.index("--sandbox") < resume_index
+        assert all(
+            index < resume_index for index, value in enumerate(args) if value == "--add-dir"
+        )
+        model_index = args.index("-m")
+        assert model_index > resume_index + 1
+        assert args[model_index + 1] == task_run_runtime.TASK_MODEL
+        config_index = args.index("-c")
+        assert config_index > resume_index + 1
+        assert args[config_index + 1] == "model_reasoning_effort=xhigh"
     assert all(item["executable"] == str(fake) for item in invocations)
     assert all(item["cwd"] == str(repo) for item in invocations)
     assert invocations[0]["prompt"] == "Implement the lane request."
@@ -565,7 +581,7 @@ def test_load_train_lib_inserts_missing_repo_root(monkeypatch) -> None:
     assert sys.path[0] == str(repo)
 
 
-def test_steered_invocation_preserves_complete_codex_command_and_fallback(
+def test_steered_invocation_places_codex_overrides_after_resume_and_keeps_fallback(
     tmp_path: Path,
 ) -> None:
     runtime = tmp_path / "runtime with spaces"
@@ -589,13 +605,26 @@ def test_steered_invocation_preserves_complete_codex_command_and_fallback(
     resumed, prompt, path = task_run_lane_runner.steered_lane_invocation(
         "codex", initial, "Original prompt.", [message], "session-1"
     )
+    model_option_start = initial.index("-m")
     runtime_options_start = initial.index("--json")
     assert resumed == [
-        *initial[:runtime_options_start],
+        *initial[:model_option_start],
         "resume",
         "session-1",
+        *initial[model_option_start:runtime_options_start],
         *initial[runtime_options_start:],
     ]
+    resume_index = resumed.index("resume")
+    model_index = resumed.index("-m")
+    config_index = resumed.index("-c")
+    assert resumed.index("--sandbox") < resume_index
+    assert all(
+        index < resume_index for index, value in enumerate(resumed) if value == "--add-dir"
+    )
+    assert model_index > resume_index + 1
+    assert resumed[model_index + 1] == task_run_runtime.TASK_MODEL
+    assert config_index > resume_index + 1
+    assert resumed[config_index + 1] == "model_reasoning_effort=xhigh"
     assert "Keep names stable." in prompt
     assert path == "session-resume"
 
