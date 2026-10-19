@@ -1,0 +1,69 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'release v8.14.9 candidate: Node 24 mutation-reporter fix since v8.14.8 plus
+  drafted release notes'
+attempt_id: release-8149-candidate
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 61fdbf66c4c8da92f3d19f870c1bf977312cbaa9efd9854c76c1761f3e81ca1d
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-4bd97f26d1ef995e0745efa38c6d29fb/receipt.json
+ledger_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-4bd97f26d1ef995e0745efa38c6d29fb/delivery.json
+producer_run_id: run-release-8149-candidate
+producer_binding:
+  output_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-4bd97f26d1ef995e0745efa38c6d29fb/result.json
+  receipt_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-4bd97f26d1ef995e0745efa38c6d29fb/receipt.json
+  producer_run_id: run-release-8149-candidate
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 33b82dbcbd5c1b6f4075c63f82fbafdd6408bdb97a9c546dae2c15d8dd6cbb46
+receipt_output_sha256: 33b82dbcbd5c1b6f4075c63f82fbafdd6408bdb97a9c546dae2c15d8dd6cbb46
+packet_identity: 9e4454fcb188438118d6122a5e302d59041f4bb338e5540578c9a8a3e08586d3
+reviewed_input_identity: 1db1697d648fba69f3da433fdd011bad19fe43f60c4ba43991a8fdce6833f378
+parent_receipt_identity: parent-818b560d1e50d79120ba641566346a6b1a8145e047b29b4c
+provenance:
+  scope: 'release v8.14.9 candidate: Node 24 mutation-reporter fix since v8.14.8 plus
+    drafted release notes'
+  packet_identity: 9e4454fcb188438118d6122a5e302d59041f4bb338e5540578c9a8a3e08586d3
+  reviewed_input_identity: 1db1697d648fba69f3da433fdd011bad19fe43f60c4ba43991a8fdce6833f378
+  parent_receipt_identity: parent-818b560d1e50d79120ba641566346a6b1a8145e047b29b4c
+  expected_targets_sha256: null
+  attempt_id: release-8149-candidate
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 61fdbf66c4c8da92f3d19f870c1bf977312cbaa9efd9854c76c1761f3e81ca1d
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

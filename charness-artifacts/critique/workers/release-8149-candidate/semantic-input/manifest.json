@@ -1,0 +1,55 @@
+{
+  "kind": "charness.semantic_input_carrier.v1",
+  "entries": [
+    {
+      "path": ".github/workflows/quality-core.yml",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8149-candidate/semantic-input/0000-content.bin",
+      "content_sha256": "b80b633a0c1732440feacd11454b3123ea13f838cccb6ef7db0908e605c43b5e",
+      "carrier_sha256": "b80b633a0c1732440feacd11454b3123ea13f838cccb6ef7db0908e605c43b5e",
+      "source": "a67dba3b72d128f7b568b1f747b49fa01de6459b:.github/workflows/quality-core.yml",
+      "size_bytes": 6523,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "charness-artifacts/release/2026-10-20-v8.14.9-notes.md",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8149-candidate/semantic-input/0001-content.bin",
+      "content_sha256": "8526f62755776ab0ac343a92e82da82abe30999f8ff9b8d6405d92c733aab100",
+      "carrier_sha256": "8526f62755776ab0ac343a92e82da82abe30999f8ff9b8d6405d92c733aab100",
+      "source": "a67dba3b72d128f7b568b1f747b49fa01de6459b:charness-artifacts/release/2026-10-20-v8.14.9-notes.md",
+      "size_bytes": 3091,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/mutation/mutate_and_restore.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8149-candidate/semantic-input/0002-content.bin",
+      "content_sha256": "eb09b4eeefedf68737b28622d2fd1529416c2b32b73817ce7a70b7c3f835d043",
+      "carrier_sha256": "eb09b4eeefedf68737b28622d2fd1529416c2b32b73817ce7a70b7c3f835d043",
+      "source": "a67dba3b72d128f7b568b1f747b49fa01de6459b:scripts/mutation/mutate_and_restore.py",
+      "size_bytes": 30226,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/mutation/mutation_test_reporters.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8149-candidate/semantic-input/0003-content.bin",
+      "content_sha256": "31f202c9c764d926a6f1ae64c6d947c2769aa2b94cf4e1fec1151cef9ca532c9",
+      "carrier_sha256": "31f202c9c764d926a6f1ae64c6d947c2769aa2b94cf4e1fec1151cef9ca532c9",
+      "source": "a67dba3b72d128f7b568b1f747b49fa01de6459b:scripts/mutation/mutation_test_reporters.py",
+      "size_bytes": 21739,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "tests/quality_gates/test_mutation_test_reporters.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8149-candidate/semantic-input/0004-content.bin",
+      "content_sha256": "9f3a07704e2489c4212ee566d97f435258975431e996d444f20ecd22b77a9b59",
+      "carrier_sha256": "9f3a07704e2489c4212ee566d97f435258975431e996d444f20ecd22b77a9b59",
+      "source": "a67dba3b72d128f7b568b1f747b49fa01de6459b:tests/quality_gates/test_mutation_test_reporters.py",
+      "size_bytes": 36356,
+      "prompt_encoding": "utf-8"
+    }
+  ]
+}

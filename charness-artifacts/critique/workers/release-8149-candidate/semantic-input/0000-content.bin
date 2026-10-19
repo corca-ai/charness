@@ -1,0 +1,160 @@
+# charness:gate-policy local-gate-subset-mirror
+# Every quality step below verbatim re-runs a repo-owned validator the
+# canonical local gate already enforces (see maintainer-local-enforcement.md
+# §Local-gate-subset mirror workflows) — adding a step that is NOT in the
+# local gate graph disqualifies the marker.
+# Authored by the 2026-06-10 next-queue goal (slice 3). The local
+# run-quality / pre-push gate is the maintainer-machine bundle proof; this
+# workflow adds a remote authoritative LIGHT layer that catches a bypass (a
+# direct push without the local hooks). Expensive mutation coverage is a
+# release-boundary or scheduled-deeper check, not a push/PR gate. It is
+# repo-local CI config: installed-plugin consumer repos inherit nothing from it.
+#
+# Deliberately NOT the full run-quality broad gate: specdown, the
+# agent-browser runtime gates, and the full local check queue stay
+# local/scheduled surfaces (see mutation-tests.yml for the scheduled deeper
+# check). Each step below invokes a repo-owned validator directly, so the
+# rules stay single-source — this file only schedules them.
+
+name: Quality Core
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-core-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core:
+    name: Core deterministic gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Cache native repograph
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cargo
+            native/repograph/target
+          key: ${{ runner.os }}-native-repograph-${{ hashFiles('native/repograph/Cargo.lock', 'native/repograph/rust-toolchain.toml') }}
+
+      - name: Provision native repograph
+        working-directory: native/repograph
+        run: cargo build --release --locked
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      - name: Setup Node
+        # check-markdown.sh resolves markdownlint-cli2 via npm exec; npm ci
+        # pins it to the lockfile version instead of fetching latest.
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Install core gate dependencies
+        # ruff pinned so the bypass-catcher only reds on repo regressions,
+        # not on new upstream lint rules.
+        run: pip install -r packaging/bootstrap-requirements.txt "ruff==0.15.10"
+
+      - name: Materialize the generated plugin export
+        # PROVISIONING, not a gate step -- the `local-gate-subset-mirror` marker
+        # above governs the quality steps below, and this adds no rule. It is the
+        # sibling of "Provision native repograph": both build an input the gates
+        # read rather than checking one.
+        #
+        # `plugins/` was untracked in 6e05e026e because it is derived and the
+        # producer regenerates it byte-identically. What that commit did not carry
+        # is that gates and tests READ the mirror, so a checkout without it is a
+        # different tree than any maintainer machine, where `charness init/update`
+        # has always materialized it. That divergence is what made main red for
+        # anyone who clones: measured on a fresh clone of 030aa8262, the standing
+        # suite is 94 failed / 16 errors without this step and clean with it, and
+        # `check_doc_links.py` fails on `docs/host-packaging.md` before pytest runs.
+        run: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .
+
+      - name: Lint (ruff)
+        # Invokes the repo-owned entrypoint rather than retyping its path list, which is
+        # what this workflow's `local-gate-subset-mirror` marker claims of every step.
+        # The retyped copy this replaced had drifted: it omitted skills/shared/scripts,
+        # so ten shared-contract scripts were invisible to the bypass-catcher.
+        run: ./scripts/check-python-lint.sh
+
+      - name: Validate plugin packaging export
+        run: python3 scripts/plugin_export/validate_packaging.py --repo-root .
+
+      - name: Validate task_run PATH independence
+        # Local gate mirror: quality-gates.yaml `path-independence` phase.
+        run: python3 scripts/gates/check_path_independence.py --repo-root .
+
+      - name: Validate doc links
+        run: python3 scripts/gates/check_doc_links.py --repo-root .
+
+      # Its sibling above scans the authoring tree and deliberately not
+      # `plugins/**`, so a link broken only by the export transform is invisible
+      # to it. Both gates share a staged-`.md` commit trigger that does NOT scope
+      # either of them — a link verdict also flips when the TARGET is renamed,
+      # which stages no `.md` at all — so this remote step is the layer that
+      # catches that case on a push. In the local gate graph via run-quality.sh
+      # and the commit-time plan, so the subset-mirror marker above holds.
+      - name: Validate plugin-mirror doc links
+        run: python3 -m tools.check_plugin_doc_links --repo-root .
+
+      - name: Validate plugin-dir references
+        run: python3 scripts/native_gate_lib.py --repo-root . plugin-refs --repo-root .
+
+      - name: Validate timing-layer completeness
+        run: python3 -m tools.check_timing_layer_completeness --repo-root .
+
+      - name: Validate markdown
+        run: ./scripts/check-markdown.sh
+
+      - name: Validate workflow action majors
+        run: python3 scripts/gates/check_github_actions.py --repo-root .
+
+  node-test-reporter:
+    name: Node ${{ matrix.node-version }} mutation reporter
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        node-version: ["22", "24"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+          cache: pip
+          cache-dependency-path: packaging/mutation-requirements.txt
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install mutation test dependencies
+        run: pip install -r packaging/mutation-requirements.txt
+
+      - name: Test Node mutation reporter
+        run: python3 -m pytest -q tests/quality_gates/test_mutation_test_reporters.py

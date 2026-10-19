@@ -1,0 +1,27 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Release lock-in over the supplied code and drafted notes",
+  "verdict": "pass",
+  "target_observations": null,
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "The Node reporter refuses spec output, which could seem to leave Node 24 unsupported.",
+      "bin": "Intentional fail-closed behavior",
+      "disposition": "For Node --test plans, prepare_command adds --test-reporter=tap unless the plan explicitly selects a reporter. Tests cover command preparation and a real Node mutation run."
+    },
+    {
+      "concern": "The Node 22 and 24 matrix is configured, but this packet contains no CI run results.",
+      "bin": "Pending execution evidence",
+      "disposition": "The workflow runs the reporter tests on both majors; confirm the candidate’s CI results before treating those runs as observed passes."
+    }
+  ],
+  "next_move": "Proceed to the separate claims review; check the Node 22 and 24 CI results before release lock-in.",
+  "non_claims": [
+    "This is a static review of the supplied payload; I did not independently execute the tests or verify the contents of the v8.14.8 notes."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "9e4454fcb188438118d6122a5e302d59041f4bb338e5540578c9a8a3e08586d3",
+  "reviewed_input_identity_sha256": "1db1697d648fba69f3da433fdd011bad19fe43f60c4ba43991a8fdce6833f378"
+}
