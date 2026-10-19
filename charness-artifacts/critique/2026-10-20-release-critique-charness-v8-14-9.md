@@ -24,7 +24,7 @@ Release the candidate at `a67dba3b7` as patch version 8.14.9. The candidate carr
 - Claim under test: the candidate is a coherent patch release; the TAP default is correct and tested at its stated level, and the drafted notes match the code range.
 - Changed surfaces: the code and test paths in `9cf70ec21..a67dba3b7` (mutation reporters, their tests, the quality-core workflow) plus the drafted notes.
 - Minimum sufficient proof: a verified committed-ref critique packet, one independent read-only file-backed reviewer over the exact range, and the parent's own run of the reporter test file under Node `v24.14.1` and Node `v22.23.2` (87 passed on each).
-- Deliberately omitted checks: no CI run result is claimed, because the workflow change only runs once the release is pushed; the reviewer did not execute tests, so the parent's local runs stand in for that.
+- Deliberately omitted checks: no CI run result is claimed, because the workflow has not run on this candidate yet (it also runs on pull requests, manual dispatch, and pushes to `main`); the reviewer did not execute tests, so the parent's local runs stand in for that.
 - Verifier contract: `skills/shared/references/bounded-review-result.schema.json` plus packet and worker-report identity readback; the verifier did not change in this release.
 - Failure classification: none
 - Negative control: none with rationale: the review judged a frozen committed candidate and produced no failure claim to reproduce.
@@ -52,7 +52,7 @@ Release the candidate at `a67dba3b7` as patch version 8.14.9. The candidate carr
 
 ## Structured Findings
 
-- F1 | bin: valid-but-defer | evidence: moderate | ref: .github/workflows/quality-core.yml | action: defer | note: the reviewer asked that the Node 22 and 24 CI results be checked; they cannot exist before push, so the release records the matrix as configured and not as observed.
+- F1 | bin: valid-but-defer | evidence: moderate | ref: .github/workflows/quality-core.yml | action: defer | note: the reviewer asked that the Node 22 and 24 CI results be checked; none exist before the candidate is pushed, so the release records the matrix as configured and not as observed.
 
 ## Operator Action Required
 
@@ -97,3 +97,4 @@ worker-delivered: one file-backed read-only worker delivered a `pass` verdict wi
 - Consumer: the mutation baseline reader, CI, and maintainers running the quality lane.
 - Owning surface: the fix lives in the existing reporter owner; the CI matrix lives in the existing quality-core workflow.
 - Verdict: owned-correctly
+- Post-release note: the claims reviewer observed that the new CI job sits under the workflow's `local-gate-subset-mirror` policy marker although it is meant to be the first place a Node 24 failure appears; whether the job should move out from under that marker is deferred to a follow-up.
