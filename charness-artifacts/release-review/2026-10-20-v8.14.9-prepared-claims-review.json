@@ -1,0 +1,65 @@
+{
+  "schema_version": "charness.release.claims-review.v4",
+  "prepared_commit": "c01d95e9dce654e135f81af3eba6512497f62012",
+  "release_record_path": "charness-artifacts/release/latest.md",
+  "release_record_sha256": "d1c463030bbf9ea22ed43db0d65d290db68ae7d41ab04e2ec489599afee02221",
+  "target_version": "8.14.9",
+  "tag_name": "v8.14.9",
+  "verdict": "pass",
+  "preparer_context": "parent release session: merged one reviewed lane onto main, one file-backed critique worker, authored v8.14.9 notes, helper-prepared release commit",
+  "reviewer_context": "separate claude-code bounded-reviewer subagent (opus): record-vs-tree audit, no code review, read-only Read/Grep/Glob",
+  "observer_distinctness": {
+    "kind": "separate-agent-context",
+    "signal": "bounded-reviewer subagent (Read, Grep, Glob only) delivered a pass verdict with advisories and no blockers to the parent context, twice, the second time on the re-prepared record",
+    "review_artifact": "charness-artifacts/release-review/2026-10-20-v8.14.9-claims-review.md"
+  },
+  "review_scope": {
+    "blocking_paths": [
+      ".claude-plugin/marketplace.json",
+      ".github/workflows/quality-core.yml",
+      "charness-artifacts/critique/release-8149-candidate-packet.json",
+      "charness-artifacts/critique/release-8149-candidate-packet.md",
+      "charness-artifacts/critique/release-8149-candidate-paths.txt",
+      "charness-artifacts/critique/workers/release-8149-candidate/attempt-manifest.json",
+      "charness-artifacts/critique/workers/release-8149-candidate/backend.stderr",
+      "charness-artifacts/critique/workers/release-8149-candidate/backend.stdout",
+      "charness-artifacts/critique/workers/release-8149-candidate/bounded-review-result.schema.json",
+      "charness-artifacts/critique/workers/release-8149-candidate/capability.json",
+      "charness-artifacts/critique/workers/release-8149-candidate/delivery.json",
+      "charness-artifacts/critique/workers/release-8149-candidate/lifecycle.yaml",
+      "charness-artifacts/critique/workers/release-8149-candidate/receipt.json",
+      "charness-artifacts/critique/workers/release-8149-candidate/result.json",
+      "charness-artifacts/critique/workers/release-8149-candidate/review-prompt.md",
+      "charness-artifacts/critique/workers/release-8149-candidate/run-plan.json",
+      "charness-artifacts/critique/workers/release-8149-candidate/runner.stderr",
+      "charness-artifacts/critique/workers/release-8149-candidate/runner.stdout",
+      "charness-artifacts/critique/workers/release-8149-candidate/semantic-input/0000-content.bin",
+      "charness-artifacts/critique/workers/release-8149-candidate/semantic-input/0001-content.bin",
+      "charness-artifacts/critique/workers/release-8149-candidate/semantic-input/0002-content.bin",
+      "charness-artifacts/critique/workers/release-8149-candidate/semantic-input/0003-content.bin",
+      "charness-artifacts/critique/workers/release-8149-candidate/semantic-input/0004-content.bin",
+      "charness-artifacts/critique/workers/release-8149-candidate/semantic-input/manifest.json",
+      "charness-artifacts/critique/workers/release-8149-candidate/worker-report.yaml",
+      "charness-artifacts/probe/2026-10-20-v8.14.8-release-observer.json",
+      "charness-artifacts/release-review/2026-10-20-v8.14.8-prepared-claims-review.json",
+      "charness-artifacts/release/.8.14.8-prepush-quality.json.charness-receipt.json",
+      "charness-artifacts/release/2026-10-20-v8.14.9-notes.md",
+      "charness-artifacts/release/8.14.8-prepush-quality.json",
+      "charness-artifacts/release/latest.md",
+      "packaging/charness.json",
+      "scripts/mutation/mutate_and_restore.py",
+      "scripts/mutation/mutation_test_reporters.py",
+      "tests/quality_gates/test_mutation_test_reporters.py"
+    ],
+    "advisory_paths": [
+      "charness-artifacts/critique/2026-10-20-release-critique-charness-v8-14-9.md",
+      "charness-artifacts/release-review/2026-10-20-v8.14.8-claims-review.md"
+    ]
+  },
+  "scope_basis": {
+    "base_ref": "refs/tags/v8.14.8",
+    "changed_paths_sha256": "111ec42527f845cabfde03eb7603d38869a89f1baaa4ad46fcad0dd61f9cabf6",
+    "changed_path_count": 37
+  },
+  "advisory_findings": []
+}
