@@ -673,6 +673,18 @@ def test_node_test_plans_default_to_tap_without_overriding_explicit_reporters() 
     ]
 
 
+def test_node_reporter_leaves_commands_without_a_test_option_unchanged() -> None:
+    assert reporters.NodeTestReporter.prepare_command(["node", "run-tests.js"]) == [
+        "node",
+        "run-tests.js",
+    ]
+    assert reporters.NodeTestReporter.prepare_command(["node", "--", "--test"]) == [
+        "node",
+        "--",
+        "--test",
+    ]
+
+
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
 def test_a_module_breaking_mutant_is_refused_not_killed(tmp_path: Path) -> None:
     """End to end, against real `node --test`: the node analogue of the pytest
