@@ -657,6 +657,22 @@ def test_the_refusal_survives_an_unregistered_reporter_name() -> None:
     assert "some-out-of-tree-reporter" in message
 
 
+def test_node_test_plans_default_to_tap_without_overriding_explicit_reporters() -> None:
+    assert reporters.NodeTestReporter.prepare_command(["node", "--test"]) == [
+        "node",
+        "--test",
+        "--test-reporter=tap",
+    ]
+    assert reporters.NodeTestReporter.prepare_command(
+        ["node", "--test", "--test-reporter", "spec"]
+    ) == ["node", "--test", "--test-reporter", "spec"]
+    assert reporters.NodeTestReporter.prepare_command(["python3", "-m", "pytest"]) == [
+        "python3",
+        "-m",
+        "pytest",
+    ]
+
+
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
 def test_a_module_breaking_mutant_is_refused_not_killed(tmp_path: Path) -> None:
     """End to end, against real `node --test`: the node analogue of the pytest
