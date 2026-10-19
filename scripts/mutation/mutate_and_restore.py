@@ -477,7 +477,6 @@ def run_mutant(
 
 def run_sweep(plan: dict, repo_root: Path, emit=print) -> Sweep:
     MutationRecovery(repo_root).assert_clear()
-    command = plan["test_command"]
     # An unknown reporter name is REFUSED, never silently defaulted. A plan asking
     # for a reader this harness does not have, answered with pytest's, reports
     # `baseline REFUSED` on a healthy tree and blames the tree -- a proof surface
@@ -491,6 +490,11 @@ def run_sweep(plan: dict, repo_root: Path, emit=print) -> Sweep:
         )
         emit(f"baseline REFUSED: {refusal}")
         return Sweep(baseline=Baseline(returncode=None, passed=None, output="", refusal=refusal))
+    command = (
+        reporter.prepare_command(plan["test_command"])
+        if reporter is _reporters.NodeTestReporter
+        else plan["test_command"]
+    )
     baseline = measure_baseline(command, repo_root, reporter)
     # The count goes out BEFORE the first mutant, so a reader of a truncated log
     # still sees what the sweep was measured against.

@@ -66,6 +66,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from pathlib import Path
 
 #: pytest, unchanged from the hardcoded originals so this extraction cannot
 #: alter a single existing verdict.
@@ -201,6 +202,23 @@ class NodeTestReporter:
         "detail this reader needs to tell a broken module from a caught mutation -- "
         "so add `--test-reporter=tap` to the plan's test_command"
     )
+
+    @classmethod
+    def prepare_command(cls, command: list[str]) -> list[str]:
+        """Ask Node's test runner for TAP unless the plan chose a reporter."""
+        if not command or Path(command[0]).name.casefold() not in {"node", "node.exe"}:
+            return command
+        try:
+            test_index = command.index("--test")
+        except ValueError:
+            return command
+        option_end = command.index("--") if "--" in command else len(command)
+        if test_index >= option_end or any(
+            arg == "--test-reporter" or arg.startswith("--test-reporter=")
+            for arg in command[1:option_end]
+        ):
+            return command
+        return [*command[: test_index + 1], "--test-reporter=tap", *command[test_index + 1 :]]
 
     @staticmethod
     def looks_like_spec(output: str) -> bool:
@@ -436,11 +454,16 @@ def unreadable_refusal(configured: str, output: str) -> str:
         # The one unreadable case with a precise cause and a one-flag fix. Without
         # this the operator gets a generic "nothing could read it" over output that
         # is obviously node's, which is the dead end this whole seam exists to end.
+        reader_advice = (
+            "add `--test-reporter=tap` to the plan's test_command"
+            if configured == NodeTestReporter.name
+            else "select the `node-test` reporter and add `--test-reporter=tap` to the plan's test_command"
+        )
         return (
             detail + "; this IS node output, in the `spec` reporter. That format omits the "
             "file-level failure detail needed to tell a broken module from a caught "
-            "mutation, so it is refused rather than half-read -- add "
-            "`--test-reporter=tap` to the plan's test_command"
+            "mutation, so it is refused rather than half-read -- "
+            + reader_advice
         )
     if others:
         detail += (
