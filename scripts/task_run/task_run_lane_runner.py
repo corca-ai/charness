@@ -128,9 +128,10 @@ def build_lane_prompt(
     """Shape the lane prompt; implementation lanes get prompt-shaping directives.
 
     A require-change scope is a write boundary, not evidence that the requested
-    change is warranted. The implementation-lane shaping requires concept,
-    consumer, owner, and evidence-level validation before editing, then defines
-    progress and typed-blocker signals; all other lanes pass through untouched.
+    change is warranted. Implementation lanes investigate the concept,
+    consumer, owner, and evidence level before editing, then follow the prompt's
+    evidence-based stop rule and typed progress signals; all other lanes pass
+    through untouched.
     """
     shaped = prompt
     if require_change:
@@ -146,12 +147,16 @@ def build_lane_prompt(
             "falsifier that can see that level. A fixture or simulation may own an "
             "honestly labelled lower-level claim, but must never substitute for or "
             "be reported as product or release behavior. If the available observer "
-            "cannot see the requested level, proceed only when the claim can be "
-            "explicitly narrowed within user intent while retaining the higher "
-            "non-claim. If a required premise is false, the required owner is "
-            "outside scope, or the claim cannot be narrowed honestly, do not edit; "
-            "stop promptly and reply on its own line: "
-            "BLOCKED: premise/scope mismatch - <concrete reason>.\n"
+            "cannot see the requested level, narrow the claim when user intent "
+            "permits; otherwise report the evidence limitation and make no claim "
+            "above that level. Stop before editing for a false premise only after "
+            "investigation demonstrates it; quote the contradicting file:line and "
+            "reply on its own line: "
+            "BLOCKED: premise/scope mismatch - <concrete reason>. Unvalidated "
+            "premises or large work are reasons to investigate or bound, not stop "
+            "conditions. In multi-item work, block only contradicted items and "
+            "continue with the rest. For a design decision, make the smallest "
+            "reasonable choice and report it, or return the options.\n"
             "After the first scoped edit has landed (after you emitted EDITING), "
             "never run git restore, git reset, git checkout, or git clean to undo "
             "scoped files, even if you discover a scope problem. Keep the "
@@ -175,9 +180,10 @@ def build_lane_prompt(
             "If sibling lanes share a new interface, builder, or simulator, define "
             "and land it in a seam lane before fan-out; each sibling must declare "
             "that seam lane as a hard `depends_on`.\n"
-            "If you cannot make a scoped change, stop promptly and reply with a "
-            "typed blocker on its own line: BLOCKED: <concrete reason>. Do not "
-            "consume the run in further analysis once blocked.\n"
+            "If no scoped change is possible after investigation, reply with a "
+            "typed blocker on its own line that names the concrete evidence and "
+            "needed next step; continue independent items first. Do not consume "
+            "the run in further analysis once a concrete blocker is established.\n"
             "---\n"
             f"{prompt}"
         )

@@ -32,12 +32,32 @@ def test_implementation_prompt_separates_edit_scope_from_judgment() -> None:
     assert "canonical behavior owner" in shaped
     assert "evidence level with an observer and falsifier" in shaped
     assert "fixture or simulation may own an honestly labelled lower-level claim" in shaped
-    assert "must never substitute for or be reported as product or release behavior" in shaped
-    assert "explicitly narrowed within user intent" in shaped
-    assert "retaining the higher non-claim" in shaped
-    assert "claim cannot be narrowed honestly" in shaped
+    assert (
+        "must never substitute for or be reported as product or release behavior"
+        in shaped
+    )
+    assert "narrow the claim when user intent permits" in shaped
+    assert "report the evidence limitation and make no claim above that level" in shaped
+    assert (
+        "Stop before editing for a false premise only after investigation demonstrates it"
+        in shaped
+    )
+    assert "quote the contradicting file:line" in shaped
+    assert (
+        "Unvalidated premises or large work are reasons to investigate or bound, not stop conditions"
+        in shaped
+    )
+    assert "block only contradicted items and continue with the rest" in shaped
+    assert (
+        "make the smallest reasonable choice and report it, or return the options"
+        in shaped
+    )
+    assert "If no scoped change is possible after investigation" in shaped
+    assert "names the concrete evidence and needed next step" in shaped
+    assert "continue independent items first" in shaped
     assert "EDITING" in shaped
     assert "BLOCKED: premise/scope mismatch - <concrete reason>" in shaped
+    assert "real owner <path> is outside declared scope" in shaped
     assert shaped.rstrip().endswith("Fix the lease delta.")
 
 
