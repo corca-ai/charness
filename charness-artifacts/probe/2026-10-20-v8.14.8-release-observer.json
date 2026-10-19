@@ -1,0 +1,45 @@
+{
+  "schema_version": "charness.release_observer.v1",
+  "target": {
+    "version": "8.14.8",
+    "tag": "v8.14.8",
+    "commit": "6e8581b2b0ced5b721c384c3deb02816156cb129",
+    "release_url": "https://github.com/corca-ai/charness/releases/tag/v8.14.8"
+  },
+  "observed_at": "2026-10-20T00:00:00+00:00",
+  "distinct_channel_verification": {
+    "channel": "https-fetch",
+    "status": "confirmed",
+    "fetched_url": "https://github.com/corca-ai/charness/releases/tag/v8.14.8",
+    "http_status": 200,
+    "expected_content": "v8.14.8",
+    "observer": "unauthenticated-http (credential-free; same host/process as publisher)",
+    "establishes": "public page reachable, names the tag, and contains the release notes Known issue text",
+    "does_not_establish": "a machine-distinct observer"
+  },
+  "installed_readback": {
+    "install_refresh": {
+      "command": "charness update",
+      "status": "refreshed"
+    },
+    "version": {
+      "command": "charness version",
+      "before": "8.14.6",
+      "after": "8.14.8",
+      "status": "confirmed"
+    },
+    "doctor": {
+      "command": "charness doctor",
+      "checkout_version": "8.14.8",
+      "codex_source_version": "8.14.8",
+      "codex_cache_manifest_version": "8.14.8",
+      "codex_source_cache_drift": false,
+      "status": "confirmed"
+    }
+  },
+  "non_claims": [
+    "The helper's own closeout did not run; the GitHub release was created by hand with the helper's command after a PATH-selected older gh rejected --verify-tag.",
+    "observed_at is the session date, not a measured timestamp.",
+    "Active Claude and Codex sessions were not restarted or observed loading the new plugin."
+  ]
+}
