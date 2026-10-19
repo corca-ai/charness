@@ -80,21 +80,27 @@ def _artifact_summary(repo_root: Path, scaffold: dict[str, Any]) -> dict[str, An
         "current_pointer_symlink_target": scaffold["current_pointer_symlink_target"],
     }
     summary.update(declarations.risk_summary(artifact_path, risk_interrupt_lib))
-    summary["effective_routing"] = _effective_routing(repo_root, artifact_path, summary)
+    summary["effective_routing"] = _effective_routing(
+        repo_root, artifact_path, summary, scaffold
+    )
     return summary
 
 
 def _effective_routing(
-    repo_root: Path, artifact_path: Path, artifact: dict[str, Any]
+    repo_root: Path,
+    artifact_path: Path,
+    artifact: dict[str, Any],
+    scaffold: dict[str, Any],
 ) -> dict[str, Any]:
     """Compose the artifact's effective risk route once.
 
     ``risk_summary`` deliberately preserves what the artifact declared, including
     parser diagnostics and pressure. That raw history is not by itself the
-    effective route: a resolved forced-risk record is prior memory only after the
-    canonical interrupt and spec handoff parsers prove the same interrupt/seam and
-    an allowed implementation handoff. The current-slice freshness rule belongs
-    to ``plan_risk_interrupt`` and is intentionally not replayed here.
+    effective route: a resolved forced-risk record that this run does not continue
+    is prior memory, so its interrupt and handoff do not route the new artifact.
+    The existing matching, allowed implementation handoff can also release a
+    resolved record. The current-slice freshness rule belongs to
+    ``plan_risk_interrupt`` and is intentionally not replayed here.
     """
     raw_forced = bool(artifact.get("requires_interrupt"))
     scope_established = bool(artifact.get("risk_scope_established", True))
@@ -109,6 +115,17 @@ def _effective_routing(
     if not raw_forced or artifact.get("resolution") != "resolved":
         return routing
 
+    def prior_record_route() -> dict[str, Any]:
+        if not _continues_existing_artifact(artifact, scaffold):
+            routing.update(
+                {
+                    "risk_interrupt_active": False,
+                    "requires_current_artifact_read": False,
+                    "reason": "resolved-forced-risk-prior-record-not-continued",
+                }
+            )
+        return routing
+
     try:
         interrupt = risk_interrupt_lib.parse_debug_interrupt(artifact_path)
     except (risk_interrupt_lib.ValidationError, OSError, UnicodeError) as exc:
@@ -118,10 +135,10 @@ def _effective_routing(
                 "handoff_error": str(exc),
             }
         )
-        return routing
+        return prior_record_route()
     if not interrupt.get("present") or not interrupt.get("forced"):
         routing["reason"] = "resolved-forced-risk-debug-interrupt-incomplete"
-        return routing
+        return prior_record_route()
 
     handoff_artifact = str(interrupt["handoff_artifact"])
     routing["handoff_artifact"] = handoff_artifact
@@ -137,7 +154,7 @@ def _effective_routing(
                 "handoff_error": str(exc),
             }
         )
-        return routing
+        return prior_record_route()
 
     if handoff["seam_summary"] != interrupt["seam"]:
         routing.update(
@@ -146,7 +163,7 @@ def _effective_routing(
                 "handoff_error": "spec handoff seam summary does not match debug seam",
             }
         )
-        return routing
+        return prior_record_route()
     if handoff["chosen_next_step"] != "impl" or handoff["impl_status"] != "allowed":
         routing.update(
             {
@@ -154,7 +171,7 @@ def _effective_routing(
                 "handoff_error": "spec handoff must choose impl with Impl Status: allowed",
             }
         )
-        return routing
+        return prior_record_route()
 
     routing.update(
         {

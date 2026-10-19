@@ -537,7 +537,7 @@ def test_resolved_prior_memory_with_invalid_first_risk_declaration_stays_blockin
     assert "bogus" in payload["artifact"]["risk_parse_error"]
 
 
-def test_resolved_prose_risk_without_interrupt_sections_stays_read_first(
+def test_resolved_prose_risk_without_interrupt_sections_is_prior_memory_for_new_run(
     tmp_path: Path,
 ) -> None:
     repo = tmp_path / "repo"
@@ -558,14 +558,16 @@ def test_resolved_prose_risk_without_interrupt_sections_stays_read_first(
     payload = run_plan(repo, subject="fresh-subject")
 
     assert payload["artifact"]["requires_interrupt"] is True
-    assert payload["artifact"]["effective_routing"]["risk_interrupt_active"] is True
-    assert payload["artifact"]["effective_routing"]["requires_current_artifact_read"] is True
+    assert payload["artifact"]["effective_routing"]["risk_interrupt_active"] is False
+    assert payload["artifact"]["effective_routing"]["requires_current_artifact_read"] is False
     assert payload["artifact"]["effective_routing"]["reason"] == (
-        "resolved-forced-risk-debug-interrupt-incomplete"
+        "resolved-forced-risk-prior-record-not-continued"
     )
-    assert payload["mode"] == "risk-interrupt"
-    assert payload["next_action"]["kind"] == "interrupt-to-spec"
-    assert payload["required_reads"][0]["path"] == "charness-artifacts/debug/latest.md"
+    assert payload["mode"] == "fresh-investigation-with-prior-memory"
+    assert payload["next_action"]["kind"] == "scaffold-debug-artifact"
+    required_paths = [read["path"] for read in payload["required_reads"]]
+    assert required_paths[0] == "scripts/scaffold_debug_artifact.py"
+    assert "charness-artifacts/debug/latest.md" in required_paths
 
 
 def test_resolved_factor_now_with_allowed_handoff_becomes_prior_memory(tmp_path: Path) -> None:
@@ -584,7 +586,7 @@ def test_resolved_factor_now_with_allowed_handoff_becomes_prior_memory(tmp_path:
 
 
 @pytest.mark.parametrize("resolution", [_MISSING, "open", "unknown"])
-def test_unclosed_or_unknown_resolution_keeps_forced_risk_active(
+def test_unresolved_or_unparseable_resolution_keeps_forced_risk_active(
     tmp_path: Path, resolution: object
 ) -> None:
     repo = tmp_path / "repo"
@@ -598,6 +600,37 @@ def test_unclosed_or_unknown_resolution_keeps_forced_risk_active(
     assert payload["artifact"]["risk_parse_error"] is None
 
 
+def test_resolved_forced_risk_non_impl_handoff_is_prior_memory_for_new_run(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    write_forced_risk_artifact(repo)
+    # The latest record has no subject. Its spec handoff belongs to that closed
+    # record, even when a new subject starts before the handoff reaches impl.
+    latest_path = repo / "charness-artifacts" / "debug" / "latest.md"
+    assert "Subject:" not in latest_path.read_text(encoding="utf-8")
+    write_spec_handoff(repo, next_step="spec", impl_status="blocked")
+
+    payload = run_plan(repo, subject="fresh-subject")
+
+    assert payload["artifact"]["resolution"] == "resolved"
+    assert payload["artifact"]["effective_routing"]["risk_interrupt_active"] is False
+    assert payload["artifact"]["effective_routing"]["reason"] == (
+        "resolved-forced-risk-prior-record-not-continued"
+    )
+    assert payload["mode"] == "fresh-investigation-with-prior-memory"
+    assert payload["next_action"]["kind"] == "scaffold-debug-artifact"
+    prior_read = next(
+        read
+        for read in payload["required_reads"]
+        if read["path"] == "charness-artifacts/debug/latest.md"
+    )
+    assert "prior incident" in prior_read["why"]
+    assert "references/document-seams.md" not in {
+        read["path"] for read in payload["required_reads"]
+    }
+
+
 @pytest.mark.parametrize(
     ("variant", "kwargs"),
     [
@@ -609,7 +642,7 @@ def test_unclosed_or_unknown_resolution_keeps_forced_risk_active(
         ("wrong next step", {"next_step": "critique"}),
     ],
 )
-def test_resolved_forced_risk_stays_active_without_allowed_matching_handoff(
+def test_resolved_forced_risk_without_allowed_matching_handoff_is_prior_memory_when_not_continued(
     tmp_path: Path, variant: str, kwargs: dict[str, object] | None
 ) -> None:
     repo = tmp_path / "repo"
@@ -619,15 +652,18 @@ def test_resolved_forced_risk_stays_active_without_allowed_matching_handoff(
 
     payload = run_plan(repo, subject="fresh-subject")
 
-    assert_active_blocker(payload)
     assert payload["artifact"]["resolution"] == "resolved"
     assert payload["artifact"]["risk_classes"] == ["repeated-symptom"]
     assert payload["artifact"]["risk_parse_error"] is None
-    assert payload["artifact"]["effective_routing"]["reason"].startswith(
-        "resolved-forced-risk-handoff"
-    ) or payload["artifact"]["effective_routing"]["reason"].startswith(
-        "resolved-forced-risk-debug"
+    assert payload["artifact"]["effective_routing"]["risk_interrupt_active"] is False
+    assert payload["artifact"]["effective_routing"]["reason"] == (
+        "resolved-forced-risk-prior-record-not-continued"
     )
+    assert payload["mode"] == "fresh-investigation-with-prior-memory"
+    assert payload["next_action"]["kind"] == "scaffold-debug-artifact"
+    required_paths = [read["path"] for read in payload["required_reads"]]
+    assert "charness-artifacts/debug/latest.md" in required_paths
+    assert "references/document-seams.md" not in required_paths
 
 
 @pytest.mark.parametrize("risk_class", ["bogus", "external-seam, bogus"])
@@ -921,14 +957,21 @@ def test_the_shape_packet_validates_the_artifact_this_run_writes(tmp_path: Path)
     assert scaffold_packet["validator_command"].endswith(f"--paths {write_path}")
 
 
-def test_resolved_invalid_canonical_interrupt_stays_active(tmp_path: Path) -> None:
+def test_resolved_invalid_canonical_interrupt_is_prior_memory_when_not_continued(
+    tmp_path: Path,
+) -> None:
     repo = tmp_path / "repo"
     write_forced_risk_artifact(repo)
     write_spec_handoff(repo)
     path = repo / "charness-artifacts/debug/latest.md"
     path.write_text(path.read_text(encoding="utf-8").replace("- Critique Required: yes", "- Critique Required: no"), encoding="utf-8")
     payload = run_plan(repo, subject="fresh-subject")
-    assert_active_blocker(payload)
+    assert payload["artifact"]["effective_routing"]["risk_interrupt_active"] is False
     assert payload["artifact"]["risk_parse_error"] is None
-    assert payload["artifact"]["effective_routing"]["reason"] == "resolved-forced-risk-debug-interrupt-invalid"
+    assert payload["artifact"]["effective_routing"]["reason"] == (
+        "resolved-forced-risk-prior-record-not-continued"
+    )
     assert "Critique Required" in payload["artifact"]["effective_routing"]["handoff_error"]
+    assert payload["mode"] == "fresh-investigation-with-prior-memory"
+    required_paths = [read["path"] for read in payload["required_reads"]]
+    assert "charness-artifacts/debug/latest.md" in required_paths

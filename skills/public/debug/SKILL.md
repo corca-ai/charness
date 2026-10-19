@@ -26,8 +26,10 @@ For the same open investigation, reuse a known emitted target, subject,
 Check relevant pointer, resolution, adapter/validator, and repo-wide risk deltas
 before editing; warm context is not a cached verdict. If any identity or
 contract is missing, changed, resolved, or belongs to another subject, use the
-planner path below. Keep cross-subject risk interrupts and current evidence
-reads in either path.
+planner path below. Unresolved forced-risk records continue to interrupt every
+run, including runs about another subject. A resolved record the run does not
+continue stays available as prior memory, and its handoff does not route the new
+artifact. Keep current evidence reads in either path.
 
 When discovery is needed, resolve the adapter and run the planner before broad
 search, artifact edits, or repair.
