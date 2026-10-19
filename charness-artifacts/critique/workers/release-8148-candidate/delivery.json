@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8148-candidate",
+      "scope": "release v8.14.8: four fixes since v8.14.7 (steer resume model/effort, critique linked review carriers, debug prior-record routing, task-run premise stop)",
+      "packet_identity": "ec2fa69b1d239bb34d67bfe0a876b9142541337a5176b01ad67efd1d04dd98f0",
+      "parent_receipt_identity": "parent-1cfe8ceea01e9cbaff6fb23a925ccd5b8de7f6c3ada1362f",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-19T21:04:52Z",
+      "history": [
+        {
+          "event_id": "33e58d403eb848f2a27305511303948d",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-19T21:03:51Z",
+          "attempt_id": "release-8148-candidate",
+          "scope": "release v8.14.8: four fixes since v8.14.7 (steer resume model/effort, critique linked review carriers, debug prior-record routing, task-run premise stop)",
+          "packet_identity": "ec2fa69b1d239bb34d67bfe0a876b9142541337a5176b01ad67efd1d04dd98f0",
+          "parent_receipt_identity": "parent-1cfe8ceea01e9cbaff6fb23a925ccd5b8de7f6c3ada1362f",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "477929619de34cd8ad2566b241db0b79",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-19T21:03:51Z",
+          "attempt_id": "release-8148-candidate",
+          "scope": "release v8.14.8: four fixes since v8.14.7 (steer resume model/effort, critique linked review carriers, debug prior-record routing, task-run premise stop)",
+          "packet_identity": "ec2fa69b1d239bb34d67bfe0a876b9142541337a5176b01ad67efd1d04dd98f0",
+          "parent_receipt_identity": "parent-1cfe8ceea01e9cbaff6fb23a925ccd5b8de7f6c3ada1362f",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "51a478773d4f4f5e9687e10a5a393ac4",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-19T21:04:52Z",
+          "attempt_id": "release-8148-candidate",
+          "scope": "release v8.14.8: four fixes since v8.14.7 (steer resume model/effort, critique linked review carriers, debug prior-record routing, task-run premise stop)",
+          "packet_identity": "ec2fa69b1d239bb34d67bfe0a876b9142541337a5176b01ad67efd1d04dd98f0",
+          "parent_receipt_identity": "parent-1cfe8ceea01e9cbaff6fb23a925ccd5b8de7f6c3ada1362f",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "a016e9b64b8b03eb977c10952dbfe93dbefef5675949cd5ef92c8916ee68bfda"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "c7fd593b37169ee94d1bffbf8d92ad5449c342966743665537d1c8a13a50927f",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "eaa53d6f14f69092afaf93a85a077c8c703e1236c004a806cf94d8ea4f099b89",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8148-candidate/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8148-candidate/receipt.json",
+      "producer_run_id": "run-release-8148-candidate",
+      "findings_identity": "a016e9b64b8b03eb977c10952dbfe93dbefef5675949cd5ef92c8916ee68bfda"
+    }
+  ]
+}

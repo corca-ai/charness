@@ -1,0 +1,82 @@
+{
+  "attempt_id": "release-8148-candidate",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/release-8148-candidate/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-10-19T21:04:52Z",
+  "model_application_state": "unverified-by-provider",
+  "output_file": "charness-artifacts/critique/workers/release-8148-candidate/result.json",
+  "output_fresh": true,
+  "output_sha256": "a016e9b64b8b03eb977c10952dbfe93dbefef5675949cd5ef92c8916ee68bfda",
+  "output_size": 2756,
+  "packet_identity": "ec2fa69b1d239bb34d67bfe0a876b9142541337a5176b01ad67efd1d04dd98f0",
+  "parent_receipt_identity": "parent-1cfe8ceea01e9cbaff6fb23a925ccd5b8de7f6c3ada1362f",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/release-8148-candidate/review-prompt.md",
+  "prompt_sha256": "eaa53d6f14f69092afaf93a85a077c8c703e1236c004a806cf94d8ea4f099b89",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "requested_model": "gpt-6-luna",
+  "requested_reasoning_effort": "xhigh",
+  "reviewed_input_identity": "c7fd593b37169ee94d1bffbf8d92ad5449c342966743665537d1c8a13a50927f",
+  "reviewer_tier": "high-leverage",
+  "run_id": "run-release-8148-candidate",
+  "schema_file": "charness-artifacts/critique/workers/release-8148-candidate/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "release v8.14.8: four fixes since v8.14.7 (steer resume model/effort, critique linked review carriers, debug prior-record routing, task-run premise stop)",
+  "started_at": "2026-10-19T21:03:51Z",
+  "status": "succeeded",
+  "stderr_file": "charness-artifacts/critique/workers/release-8148-candidate/backend.stderr",
+  "stdout_file": "charness-artifacts/critique/workers/release-8148-candidate/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "unsupported_reviewer_fields": [
+    "service_tier=priority",
+    "fork_turns=none"
+  ],
+  "workspace": "/home/hwidong/codes/charness"
+}

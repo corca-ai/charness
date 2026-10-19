@@ -1,0 +1,45 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in: Gawande operational, Minto communication, Raskin interface",
+  "verdict": "defer",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R1",
+      "severity": "high",
+      "summary": "The bound release surfaces identify v8.14.7, so they cannot establish that v8.14.8 release claims and version surfaces are ready to lock.",
+      "evidence": [
+        "The packet is prepared_for \"release v8.14.8 candidate\", but its reviewed_paths include no v8.14.8 release notes, claims review, or version/package surfaces.",
+        "charness-artifacts/release/latest.md identifies target version 8.14.7 and tag v8.14.7.",
+        "charness-artifacts/release-review/2026-10-17-v8.14.7-prepared-claims-review.json records target_version 8.14.7."
+      ],
+      "action": "Bind the prepared v8.14.8 release record, notes, claims review, and version/package surfaces, then review those exact bytes before release lock-in."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "The four fixes lack code-level support.",
+      "bin": "not substantiated",
+      "disposition": "The supplied lane code and tests support steer resume argument propagation, linked-worktree carrier preservation, resolved debug prior-record routing, and premise validation before edits. No code-level blocker is evident in these inputs."
+    },
+    {
+      "concern": "Fake-executor tests establish live Codex or Muse behavior.",
+      "bin": "scope limitation",
+      "disposition": "The steer test explicitly describes its claim as lower-level orchestration. Keep release claims at that evidence level unless live host evidence is separately supplied."
+    },
+    {
+      "concern": "The task-run premise guidance forces premature stops.",
+      "bin": "not substantiated",
+      "disposition": "The prompt requires investigation before a false-premise stop, permits continuing independent items, and asks for concrete contradictory evidence."
+    }
+  ],
+  "next_move": "Prepare and bind the v8.14.8 release-facing claim and version surfaces, then rerun this bounded review against them.",
+  "non_claims": [
+    "This review does not establish v8.14.8 publication, installed readback, or live Codex/Muse behavior.",
+    "The supplied v8.14.7 observer records an installed version mismatch and a failed install refresh; it is historical evidence, not a v8.14.8 result."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "ec2fa69b1d239bb34d67bfe0a876b9142541337a5176b01ad67efd1d04dd98f0",
+  "reviewed_input_identity_sha256": "c7fd593b37169ee94d1bffbf8d92ad5449c342966743665537d1c8a13a50927f"
+}

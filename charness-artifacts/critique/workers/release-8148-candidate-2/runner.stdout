@@ -1,0 +1,68 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'release v8.14.8 candidate: four fixes since v8.14.7 plus drafted release notes'
+attempt_id: release-8148-candidate-2
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: b5eadebe224297f443b5be78a29f3393ceb803f94a8f208eee88ed361a34bbe2
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-a44f19e3a4dfe19631e24d7f673ebe13/receipt.json
+ledger_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-a44f19e3a4dfe19631e24d7f673ebe13/delivery.json
+producer_run_id: run-release-8148-candidate-2
+producer_binding:
+  output_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-a44f19e3a4dfe19631e24d7f673ebe13/result.json
+  receipt_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-a44f19e3a4dfe19631e24d7f673ebe13/receipt.json
+  producer_run_id: run-release-8148-candidate-2
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 10fffef27a78fe73bae2a095fb2719cd0c4db0b4bbefaf5e8db34d6b3711ddd2
+receipt_output_sha256: 10fffef27a78fe73bae2a095fb2719cd0c4db0b4bbefaf5e8db34d6b3711ddd2
+packet_identity: f6f7fc53efcae350c641a26e51b7c2e60c53ed33297856cf061de1a4b527874a
+reviewed_input_identity: 8564b380d9654e6db8d4dbc14f9f0c7d00cfe07bf0698bc6f207c1f08da3de57
+parent_receipt_identity: parent-851928c83dcb4b92d17734a5d74365d0b7f602ecae5049bd
+provenance:
+  scope: 'release v8.14.8 candidate: four fixes since v8.14.7 plus drafted release
+    notes'
+  packet_identity: f6f7fc53efcae350c641a26e51b7c2e60c53ed33297856cf061de1a4b527874a
+  reviewed_input_identity: 8564b380d9654e6db8d4dbc14f9f0c7d00cfe07bf0698bc6f207c1f08da3de57
+  parent_receipt_identity: parent-851928c83dcb4b92d17734a5d74365d0b7f602ecae5049bd
+  expected_targets_sha256: null
+  attempt_id: release-8148-candidate-2
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: b5eadebe224297f443b5be78a29f3393ceb803f94a8f208eee88ed361a34bbe2
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

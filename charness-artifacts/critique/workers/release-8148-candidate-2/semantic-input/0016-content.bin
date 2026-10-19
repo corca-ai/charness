@@ -1,0 +1,720 @@
+"""Typed task steering and same-candidate scope amendment.
+
+The fake executor owns a lower-level orchestration claim: its transcript marker
+is written before the resumed invocation's simulated edit. It does not claim
+live Codex or Muse behavior.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+import scripts.cli.cmd_task as task_payload
+import scripts.cli.process as cli_process
+from scripts.task_run import (
+    task_run_execution,
+    task_run_lane_runner,
+    task_run_progress,
+    task_run_runtime,
+    task_run_scope,
+)
+from tests.charness_cli.support import CLI, load_cli_module
+from tests.charness_cli.test_task_run_fixtures import _git, _repo
+
+
+def test_direct_script_bootstrap_fallback_runs_from_real_entry_path() -> None:
+    """The entry-script fallback is observable only through direct execution."""
+    script = Path(__file__).resolve().parents[2] / "charness"
+    result = subprocess.run(
+        [sys.executable, str(script), "--help"],
+        capture_output=True,
+        check=False,
+        text=True,
+    )
+
+    assert result.returncode == 0
+    assert "usage:" in result.stdout.lower()
+
+
+def test_guard_queue_delivery_precedes_resumed_fake_executor_edit(tmp_path: Path) -> None:
+    """The lower-level harness sees transcript-before-next-invocation-edit."""
+    repo = _repo(tmp_path)
+    base_sha = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    runtime = tmp_path / "runtime with spaces"
+    runtime.mkdir()
+    stdout_log = runtime / "codex.stdout.log"
+    stderr_log = runtime / "codex.stderr.log"
+    queue = runtime / "steer.queue.jsonl"
+    order_log = tmp_path / "order.log"
+    invocations_log = tmp_path / "invocations.jsonl"
+    writable_dirs = (tmp_path / "first grant directory", tmp_path / "second grant directory")
+    fake = tmp_path / "fake-codex"
+    fake.write_text(
+        f"#!{sys.executable}\n"
+        "import json, os, pathlib, sys\n"
+        "args = sys.argv[1:]\n"
+        "prompt = sys.stdin.read()\n"
+        "with pathlib.Path(os.environ['INVOCATIONS_LOG']).open('a') as handle:\n"
+        "    handle.write(json.dumps({'executable': sys.argv[0], 'args': args, 'cwd': os.getcwd(), 'prompt': prompt}) + '\\n')\n"
+        "output = pathlib.Path(args[args.index('--output-last-message') + 1])\n"
+        "if 'resume' not in args:\n"
+        f"    queue = pathlib.Path({str(queue)!r})\n"
+        "    print(json.dumps({'type': 'thread.started', 'thread_id': 'session-1'}), flush=True)\n"
+        "    queue.write_text(json.dumps({'kind': 'charness.task_steer.v1', "
+        "'message_id': 'message-1', 'task_id': 'lane-1', 'message': 'Keep the public API stable.', "
+        "'queued_at': '2026-09-24T00:00:00Z', 'delivered_at': None, "
+        "'disposition': 'accepted', 'reason_code': None, 'resume_path': None}) + '\\n')\n"
+        "    output.write_text('first turn\\n')\n"
+        "else:\n"
+        f"    transcript = pathlib.Path({str(stderr_log)!r}).read_text()\n"
+        "    with pathlib.Path(os.environ['ORDER_LOG']).open('a') as handle:\n"
+        "        handle.write(('transcript-before-edit\\n' if 'STEER [message-' in transcript else 'missing-steer\\n') + prompt + '\\n')\n"
+        "    if len(pathlib.Path(os.environ['INVOCATIONS_LOG']).read_text().splitlines()) == 2:\n"
+        f"        with pathlib.Path({str(queue)!r}).open('a') as handle:\n"
+        "            handle.write(json.dumps({'kind': 'charness.task_steer.v1', 'message_id': 'message-2', 'task_id': 'lane-1', 'message': 'Keep the output path stable.', 'queued_at': '2026-09-24T00:00:01Z', 'delivered_at': None, 'disposition': 'accepted', 'reason_code': None, 'resume_path': None}) + '\\n')\n"
+        f"    pathlib.Path({str(repo / 'module.py')!r}).write_text('VALUE = 2\\n')\n"
+        "    print(json.dumps({'type': 'item.completed', 'item': {'type': 'agent_message', 'text': 'TESTING'}}), flush=True)\n"
+        "    output.write_text('resumed turn\\n')\n",
+        encoding="utf-8",
+    )
+    fake.chmod(0o755)
+    command = task_run_lane_runner.lane_command(
+        executor="codex",
+        executable=str(fake),
+        effort="xhigh",
+        prompt="Implement the lane request.",
+        execution_runtime_path=runtime,
+        writable_dirs=writable_dirs,
+        worktree=repo,
+    )
+    watch = task_run_progress.build_progress_watch(
+        require_change=False,
+        stdout_log=stdout_log,
+        stderr_log=stderr_log,
+        worktree=repo,
+        base_sha=base_sha,
+        scope_specs=[],
+    )
+    execution = task_run_execution._execute_codex(
+        command,
+        prompt="Implement the lane request.",
+        target_path=repo,
+        configured_env={
+            **os.environ,
+            "ORDER_LOG": str(order_log),
+            "INVOCATIONS_LOG": str(invocations_log),
+        },
+        stdout_log=stdout_log,
+        stderr_log=stderr_log,
+        timeout_seconds=5,
+        lane_watch=watch,
+        executor="codex",
+    )
+
+    assert execution["exit_code"] == 0
+    assert (repo / "module.py").read_text(encoding="utf-8") == "VALUE = 2\n"
+    order = order_log.read_text(encoding="utf-8")
+    assert order.count("transcript-before-edit\n") == 2
+    assert "Keep the public API stable." in order
+    assert "Keep the output path stable." in order
+    invocations = [
+        json.loads(line) for line in invocations_log.read_text(encoding="utf-8").splitlines()
+    ]
+    assert len(invocations) == 3
+    assert invocations[0]["args"] == command[1:]
+    runtime_options_start = command.index("--json")
+    model_option_start = command.index("-m")
+    expected_resume = [
+        *command[:model_option_start],
+        "resume",
+        "session-1",
+        *command[model_option_start:runtime_options_start],
+        *command[runtime_options_start:],
+    ]
+    assert invocations[1]["args"] == expected_resume[1:]
+    assert invocations[2]["args"] == expected_resume[1:]
+    for invocation in invocations[1:]:
+        args = invocation["args"]
+        resume_index = args.index("resume")
+        assert args[resume_index + 1] == "session-1"
+        assert args.index("--sandbox") < resume_index
+        assert all(
+            index < resume_index for index, value in enumerate(args) if value == "--add-dir"
+        )
+        model_index = args.index("-m")
+        assert model_index > resume_index + 1
+        assert args[model_index + 1] == task_run_runtime.TASK_MODEL
+        config_index = args.index("-c")
+        assert config_index > resume_index + 1
+        assert args[config_index + 1] == "model_reasoning_effort=xhigh"
+    assert all(item["executable"] == str(fake) for item in invocations)
+    assert all(item["cwd"] == str(repo) for item in invocations)
+    assert invocations[0]["prompt"] == "Implement the lane request."
+    assert "Keep the public API stable." in invocations[1]["prompt"]
+    assert "Keep the output path stable." in invocations[2]["prompt"]
+    for item in invocations:
+        args = item["args"]
+        add_dir_values = [
+            args[index + 1] for index, value in enumerate(args) if value == "--add-dir"
+        ]
+        assert add_dir_values == [str(path.resolve()) for path in writable_dirs]
+        assert args[args.index("--output-last-message") + 1] == str(
+            runtime / "codex.last-message.txt"
+        )
+        assert args[-1] == "-"
+    messages = execution["steer_messages"]
+    assert len(messages) == 2
+    assert all(message["queued_at"] and message["delivered_at"] for message in messages)
+    assert all(message["disposition"] == "accepted" for message in messages)
+    assert all(message["resume_path"] == "session-resume" for message in messages)
+
+
+def test_progress_poll_records_timestamped_typed_envelopes(tmp_path: Path) -> None:
+    runtime = tmp_path / "runtime"
+    queue = runtime / "steer.queue.jsonl"
+    entry = task_run_lane_runner.enqueue_steer(queue, "lane-2", "Check the migration path.")
+    watch = task_run_progress.LaneProgressWatch(
+        stdout_log=runtime / "codex.stdout.log",
+        stderr_log=runtime / "codex.stderr.log",
+        worktree=tmp_path,
+        base_sha="base",
+        scope_specs=[],
+        budget_seconds=0,
+        poll_seconds=0.1,
+    )
+
+    watch.tick(1.0)
+    pending = watch.pending_steers()
+    watch.record_steer_delivery(pending, resume_path="relaunch-in-place")
+    message = pending[0]
+
+    assert message["message_id"] == entry["message_id"]
+    assert message["queued_at"]
+    assert message["delivered_at"]
+    assert message["disposition"] == "accepted"
+    assert task_run_lane_runner.read_steer_queue(queue)[0]["resume_path"] == "relaunch-in-place"
+
+
+def test_steer_producer_and_poller_share_one_queue_path(tmp_path: Path) -> None:
+    """An accepted CLI message lands where the progress poller reads (#883)."""
+    runtime = tmp_path / "runtime"
+    task_dir = task_run_runtime.task_result_path(runtime, "lane-9").parent
+    stdout_log = task_dir / "codex.stdout.log"
+    task_dir.mkdir(parents=True)
+    stdout_log.write_text("", encoding="utf-8")
+    produced = task_run_lane_runner.steer_queue_path(task_dir)
+    entry = task_run_lane_runner.enqueue_steer(produced, "lane-9", "Narrow the retry.")
+    watch = task_run_progress.LaneProgressWatch(
+        stdout_log=stdout_log,
+        stderr_log=task_dir / "codex.stderr.log",
+        worktree=tmp_path,
+        base_sha="base",
+        scope_specs=[],
+        budget_seconds=0,
+        poll_seconds=0.1,
+    )
+
+    pending = watch.pending_steers()
+
+    assert produced == task_run_lane_runner.steer_queue_path(stdout_log.parent)
+    assert [message["message_id"] for message in pending] == [entry["message_id"]]
+    assert task_run_lane_runner.read_steer_queue(produced)[0]["message"] == "Narrow the retry."
+
+
+def test_task_steer_cli_returns_typed_accept_and_nack(tmp_path: Path, monkeypatch) -> None:
+    cli = load_cli_module("charness_task_run_steer_accept", CLI)
+    runtime = tmp_path / "runtime"
+    record = {"task_id": "lane-3", "status": "running", "runner_pid": os.getpid()}
+    monkeypatch.setattr(task_payload, "_load_task_run_lib", lambda _args: object())
+    monkeypatch.setattr(task_run_runtime, "task_runtime_root", lambda _root: runtime)
+    monkeypatch.setattr(task_run_runtime, "read_task_result", lambda *_args: dict(record))
+    emitted: list[dict[str, object]] = []
+    monkeypatch.setattr(task_payload, "emit_yaml", emitted.append)
+
+    code = cli.cmd_task_steer(
+        argparse.Namespace(
+            repo_root=tmp_path, task_id="lane-3", message="Narrow the retry.", amend_scope=None
+        )
+    )
+
+    assert code == 0
+    assert emitted[-1]["result_kind"] == "success"
+    assert emitted[-1]["disposition"] == "accepted"
+    assert emitted[-1]["queued_at"]
+    assert task_run_lane_runner.read_steer_queue(
+        runtime / "task-run" / "lane-3" / "steer.queue.jsonl"
+    )
+
+    monkeypatch.setattr(
+        task_run_runtime, "read_task_result", lambda *_args: {**record, "status": "completed"}
+    )
+    code = cli.cmd_task_steer(
+        argparse.Namespace(
+            repo_root=tmp_path, task_id="lane-3", message="Too late.", amend_scope=None
+        )
+    )
+    assert code == 1
+    assert emitted[-1]["disposition"] == "nacked"
+    assert emitted[-1]["result_kind"] == "failed"
+
+
+def test_scope_amend_revalidates_same_candidate_without_relaunch(
+    tmp_path: Path, monkeypatch
+) -> None:
+    cli = load_cli_module("charness_task_run_steer_amend", CLI)
+    repo = _repo(tmp_path)
+    base_sha = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    (repo / "stray.py").write_text("VALUE = 3\n", encoding="utf-8")
+    specs = task_run_scope.resolve_scope_specs(repo, ["module.py"], base_sha)
+    result = {
+        "task_id": "lane-4",
+        "status": "completed-needs-review",
+        "worktree_path": str(repo),
+        "base_sha": base_sha,
+        "target_sha": base_sha,
+        "target_branch": "task/lane-4",
+        "scope_specs": specs,
+        "require_change": True,
+        "candidate": {
+            "status": "invalid",
+            "changed_paths": ["stray.py"],
+            "disallowed_paths": ["stray.py"],
+        },
+        "timestamps": {},
+    }
+    writes: list[dict[str, object]] = []
+    monkeypatch.setattr(task_payload, "_load_task_run_lib", lambda _args: object())
+    monkeypatch.setattr(task_run_runtime, "task_runtime_root", lambda _root: tmp_path / "runtime")
+    monkeypatch.setattr(task_run_runtime, "read_task_result", lambda *_args: result)
+    monkeypatch.setattr(
+        task_run_runtime, "write_task_result", lambda _root, value: writes.append(value)
+    )
+    emitted: list[dict[str, object]] = []
+    monkeypatch.setattr(task_payload, "emit_yaml", emitted.append)
+
+    code = cli.cmd_task_steer(
+        argparse.Namespace(
+            repo_root=tmp_path,
+            task_id="lane-4",
+            message=None,
+            amend_scope=["stray.py"],
+        )
+    )
+
+    assert code == 0
+    amendment = emitted[-1]
+    assert amendment["disposition"] == "accepted"
+    assert amendment["same_candidate"] is True
+    assert amendment["executor_relaunched"] is False
+    assert amendment["target_sha"] == base_sha
+    assert writes and result["scope"]["verdict"] == task_run_scope.PASS
+    assert result["candidate"]["disallowed_paths"] == []
+    assert result["scope_amendments"][0]["result_kind"] == "success"
+
+
+def test_scope_amend_records_reason_and_actor(tmp_path: Path, monkeypatch) -> None:
+    cli = load_cli_module("charness_task_run_steer_amend_audit", CLI)
+    repo = _repo(tmp_path)
+    base_sha = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    (repo / "stray.py").write_text("VALUE = 3\n", encoding="utf-8")
+    specs = task_run_scope.resolve_scope_specs(repo, ["module.py"], base_sha)
+    result = {
+        "task_id": "lane-4",
+        "status": "completed-needs-review",
+        "worktree_path": str(repo),
+        "base_sha": base_sha,
+        "target_sha": base_sha,
+        "target_branch": "task/lane-4",
+        "scope_specs": specs,
+        "require_change": True,
+        "candidate": {
+            "status": "invalid",
+            "changed_paths": ["stray.py"],
+            "disallowed_paths": ["stray.py"],
+        },
+        "timestamps": {},
+    }
+    monkeypatch.setattr(task_payload, "_load_task_run_lib", lambda _args: object())
+    monkeypatch.setattr(task_run_runtime, "task_runtime_root", lambda _root: tmp_path / "runtime")
+    monkeypatch.setattr(task_run_runtime, "read_task_result", lambda *_args: result)
+    monkeypatch.setattr(task_run_runtime, "write_task_result", lambda _root, _value: None)
+    emitted: list[dict[str, object]] = []
+    monkeypatch.setattr(task_payload, "emit_yaml", emitted.append)
+
+    code = cli.cmd_task_steer(
+        argparse.Namespace(
+            repo_root=tmp_path,
+            task_id="lane-4",
+            message=None,
+            amend_scope=["stray.py"],
+            reason="lane missed its file",
+            actor="hwidong",
+        )
+    )
+
+    assert code == 0
+    assert emitted[-1]["reason"] == "lane missed its file"
+    assert emitted[-1]["actor"] == "hwidong"
+    assert result["scope_amendments"][0]["reason"] == "lane missed its file"
+    assert result["scope_amendments"][0]["actor"] == "hwidong"
+
+
+def test_scope_amend_nack_keeps_audit_reason_and_machine_reason_code(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """A rejected amendment keeps issuer text in `reason`, cause in `reason_code`."""
+    cli = load_cli_module("charness_task_run_steer_amend_nack_audit", CLI)
+    repo = _repo(tmp_path)
+    base_sha = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    (repo / "stray.py").write_text("VALUE = 3\n", encoding="utf-8")
+    specs = task_run_scope.resolve_scope_specs(repo, ["module.py"], base_sha)
+    result = {
+        "task_id": "lane-4",
+        "status": "completed-needs-review",
+        "worktree_path": str(repo),
+        "base_sha": base_sha,
+        "target_sha": base_sha,
+        "target_branch": "task/lane-4",
+        "scope_specs": specs,
+        "require_change": True,
+        "candidate": {
+            "status": "invalid",
+            "changed_paths": ["stray.py"],
+            "disallowed_paths": ["stray.py"],
+        },
+        "timestamps": {},
+    }
+    monkeypatch.setattr(task_payload, "_load_task_run_lib", lambda _args: object())
+    monkeypatch.setattr(task_run_runtime, "task_runtime_root", lambda _root: tmp_path / "runtime")
+    monkeypatch.setattr(task_run_runtime, "read_task_result", lambda *_args: result)
+    monkeypatch.setattr(task_run_runtime, "write_task_result", lambda _root, _value: None)
+    emitted: list[dict[str, object]] = []
+    monkeypatch.setattr(task_payload, "emit_yaml", emitted.append)
+
+    code = cli.cmd_task_steer(
+        argparse.Namespace(
+            repo_root=tmp_path,
+            task_id="lane-4",
+            message=None,
+            amend_scope=["other.py"],
+            reason="lane missed its file",
+            actor="hwidong",
+        )
+    )
+
+    assert code == 1
+    amendment = emitted[-1]
+    assert amendment["disposition"] == "nacked"
+    assert amendment["reason"] == "lane missed its file"
+    assert amendment["actor"] == "hwidong"
+    assert amendment["reason_code"] == "candidate-still-out-of-scope"
+    assert "reason_detail" not in amendment
+    assert result["scope_amendments"][0]["reason"] == "lane missed its file"
+    assert result["scope_amendments"][0]["reason_code"] == "candidate-still-out-of-scope"
+
+
+def test_task_steer_cli_nacks_unknown_task(tmp_path: Path, monkeypatch) -> None:
+    cli = load_cli_module("charness_task_run_steer_not_found", CLI)
+    runtime = tmp_path / "runtime"
+    monkeypatch.setattr(task_payload, "_load_task_run_lib", lambda _args: object())
+    monkeypatch.setattr(task_run_runtime, "task_runtime_root", lambda _root: runtime)
+    monkeypatch.setattr(task_run_runtime, "read_task_result", lambda *_args: None)
+    emitted: list[dict[str, object]] = []
+    monkeypatch.setattr(task_payload, "emit_yaml", emitted.append)
+
+    code = cli.cmd_task_steer(
+        argparse.Namespace(
+            repo_root=tmp_path,
+            task_id="ghost-lane",
+            message="Hello?",
+            amend_scope=None,
+            reason="probe",
+            actor="hwidong",
+        )
+    )
+
+    assert code == 1
+    assert emitted[-1]["disposition"] == "nacked"
+    assert emitted[-1]["reason_code"] == "task-not-found"
+
+
+def test_task_steer_cli_nacks_amend_on_running_lane(tmp_path: Path, monkeypatch) -> None:
+    cli = load_cli_module("charness_task_run_steer_amend_running", CLI)
+    repo = _repo(tmp_path)
+    base_sha = _git(repo, "rev-parse", "HEAD").stdout.strip()
+    specs = task_run_scope.resolve_scope_specs(repo, ["module.py"], base_sha)
+    result = {
+        "task_id": "lane-5",
+        "status": "running",
+        "worktree_path": str(repo),
+        "base_sha": base_sha,
+        "target_sha": base_sha,
+        "target_branch": "task/lane-5",
+        "scope_specs": specs,
+        "require_change": True,
+        "candidate": {},
+        "timestamps": {},
+    }
+    monkeypatch.setattr(task_payload, "_load_task_run_lib", lambda _args: object())
+    monkeypatch.setattr(task_run_runtime, "task_runtime_root", lambda _root: tmp_path / "runtime")
+    monkeypatch.setattr(task_run_runtime, "read_task_result", lambda *_args: result)
+    monkeypatch.setattr(task_run_runtime, "write_task_result", lambda _root, _value: None)
+    emitted: list[dict[str, object]] = []
+    monkeypatch.setattr(task_payload, "emit_yaml", emitted.append)
+
+    code = cli.cmd_task_steer(
+        argparse.Namespace(
+            repo_root=tmp_path,
+            task_id="lane-5",
+            message=None,
+            amend_scope=["module.py"],
+            reason="probe",
+            actor="hwidong",
+        )
+    )
+
+    assert code == 1
+    assert emitted[-1]["disposition"] == "nacked"
+    assert emitted[-1]["reason_code"] == "same-candidate-unavailable"
+
+
+def test_direct_entry_copy_nacks_unknown_task_from_real_checkout(tmp_path: Path) -> None:
+    """A copied entry script steers and nacks; kept as a behavior probe."""
+    import shutil
+    import subprocess
+
+    import yaml
+
+    repo = Path(__file__).resolve().parents[2]
+    copy = tmp_path / "charness-copy"
+    shutil.copy(repo / "charness", copy)
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(copy),
+            "task",
+            "steer",
+            "--repo-root",
+            str(repo),
+            "--message",
+            "Hello?",
+            "--reason",
+            "probe",
+            "--actor",
+            "t",
+            "ghost-lane",
+        ],
+        capture_output=True,
+        check=False,
+        text=True,
+        cwd=repo,
+    )
+
+    assert result.returncode == 1
+    payload = yaml.safe_load(result.stdout)
+    assert payload["disposition"] == "nacked"
+    assert payload["reason_code"] == "task-not-found"
+
+
+def test_real_entry_path_inserts_foreign_checkout_lib_root(tmp_path: Path) -> None:
+    """The bootstrap fallback insert runs for a foreign checkout root.
+
+    The spawn uses the real in-repo script path with an inherited
+    environment so the executed lines attribute to the entry script; a
+    copied script would run but its lines would attribute to the copy.
+    The foreign checkout needs only the marker files the resolver checks.
+    """
+    import subprocess
+
+    import yaml
+
+    repo = Path(__file__).resolve().parents[2]
+    foreign = tmp_path / "foreign-checkout"
+    (foreign / "packaging").mkdir(parents=True)
+    (foreign / "packaging" / "charness.json").write_text("{}\n", encoding="utf-8")
+    task_run_dir = foreign / "scripts" / "task_run"
+    task_run_dir.mkdir(parents=True)
+    (task_run_dir / "task_run.py").write_text('"""Marker."""\n', encoding="utf-8")
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(repo / "charness"),
+            "task",
+            "steer",
+            "--repo-root",
+            str(foreign),
+            "--message",
+            "Hello?",
+            "ghost-lane",
+        ],
+        capture_output=True,
+        check=False,
+        text=True,
+        cwd=repo,
+    )
+
+    assert result.returncode == 1
+    payload = yaml.safe_load(result.stdout)
+    assert payload["disposition"] == "nacked"
+    assert payload["reason_code"] == "task-not-found"
+
+
+def test_load_train_lib_inserts_missing_repo_root(monkeypatch) -> None:
+    repo = Path(__file__).resolve().parents[2]
+    # The loaded module resolves to this checkout, so dropping the checkout
+    # from the path takes the fallback insert; the import below re-adds it.
+    monkeypatch.setattr(
+        sys,
+        "path",
+        [entry for entry in sys.path if Path(entry or ".").resolve() != repo],
+    )
+    assert str(repo) not in sys.path
+
+    lib = cli_process._load_train_lib(argparse.Namespace())
+
+    assert lib is not None
+    assert sys.path[0] == str(repo)
+
+
+def test_steered_invocation_places_codex_overrides_after_resume_and_keeps_fallback(
+    tmp_path: Path,
+) -> None:
+    runtime = tmp_path / "runtime with spaces"
+    runtime.mkdir()
+    writable_dirs = (tmp_path / "first grant directory", tmp_path / "second grant directory")
+    initial = task_run_lane_runner.lane_command(
+        executor="codex",
+        executable="codex",
+        effort="xhigh",
+        prompt="Original prompt.",
+        execution_runtime_path=runtime,
+        writable_dirs=writable_dirs,
+        worktree=tmp_path,
+    )
+    message = {
+        "message_id": "m-1",
+        "queued_at": "2026-09-24T00:00:00Z",
+        "message": "Keep names stable.",
+    }
+
+    resumed, prompt, path = task_run_lane_runner.steered_lane_invocation(
+        "codex", initial, "Original prompt.", [message], "session-1"
+    )
+    model_option_start = initial.index("-m")
+    runtime_options_start = initial.index("--json")
+    assert resumed == [
+        *initial[:model_option_start],
+        "resume",
+        "session-1",
+        *initial[model_option_start:runtime_options_start],
+        *initial[runtime_options_start:],
+    ]
+    resume_index = resumed.index("resume")
+    model_index = resumed.index("-m")
+    config_index = resumed.index("-c")
+    assert resumed.index("--sandbox") < resume_index
+    assert all(
+        index < resume_index for index, value in enumerate(resumed) if value == "--add-dir"
+    )
+    assert model_index > resume_index + 1
+    assert resumed[model_index + 1] == task_run_runtime.TASK_MODEL
+    assert config_index > resume_index + 1
+    assert resumed[config_index + 1] == "model_reasoning_effort=xhigh"
+    assert "Keep names stable." in prompt
+    assert path == "session-resume"
+
+    relaunched, _prompt, path = task_run_lane_runner.steered_lane_invocation(
+        "codex", initial, "Original prompt.", [message], None
+    )
+    assert relaunched == initial
+    assert path == "relaunch-in-place"
+
+
+def test_steered_muse_invocation_keeps_command_and_updates_prompt_file(
+    tmp_path: Path,
+) -> None:
+    runtime = tmp_path / "runtime"
+    initial = task_run_lane_runner.lane_command(
+        executor="muse",
+        executable="muse",
+        effort="medium",
+        prompt="Original prompt.",
+        execution_runtime_path=runtime,
+        writable_dirs=(),
+        worktree=tmp_path,
+    )
+    message = {
+        "message_id": "muse-1",
+        "queued_at": "2026-09-24T00:00:00Z",
+        "message": "Keep the prompt file current.",
+    }
+
+    resumed, prompt, path = task_run_lane_runner.steered_lane_invocation(
+        "muse", initial, "Original prompt.", [message], "muse-session"
+    )
+
+    assert resumed == initial
+    assert Path(initial[initial.index("--prompt-file") + 1]).read_text(
+        encoding="utf-8"
+    ) == prompt
+    assert "Keep the prompt file current." in prompt
+    assert path == "session-resume"
+
+
+def test_enqueue_steer_records_reason_and_actor(tmp_path: Path) -> None:
+    queue = tmp_path / "steer.queue.jsonl"
+
+    entry = task_run_lane_runner.enqueue_steer(
+        queue, "lane-9", "Hold the line.", reason="release gate", actor="hwidong"
+    )
+
+    assert entry["reason"] == "release gate"
+    assert entry["actor"] == "hwidong"
+    assert entry["reason_code"] is None
+    assert "reason_detail" not in entry
+    stored = task_run_lane_runner.read_steer_queue(queue)[0]
+    assert stored["reason"] == "release gate"
+    assert stored["actor"] == "hwidong"
+
+
+def test_enqueue_steer_defaults_reason_and_actor_to_none(tmp_path: Path) -> None:
+    entry = task_run_lane_runner.enqueue_steer(tmp_path / "q.jsonl", "lane-9", "Hi.")
+
+    assert entry["reason"] is None
+    assert entry["actor"] is None
+
+
+def test_task_steer_cli_threads_reason_and_actor(tmp_path: Path, monkeypatch) -> None:
+    cli = load_cli_module("charness_task_run_steer_audit", CLI)
+    runtime = tmp_path / "runtime"
+    record = {"task_id": "lane-3", "status": "running", "runner_pid": os.getpid()}
+    monkeypatch.setattr(task_payload, "_load_task_run_lib", lambda _args: object())
+    monkeypatch.setattr(task_run_runtime, "task_runtime_root", lambda _root: runtime)
+    monkeypatch.setattr(task_run_runtime, "read_task_result", lambda *_args: dict(record))
+    emitted: list[dict[str, object]] = []
+    monkeypatch.setattr(task_payload, "emit_yaml", emitted.append)
+
+    code = cli.cmd_task_steer(
+        argparse.Namespace(
+            repo_root=tmp_path,
+            task_id="lane-3",
+            message="Narrow the retry.",
+            amend_scope=None,
+            reason="flaky window",
+            actor="hwidong",
+        )
+    )
+
+    assert code == 0
+    assert emitted[-1]["reason"] == "flaky window"
+    assert emitted[-1]["actor"] == "hwidong"
+    queued = task_run_lane_runner.read_steer_queue(
+        runtime / "task-run" / "lane-3" / "steer.queue.jsonl"
+    )
+    assert queued[0]["reason"] == "flaky window"
+    assert queued[0]["actor"] == "hwidong"

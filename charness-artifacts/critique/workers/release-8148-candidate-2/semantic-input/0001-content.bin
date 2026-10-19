@@ -1,0 +1,52 @@
+# Claims review narrative — Charness v8.14.7
+
+## Subject and identities
+
+Prepared release commit: `382649040d6915f9dfd0c954162b3631f5c7ed1d`; direct parent: `acf8d6d94f6ffd39eeb5e259b820b3b7f451f160`. The subject is [`latest.md`](../release/latest.md) and [`2026-10-17-v8.14.7-notes.md`](../release/2026-10-17-v8.14.7-notes.md), audited against the prepared tree and prior public tag `v8.14.6`.
+
+The release delta from `v8.14.6` is 136 files, 8,091 additions, and 2,249 deletions. The prepared branch is local; `v8.14.7` has no tag in this checkout.
+
+## Re-derived claims
+
+The release-note claims check completed with status `clean`, zero findings, and zero overclaims. It re-derived the four registered surfaces as: 0 Python sources declaring their own `--json` option, 14 top-level CLI subcommands, 19 public skills, and 8 shell gates. Their item lists and declared scan limits match the notes. This check establishes agreement with those four registered derivations; it does not establish that the derivation catalog covers every possible claim.
+
+The read-only `current_release.py` check found no version drift: packaging, Claude plugin, Codex plugin, and Claude marketplace versions are all `8.14.7`; the Codex marketplace source path is `./plugins/charness`. This matches the four-versioned plus one presence-only surfaces recorded in `latest.md`.
+
+The three required behavior claims are supported by the prepared source:
+
+- `charness task run` defaults self-review to `never`; `--self-review` opts in. The implementation also records self-review as a non-approval result (`charness:1677–1683`, `scripts/task_run/task_run.py:206`, `scripts/task_run/task_run_self_review.py:34–38`).
+- `task status --all-repos` reports managed runtime inventory. Its boundary is immediate sibling keys in the caller’s managed runtime tree, not whole-machine coverage (`scripts/task_run/task_run_inventory.py:326–332`, `docs/agent-task-runs.md:125–129`).
+- Retained reviewer attempts require an explicit boundary mode. A missing mode is rejected during delivery-field validation, so older evidence without a provable mode fails closed (`skills/shared/scripts/reviewer_delivery_fields.py:195–199`; the readback contract is also pinned in `tests/quality_gates/test_reviewer_delivery_state_machine.py:48–52`).
+
+The persistence-risk path is present: the task-run scanner checks changed candidate-diff lines for specific destructive statement shapes, adds `persistence-risk` to review reasons, and can convert completed or validated-partial results to `completed-needs-review` (`scripts/task_run/task_run_persistence.py:17–22, 65–116`; `scripts/task_run/task_run_state.py:366–393`). The release critique’s F1 requested this operator-facing explanation, and the notes include it.
+
+The update instructions and target version agree with the release adapter and CLI surfaces. “No migration is required” is consistent with the documented remedy for an unprovable retained attempt: rerun the bounded review after updating.
+
+## Pending/non-claims
+
+`latest.md` records that the release quality command exited 0 at `post-bump, pre-commit`, while `pytest-release` remains unestablished pending final resume. It also explicitly says no pre-push quality receipt was recorded. I treat that as a limited recorded result, not a final quality receipt.
+
+The same record says initial fresh-checkout probes passed and lists their commands. My read-only `current_release.py` invocation returned `not_established` for its own probe listing because that command does not run probes; I did not rerun them. The earlier pass remains a recorded claim, not independently reproduced here.
+
+Push, tag, GitHub publication, public release verification, post-publish install refresh, and issue closeout remain pending or unverified as recorded. The requested-review gate is `ok` with advisory-only policy and zero configured commands; that does not substitute for the claims review.
+
+The critique is supporting context for candidate `862a8300b1b496dfb205e8a23ea44002a0101cd3` and its earlier range. It is not evidence that the final prepared notes or release-state record had already received this claims review.
+
+## Findings
+
+- **Advisory — persistence wording is broader than the detector.** The notes say the guard requires review when candidate content contains `DROP`, `TRUNCATE`, or an unscoped `DELETE` (notes, line 8). The scanner is explicitly best-effort and matches particular changed diff lines: `DROP TABLE/COLUMN/INDEX/SCHEMA/DATABASE`, `TRUNCATE TABLE`, and unscoped `DELETE FROM …` statements (scanner, lines 7–8, 17–22, 65–116). Consider naming those statement shapes and the best-effort diff scope to avoid implying that any keyword occurrence is detected.
+- **Advisory — patch rationale could be more precise about compatibility.** `latest.md` says the patch does not change “command compatibility” (line 90). The release adds `--all-repos` and changes self-review’s default from automatic behavior to opt-in; the notes disclose both behavior changes. The rationale is defensible if it means existing command syntax remains usable, but it could say that explicitly.
+
+No blockers found in the audited claims.
+
+## Verdict
+
+**pass** — the release-note claims match the prepared tree and the required behavior statements are present and supported. The advisories above do not block the claims review. Publication remains pending as `latest.md` records; that record should remain in its prepared state until this review narrative is committed.
+
+## Observer distinctness
+
+This is a separate native agent context from the release-owning parent. Exact task identity: `/root/charness_integrate_release/v8147_claims_review`. The audit used the isolated clone read-only; no files or git state were changed.
+
+Fresh-eye satisfaction: parent-delegated
+
+Boundary mode: isolated clone, read-only instructions

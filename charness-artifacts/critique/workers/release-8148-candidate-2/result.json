@@ -1,0 +1,56 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Release lock-in over code and drafted notes (Gawande, Minto, Raskin)",
+  "verdict": "pass",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "advisory",
+      "summary": "The debug note blurs an unparseable resolution with other unparseable record fields. The code routes an unknown resolution on a forced-risk record to the interrupt path, but an unparseable risk declaration can route to repair-risk-declaration; a resolved record that is not continued stays prior memory even when its handoff is invalid.",
+      "evidence": [
+        "The notes say “unresolved or unparseable records still force the interrupt route.”",
+        "debug_artifact_state.py routes unreadable risk declarations with reason risk-declaration-unreadable.",
+        "test_debug_plan.py::test_resolved_unparseable_risk_declaration_is_not_demoted expects a bare invalid risk declaration to route to repair-risk-declaration.",
+        "test_debug_plan.py::test_resolved_forced_risk_without_allowed_matching_handoff_is_prior_memory_when_not_continued covers invalid handoffs on resolved, noncontinued records. "
+      ],
+      "action": "Clarify that unresolved or unknown resolution on a forced-risk record keeps the interrupt route; distinguish malformed risk declarations and resolved prior records."
+    },
+    {
+      "id": "F2",
+      "severity": "advisory",
+      "summary": "The Node mutation-reporter warning and older-Node workaround are not independently substantiated by the bound inputs. The specific test, observed reporter output, and Node version are not included.",
+      "evidence": [
+        "The drafted notes describe a `node --test` reporter failure and recommend an older Node major on PATH.",
+        "The bound v8.14.7 quality receipt records a pass but does not identify the Node version or include the failure evidence."
+      ],
+      "action": "Retain this operator guidance only if the failure and workaround are confirmed by a focused repro; otherwise remove or qualify it."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Codex resume behavior lacks a live-host invocation in the bound evidence.",
+      "bin": "non-blocking",
+      "disposition": "The fake-executor test explicitly bounds its claim to invocation construction and verifies the original model and effort options survive resume; no live-host result is claimed here."
+    },
+    {
+      "concern": "The linked-worktree promotion fix has only unit-level evidence.",
+      "bin": "not a concern",
+      "disposition": "The bound tests exercise a real Git linked worktree, repeated promotion, cleanup, and collision handling."
+    },
+    {
+      "concern": "The implementation-lane stop refinement lacks an end-to-end model behavior test.",
+      "bin": "non-blocking",
+      "disposition": "The change is prompt shaping; the source carries the revised directions and tests pin their presence. The notes describe that policy."
+    }
+  ],
+  "next_move": "The four fix summaries are supported by their bound source and tests. Clarify the debug routing wording and confirm or qualify the carried Node issue before publication; version, manifest, and claims-review surfaces remain for the separate review.",
+  "non_claims": [
+    "No tests or live Codex/Muse host invocations were run; this review relies on the bound source and test content.",
+    "The generated derived-claim, version, manifest, and claims-review surfaces were not judged in this review."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "f6f7fc53efcae350c641a26e51b7c2e60c53ed33297856cf061de1a4b527874a",
+  "reviewed_input_identity_sha256": "8564b380d9654e6db8d4dbc14f9f0c7d00cfe07bf0698bc6f207c1f08da3de57"
+}
