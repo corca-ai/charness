@@ -114,8 +114,8 @@ def build_codex_args(
     """Build Codex host arguments with the task runner's fixed Luna model."""
     # Lanes run loopback servers and fetches in their tests; the operator allowed
     # network for task-run lanes (2026-10-20). Lane worktrees carry no credentials.
-    # The key configures only workspace-write: the read-only reviewers that swap
-    # the sandbox mode (self-review, brief critique) keep their network off. It
+    # The key configures only workspace-write; the read-only reviewers (self-review,
+    # brief critique) drop it with `read_only_codex` so their argv is unchanged. It
     # follows `-m` with the other `-c` overrides, so a steer resume moves it
     # into the `exec resume` parser scope with them (see ef7c520ed).
     args: list[str] = ["--sandbox", "workspace-write"]
@@ -127,6 +127,16 @@ def build_codex_args(
         raise TaskRunError(f"--effort must be one of: {allowed} (codex executor)")
     args.extend(["-c", f"model_reasoning_effort={effort}", "-c", CODEX_LANE_NETWORK_CONFIG])
     return args
+
+
+def read_only_codex(command: list[str]) -> list[str]:
+    """Turn a lane's Codex argv into a read-only reviewer's: no write, no lane network."""
+    command[command.index("--sandbox") + 1] = "read-only"
+    for index in range(len(command) - 1):
+        if command[index] == "-c" and command[index + 1] == CODEX_LANE_NETWORK_CONFIG:
+            del command[index : index + 2]
+            break
+    return command
 
 
 def build_codex_command(

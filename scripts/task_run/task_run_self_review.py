@@ -62,8 +62,9 @@ def run_self_review(payload: dict[str, Any]) -> dict[str, Any]:
         output_path = review_root / "codex.last-message.txt"
         schema_path = review_root / "self-review.schema.json"
         schema_path.write_text(json.dumps(self_review_schema()), encoding="utf-8")
-        command = task_run_runtime.build_codex_command(executable, effort="medium")
-        command[command.index("--sandbox") + 1] = "read-only"
+        command = task_run_runtime.read_only_codex(
+            task_run_runtime.build_codex_command(executable, effort="medium")
+        )
         command[-1:-1] = [
             "--json", "--output-schema", str(schema_path),
             "--output-last-message", str(output_path),

@@ -88,13 +88,13 @@ def _run_brief_critique(
     from scripts.task_run.task_run_runtime import (
         _resolve_codex,
         build_codex_command,
+        read_only_codex,
     )
 
     exec_lib = import_repo_module(__file__, "scripts.worktree.worktree_exec_lib")
 
     executable = _resolve_codex("codex")
-    command = build_codex_command(executable, effort="medium")
-    command[command.index("--sandbox") + 1] = "read-only"
+    command = read_only_codex(build_codex_command(executable, effort="medium"))
     task_root = Path(resolved["runtime_path"]) / "task-run" / str(payload["task_id"])
     stdout_log, stderr_log = task_root / "brief-critique.stdout.log", task_root / "brief-critique.stderr.log"
     stdout_log.parent.mkdir(parents=True, exist_ok=True)

@@ -251,7 +251,10 @@ def test_brief_critic_uses_read_only_bounded_fresh_process(tmp_path, monkeypatch
     monkeypatch.setattr(
         task_run_runtime,
         "build_codex_command",
-        lambda executable, *, effort: [executable, "exec", "--sandbox", "workspace-write", "-"],
+        lambda executable, *, effort: [
+            executable, "exec", "--sandbox", "workspace-write",
+            "-c", task_run_runtime.CODEX_LANE_NETWORK_CONFIG, "-",
+        ],
     )
     monkeypatch.setattr(
         exec_lib,
@@ -282,6 +285,7 @@ def test_brief_critic_uses_read_only_bounded_fresh_process(tmp_path, monkeypatch
     )
 
     assert observed["command"][observed["command"].index("--sandbox") + 1] == "read-only"
+    assert task_run_runtime.CODEX_LANE_NETWORK_CONFIG not in observed["command"]
     assert observed["timeout_seconds"] == 120
     assert review["status"] == "completed"
 

@@ -255,8 +255,8 @@ def test_self_review_stays_read_only_while_lanes_get_network(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Lanes run Codex workspace-write with network on (operator, 2026-10-20);
-    the reviewer swaps the sandbox mode to read-only, where the
-    workspace-write network key does not apply."""
+    the reviewer swaps the sandbox mode to read-only and drops the lane's
+    network key, so its argv is what it was before lanes got network."""
     from scripts.task_run import task_run_runtime
 
     lane = task_run_runtime.build_codex_command("codex", effort="medium")
@@ -285,3 +285,4 @@ def test_self_review_stays_read_only_while_lanes_get_network(
     command = captured[0]
     assert command[command.index("--sandbox") + 1] == "read-only"
     assert "workspace-write" not in command
+    assert task_run_runtime.CODEX_LANE_NETWORK_CONFIG not in command
