@@ -355,6 +355,22 @@ def test_a_completion_probe_does_not_hold_the_rule_lock() -> None:
     assert any(key.endswith(":next") for key in rule._in_flight())  # fed, not queued
 
 
+@pytest.mark.parametrize("tree_state, expected", [("tree-0", ["loop-debug"]), (None, [])])
+def test_a_completion_fed_outside_on_event_probes_the_tree_itself(
+    tree_state: str | None, expected: list[str]
+) -> None:
+    """`on_event` probes before its lock; a completion the timeline delivers
+    any other way falls back to its own probe, so a loop is still keyed to the
+    tree and none is claimed on an unreadable one."""
+    rule, tree = _rule()
+    tree.state = tree_state
+    for n in range(3):
+        rule._timeline.feed(None, _completed(TEST, f"c{n}"))
+
+    pending = [rule._pending.reason_code] if rule._pending is not None else []
+    assert pending == expected
+
+
 def test_a_command_started_after_the_request_is_not_killed_until_it_is_a_window_old() -> None:
     rule, _tree = _rule()
     assert rule.on_tick(100.0).kind == "message"  # delivered
