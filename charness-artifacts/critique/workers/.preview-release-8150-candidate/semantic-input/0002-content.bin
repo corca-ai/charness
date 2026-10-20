@@ -1,0 +1,119 @@
+# Charness v8.15.0
+
+## What changed
+
+- `charness task run` now stamps each JSON-object line of a lane's `<executor>.events.log` with `charness_received_at`, the UTC time the carrier received it from the executor's pipe. Codex items and Muse envelopes carry no wall time of their own, so a lane that hit its time limit could not say how long a command or phase took. Non-JSON lines and the rest of each event's bytes are unchanged.
+- `charness task status <task-id> --commands` reads that stamped log back and reports the lane's longest commands, starts per command family (test, lint, typecheck, merge), and time per phase. Without a task id the option is refused. A lane run before this release has an unstamped events log, so the report counts its command starts but gives no durations or phase times.
+
+## Update
+
+Run `charness update`, then use `charness version` to read back the installed version. No migration is required; the option is additive and existing `task status` calls behave as before.
+
+## Derived claim surfaces
+
+<!-- charness:derived-claims:begin -->
+<!-- Generated from the shipped tree. Hand-edits are refused at publish: the gate re-derives this block and compares. -->
+
+<!-- claim-surface: json-declaring-scripts -->
+
+```yaml
+id: json-declaring-scripts
+question: which repo-owned Python sources declare their own `--json` option
+count: 0
+items: []
+scanned:
+- scripts/**/*.py
+- skills/**/scripts/**/*.py
+- charness
+unscanned:
+- the exported `plugins/charness/**` mirror and `mutants/**`, which are generated
+  copies of these same sources
+- flag names composed at runtime from a variable rather than written as a string literal
+- flags a wrapper forwards without declaring, which no parser in this tree names
+```
+
+<!-- claim-surface: charness-subcommands -->
+
+```yaml
+id: charness-subcommands
+question: which top-level subcommands the `charness` CLI declares
+count: 14
+items:
+- capability
+- catalog
+- doctor
+- goal
+- hooks
+- init
+- reset
+- task
+- tool
+- train
+- uninstall
+- update
+- version
+- worktree
+scanned:
+- charness
+unscanned:
+- nested subcommand groups such as `charness task run`, which are declared on their
+  own subparser
+- subcommands a host adapter adds outside this entrypoint
+```
+
+<!-- claim-surface: public-skills -->
+
+```yaml
+id: public-skills
+question: which public skills this repo ships
+count: 19
+items:
+- achieve
+- announcement
+- create-cli
+- create-skill
+- critique
+- debug
+- gather
+- hitl
+- hotl
+- ideation
+- impl
+- issue
+- narrative
+- prove
+- quality
+- release
+- retro
+- setup
+- spec
+scanned:
+- skills/public/*/SKILL.md
+unscanned:
+- support, profile, and integration skills, which are not part of the public surface
+- skills a consuming repo installs from elsewhere
+```
+
+<!-- claim-surface: repo-shell-gates -->
+
+```yaml
+id: repo-shell-gates
+question: which `check-*.sh` shell gates this repo ships
+count: 8
+items:
+- check-docs.sh
+- check-links-external.sh
+- check-links-internal.sh
+- check-markdown.sh
+- check-python-lint.sh
+- check-rust.sh
+- check-secrets.sh
+- check-shell.sh
+scanned:
+- scripts/**/check-*.sh
+unscanned:
+- Python gates under `scripts/`, which are far more numerous and are not this surface
+- gates a consuming repo wires from its own tree
+```
+
+<!-- charness:derived-claims:end -->

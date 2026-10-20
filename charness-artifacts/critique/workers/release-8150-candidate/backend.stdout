@@ -1,0 +1,58 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Release lock-in over code and drafted notes",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R1",
+      "severity": "blocker",
+      "summary": "The stamping pipe can silently lose event bytes during close or on a sink error.",
+      "evidence": [
+        "In scripts/task_run/task_run_event_timing.py, StampingPipe.close() closes its writer and joins the reader for 10 seconds, but does not check whether the reader finished.",
+        "The reader catches OSError and ValueError and returns without exposing a drain error. If a descendant still holds the pipe after process-group cleanup, or the sink fails, output can be dropped without a recorded failure.",
+        "tests/charness_cli/test_task_run_event_timing.py covers normal close and a final line without a newline. The interrupted-result test in tests/charness_cli/test_task_run_result.py replaces _execute_codex, so it does not exercise pipe cleanup on interruption; no supplied test exercises timeout cleanup."
+      ],
+      "action": "Make incomplete drains and sink errors observable in the task result, and ensure the sink remains available until the reader finishes. Add integration coverage for timeout and interrupt, including final partial output, and assert byte-for-byte retention."
+    },
+    {
+      "id": "R2",
+      "severity": "medium",
+      "summary": "The timing reader accepts timezone-naive stamps, which can crash when mixed with generated UTC stamps.",
+      "evidence": [
+        "stamp_event_line() leaves an event unchanged when it already contains charness_received_at.",
+        "_parse_stamp() accepts any datetime.fromisoformat() value, including one without a timezone; _seconds() subtracts parsed values directly, so mixing a naive value with a UTC-aware stamp raises TypeError.",
+        "The supplied timing tests cover valid UTC stamps and unstamped events, but not malformed or timezone-naive stamp values."
+      ],
+      "action": "Require timezone-aware receive stamps and treat invalid values as unstamped; add a mixed naive/UTC input test that confirms task status returns a partial timing report instead of failing."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "The drafted notes accurately describe the additive --commands option and legacy unstamped logs.",
+      "bin": "accepted",
+      "disposition": "The code counts command starts from unstamped events and leaves durations and phase times unavailable when those events have no receive stamps."
+    },
+    {
+      "concern": "The --commands refusal wording may be unclear.",
+      "bin": "dismissed",
+      "disposition": "The parser help says the option is used with a task id, and the runtime error '--commands needs a task id' is direct."
+    },
+    {
+      "concern": "A minor version bump may be too large for this change.",
+      "bin": "dismissed",
+      "disposition": "The CLI addition is backward-compatible and adds user-facing functionality; a minor bump from 8.14.9 to 8.15.0 is appropriate."
+    },
+    {
+      "concern": "The notes present measured intervals as exact executor timings.",
+      "bin": "watch",
+      "disposition": "They identify the timestamps as carrier receive times. Consider calling the reported durations receive-time estimates because pipe buffering can make them upper bounds on producer timing."
+    }
+  ],
+  "next_move": "Before release lock-in, make pipe drain completion and failures observable, then verify timeout and interrupt cleanup with retained-output assertions. Harden timestamp parsing against naive values and add a mixed-timestamp case.",
+  "non_claims": [
+    "This review does not assess version, manifest, or claims-review surfaces, which are out of scope.",
+    "The timing intervals are based on carrier receive times and are not proof of executor-internal wall-clock durations.",
+    "This review used the supplied inline semantic payload and did not independently run the test suite."
+  ]
+}

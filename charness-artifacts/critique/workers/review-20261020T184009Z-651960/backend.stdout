@@ -1,0 +1,29 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "(Gawande) R1/R2 owner repair and pipe-test coverage; (Minto) timing and capture-receipt notes",
+  "verdict": "pass",
+  "target_observations": null,
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "R1: event capture loss during close, timeout, interrupt, or sink failure",
+      "bin": "resolved",
+      "disposition": "The reader drains through close, reports incomplete capture, and avoids sink writes after release. Tests cover timeout and signal with a real executor pipe, interrupt through the redirected pipe, and sink failure; they assert exact expected retained bytes."
+    },
+    {
+      "concern": "R2: naive stamps mixed with timezone-aware stamps",
+      "bin": "resolved",
+      "disposition": "The parser treats naive or malformed stamps as unstamped. The mixed-input test confirms timing returns a partial report without raising."
+    },
+    {
+      "concern": "Notes describe timing bounds and capture receipt",
+      "bin": "verified",
+      "disposition": "The notes identify durations as receive-time upper bounds and state that incomplete capture is recorded in execution.event_capture_incomplete for an outliving pipe writer or failed log write."
+    }
+  ],
+  "next_move": "The R1/R2 follow-up passes for the supplied selected input.",
+  "non_claims": [
+    "Version, manifest, and claims-review surfaces were out of scope.",
+    "Tests were inspected but not executed."
+  ]
+}

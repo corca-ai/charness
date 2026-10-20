@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "review-20261020T184009Z-651960",
+      "scope": "follow-up of the v8.15.0 release critique (R1 blocker, R2, notes watch item) after commit 526fbaa17; version, manifest and claims-review surfaces are out of scope",
+      "packet_identity": "470f764c37f39d7bfddc1c9c86cb936cd28a506e288e1ac32bfb2a8607daa6c4",
+      "parent_receipt_identity": "parent-ccc008003b31574b8578fa98459cbd7b2939e32521aa228a",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T09:41:28Z",
+      "history": [
+        {
+          "event_id": "cb5a8426bccc4fb09e422ad66ce59626",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T09:40:09Z",
+          "attempt_id": "review-20261020T184009Z-651960",
+          "scope": "follow-up of the v8.15.0 release critique (R1 blocker, R2, notes watch item) after commit 526fbaa17; version, manifest and claims-review surfaces are out of scope",
+          "packet_identity": "470f764c37f39d7bfddc1c9c86cb936cd28a506e288e1ac32bfb2a8607daa6c4",
+          "parent_receipt_identity": "parent-ccc008003b31574b8578fa98459cbd7b2939e32521aa228a",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "2161aa5561e949d0af942fb00957724e",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T09:40:09Z",
+          "attempt_id": "review-20261020T184009Z-651960",
+          "scope": "follow-up of the v8.15.0 release critique (R1 blocker, R2, notes watch item) after commit 526fbaa17; version, manifest and claims-review surfaces are out of scope",
+          "packet_identity": "470f764c37f39d7bfddc1c9c86cb936cd28a506e288e1ac32bfb2a8607daa6c4",
+          "parent_receipt_identity": "parent-ccc008003b31574b8578fa98459cbd7b2939e32521aa228a",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "015ab3355e34455389c97e906be331e7",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T09:41:28Z",
+          "attempt_id": "review-20261020T184009Z-651960",
+          "scope": "follow-up of the v8.15.0 release critique (R1 blocker, R2, notes watch item) after commit 526fbaa17; version, manifest and claims-review surfaces are out of scope",
+          "packet_identity": "470f764c37f39d7bfddc1c9c86cb936cd28a506e288e1ac32bfb2a8607daa6c4",
+          "parent_receipt_identity": "parent-ccc008003b31574b8578fa98459cbd7b2939e32521aa228a",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "40302c987354fbfec2fcd088506af56a561e4561c793921e00dced22e6e92ba8"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "e3023c9dd207351733eaba567ee1a90ae7b7d9bed3e65d632ddb75075ed9bc39",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "8256f225ab158f5acdee918bef3fff995187c49509179ad6b166cf7bee6a3ad4",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/review-20261020T184009Z-651960/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/review-20261020T184009Z-651960/receipt.json",
+      "producer_run_id": "run-review-20261020T184009Z-651960",
+      "findings_identity": "40302c987354fbfec2fcd088506af56a561e4561c793921e00dced22e6e92ba8"
+    }
+  ]
+}

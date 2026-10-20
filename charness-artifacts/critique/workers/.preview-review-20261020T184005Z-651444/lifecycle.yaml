@@ -1,0 +1,114 @@
+schema_version: charness.reviewer_lifecycle.v1
+status: dry-run-ready
+execution_state: preflight-blocked
+lifecycle_state: preflight-blocked
+reviewer_started: false
+delivery_state: none
+verdict_state: not-applicable
+review_verdict: null
+classification: null
+approval_eligible: false
+output:
+  state: none
+  approval_eligible: false
+  artifacts: []
+output_state: none
+failure_identity: null
+next_move: repair the named preflight boundary and rerun; reviewer did not start
+runner_returncode: null
+runner_status: dry-run-ready
+boundary_mode: read-only-worker
+boundary_ok: true
+boundary_reason: null
+paths:
+  packet: charness-artifacts/critique/.preview-review-20261020T184005Z-651444-packet.json
+  schema: charness-artifacts/critique/workers/.preview-review-20261020T184005Z-651444/bounded-review-result.schema.json
+  capability: charness-artifacts/critique/workers/.preview-review-20261020T184005Z-651444/capability.json
+  prompt: charness-artifacts/critique/workers/.preview-review-20261020T184005Z-651444/review-prompt.md
+  plan: charness-artifacts/critique/workers/.preview-review-20261020T184005Z-651444/run-plan.json
+  summary: charness-artifacts/critique/workers/.preview-review-20261020T184005Z-651444/lifecycle.yaml
+ok: true
+carrier_ok: true
+packet_verification:
+  ok: true
+  status: current
+  reason: current
+  reason_code: current
+  expected_kind: charness.critique_prepare_packet
+  packet_path: charness-artifacts/critique/.preview-review-20261020T184005Z-651444-packet.json
+  packet_sha256: f754f839e3419325c9bdb68142d7f5481a6196dac4a6f38cc7ebf6fdd2c40c79
+  identity_sha256: e3023c9dd207351733eaba567ee1a90ae7b7d9bed3e65d632ddb75075ed9bc39
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+backend: codex_exec
+reviewer_tier: high-leverage
+timeout_seconds: 900
+scope: follow-up of the v8.15.0 release critique (R1 blocker, R2, notes watch item)
+  after commit 526fbaa17; version, manifest and claims-review surfaces are out of
+  scope
+lens: '(Gawande) are R1 and R2 actually repaired at their owner: no silent event-byte
+  loss on close, timeout, interrupt or sink failure, the sink never written after
+  the caller closes it, naive stamps unstamped, and do the tests reach the real pipe
+  and assert byte-for-byte retention; (Minto) do the notes now call durations receive-time
+  upper bounds and describe the capture receipt accurately'
+semantic_input:
+  entries:
+  - path: charness-artifacts/release/2026-10-20-v8.15.0-notes.md
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/.preview-review-20261020T184005Z-651444/semantic-input/0000-content.bin
+    content_sha256: a3be2f1501e326ba47edaa91d9ae7691b5bf328646213bae6c4ce245ad3672b9
+    carrier_sha256: a3be2f1501e326ba47edaa91d9ae7691b5bf328646213bae6c4ce245ad3672b9
+    source: 526fbaa1723d4e6d66f344af5c4ec8d47a46cb49:charness-artifacts/release/2026-10-20-v8.15.0-notes.md
+    size_bytes: 3855
+    prompt_encoding: utf-8
+  - path: docs/agent-task-runs.md
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/.preview-review-20261020T184005Z-651444/semantic-input/0001-content.bin
+    content_sha256: 9f472dc4eba83b47e6ceea845783fd6e68398fa96312eb89358fff06422814ce
+    carrier_sha256: 9f472dc4eba83b47e6ceea845783fd6e68398fa96312eb89358fff06422814ce
+    source: 526fbaa1723d4e6d66f344af5c4ec8d47a46cb49:docs/agent-task-runs.md
+    size_bytes: 8235
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_event_timing.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/.preview-review-20261020T184005Z-651444/semantic-input/0002-content.bin
+    content_sha256: 720699675dda8ced9bea455a4cf83d3fa5f8c9bb9275854d9f192ac7801778d2
+    carrier_sha256: 720699675dda8ced9bea455a4cf83d3fa5f8c9bb9275854d9f192ac7801778d2
+    source: 526fbaa1723d4e6d66f344af5c4ec8d47a46cb49:scripts/task_run/task_run_event_timing.py
+    size_bytes: 14814
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_execution.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/.preview-review-20261020T184005Z-651444/semantic-input/0003-content.bin
+    content_sha256: 5e182443f6d580b68db5f81c25a84255cda7ba2f9d3f36e7ca45f343d15bf3c1
+    carrier_sha256: 5e182443f6d580b68db5f81c25a84255cda7ba2f9d3f36e7ca45f343d15bf3c1
+    source: 526fbaa1723d4e6d66f344af5c4ec8d47a46cb49:scripts/task_run/task_run_execution.py
+    size_bytes: 20213
+    prompt_encoding: utf-8
+  - path: tests/charness_cli/test_task_run_event_capture.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/.preview-review-20261020T184005Z-651444/semantic-input/0004-content.bin
+    content_sha256: 70db9b42700bcf6ad8ee3e44dc161c4957dc8fc851ea80a8c223ffd460d9c92c
+    carrier_sha256: 70db9b42700bcf6ad8ee3e44dc161c4957dc8fc851ea80a8c223ffd460d9c92c
+    source: 526fbaa1723d4e6d66f344af5c4ec8d47a46cb49:tests/charness_cli/test_task_run_event_capture.py
+    size_bytes: 6903
+    prompt_encoding: utf-8
+  - path: tests/charness_cli/test_task_run_event_timing.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/.preview-review-20261020T184005Z-651444/semantic-input/0005-content.bin
+    content_sha256: 1d8d6653e1c823d479c583ccf1d0e0a798801c436d1f599a7f791df584e0d712
+    carrier_sha256: 1d8d6653e1c823d479c583ccf1d0e0a798801c436d1f599a7f791df584e0d712
+    source: 526fbaa1723d4e6d66f344af5c4ec8d47a46cb49:tests/charness_cli/test_task_run_event_timing.py
+    size_bytes: 9152
+    prompt_encoding: utf-8
+  manifest: charness-artifacts/critique/workers/.preview-review-20261020T184005Z-651444/semantic-input/manifest.json
+  size_bytes: 63172
+goal_lineage:
+  kind: charness.goal-lineage
+  schema_version: 1
+  disposition: not-goal-bound
+  draft: null
+  binding: null
+  goal_run: null
+  work_item: null
+  reason: critique review was run without a Goal Run Work Item identity

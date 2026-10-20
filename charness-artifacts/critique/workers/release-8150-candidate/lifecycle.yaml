@@ -1,0 +1,248 @@
+schema_version: charness.reviewer_lifecycle.v1
+status: runner-completed
+execution_state: terminal
+lifecycle_state: terminal
+reviewer_started: true
+delivery_state: findings-received
+verdict_state: block
+review_verdict: block
+classification: unclassified
+approval_eligible: false
+output:
+  state: terminal
+  approval_eligible: false
+  schema_version: charness.reviewer_worker_report.v1
+  findings_identity: ea5eb3ed57607c5d3a97ec15d11af09bebaad4ec6eacf407e986e56cadad11a0
+  partial_artifacts:
+  - reason: no identity-matching bounded-review object was found in the bounded log
+      windows
+    scan_limit_bytes: 67108864
+    sources:
+    - bytes: 3802
+      key: runner.stdout
+      path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-f332b3c4d7542a5b60ac5d66ee164728/runner.stdout
+      scanned_bytes: 3802
+      windowed: false
+    - bytes: 623
+      key: runner.stderr
+      path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-f332b3c4d7542a5b60ac5d66ee164728/runner.stderr
+      scanned_bytes: 623
+      windowed: false
+    - bytes: 4025
+      key: backend.stdout
+      path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-f332b3c4d7542a5b60ac5d66ee164728/backend.stdout
+      scanned_bytes: 4025
+      windowed: false
+    - bytes: 270123
+      key: backend.stderr
+      path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-f332b3c4d7542a5b60ac5d66ee164728/backend.stderr
+      scanned_bytes: 270123
+      windowed: false
+    status: unavailable
+output_state: terminal
+failure_identity: f20453d0fc3f630569f4514736a52437b7cc4fb63cd75badefa28c2dcf77e89c
+next_move: inspect the delivered findings; this is a reviewer block, not a runner
+  failure
+runner_returncode: 1
+runner_status: runner-completed
+boundary_mode: read-only-worker
+boundary_ok: true
+boundary_reason: null
+paths:
+  packet: charness-artifacts/critique/release-8150-candidate-packet.json
+  schema: charness-artifacts/critique/workers/release-8150-candidate/bounded-review-result.schema.json
+  capability: charness-artifacts/critique/workers/release-8150-candidate/capability.json
+  prompt: charness-artifacts/critique/workers/release-8150-candidate/review-prompt.md
+  plan: charness-artifacts/critique/workers/release-8150-candidate/run-plan.json
+  ledger: charness-artifacts/critique/workers/release-8150-candidate/delivery.json
+  output: charness-artifacts/critique/workers/release-8150-candidate/result.json
+  receipt: charness-artifacts/critique/workers/release-8150-candidate/receipt.json
+  report: charness-artifacts/critique/workers/release-8150-candidate/worker-report.yaml
+  runner_stdout: charness-artifacts/critique/workers/release-8150-candidate/runner.stdout
+  runner_stderr: charness-artifacts/critique/workers/release-8150-candidate/runner.stderr
+  backend_stdout: charness-artifacts/critique/workers/release-8150-candidate/backend.stdout
+  backend_stderr: charness-artifacts/critique/workers/release-8150-candidate/backend.stderr
+  summary: charness-artifacts/critique/workers/release-8150-candidate/lifecycle.yaml
+  semantic-input/0000-content.bin: charness-artifacts/critique/workers/release-8150-candidate/semantic-input/0000-content.bin
+  semantic-input/0001-content.bin: charness-artifacts/critique/workers/release-8150-candidate/semantic-input/0001-content.bin
+  semantic-input/0002-content.bin: charness-artifacts/critique/workers/release-8150-candidate/semantic-input/0002-content.bin
+  semantic-input/0003-content.bin: charness-artifacts/critique/workers/release-8150-candidate/semantic-input/0003-content.bin
+  semantic-input/0004-content.bin: charness-artifacts/critique/workers/release-8150-candidate/semantic-input/0004-content.bin
+  semantic-input/0005-content.bin: charness-artifacts/critique/workers/release-8150-candidate/semantic-input/0005-content.bin
+  semantic-input/0006-content.bin: charness-artifacts/critique/workers/release-8150-candidate/semantic-input/0006-content.bin
+  semantic-input/0007-content.bin: charness-artifacts/critique/workers/release-8150-candidate/semantic-input/0007-content.bin
+  semantic-input/0008-content.bin: charness-artifacts/critique/workers/release-8150-candidate/semantic-input/0008-content.bin
+  semantic-input/0009-content.bin: charness-artifacts/critique/workers/release-8150-candidate/semantic-input/0009-content.bin
+  semantic-input/manifest.json: charness-artifacts/critique/workers/release-8150-candidate/semantic-input/manifest.json
+  review-prompt.md: charness-artifacts/critique/workers/release-8150-candidate/review-prompt.md
+  run-plan.json: charness-artifacts/critique/workers/release-8150-candidate/run-plan.json
+  bounded-review-result.schema.json: charness-artifacts/critique/workers/release-8150-candidate/bounded-review-result.schema.json
+  capability.json: charness-artifacts/critique/workers/release-8150-candidate/capability.json
+  receipt.json: charness-artifacts/critique/workers/release-8150-candidate/receipt.json
+  delivery.json: charness-artifacts/critique/workers/release-8150-candidate/delivery.json
+  result.json: charness-artifacts/critique/workers/release-8150-candidate/result.json
+  runner.stdout: charness-artifacts/critique/workers/release-8150-candidate/runner.stdout
+  runner.stderr: charness-artifacts/critique/workers/release-8150-candidate/runner.stderr
+  backend.stdout: charness-artifacts/critique/workers/release-8150-candidate/backend.stdout
+  backend.stderr: charness-artifacts/critique/workers/release-8150-candidate/backend.stderr
+  worker-report.yaml: charness-artifacts/critique/workers/release-8150-candidate/worker-report.yaml
+  attempt-manifest.json: charness-artifacts/critique/workers/release-8150-candidate/attempt-manifest.json
+  durable_report: charness-artifacts/critique/workers/release-8150-candidate/worker-report.yaml
+identities:
+  attempt_id: release-8150-candidate
+  scope: 'release v8.15.0 candidate: task-run events-log receive-time stamping and
+    task status --commands since v8.14.9, plus drafted release notes'
+  packet_identity: a811b3bca5583e13dbd4a8e2867f2f4b12b9e00bb07ce5c2b4e16b9a380b8ede
+  reviewed_input_identity: dfa5a810da19f62aefa530784c17b27a93cbf93fccc8c585911e0943ca5cc9dc
+  parent_receipt_identity: parent-db8e36ae53bb130a9ab17f75a5c14b877f006f76af8c95f7
+  findings_identity: ea5eb3ed57607c5d3a97ec15d11af09bebaad4ec6eacf407e986e56cadad11a0
+ok: true
+carrier_ok: true
+packet_verification:
+  ok: true
+  status: current
+  reason: current
+  reason_code: current
+  expected_kind: charness.critique_prepare_packet
+  packet_path: charness-artifacts/critique/release-8150-candidate-packet.json
+  packet_sha256: a811b3bca5583e13dbd4a8e2867f2f4b12b9e00bb07ce5c2b4e16b9a380b8ede
+  identity_sha256: dfa5a810da19f62aefa530784c17b27a93cbf93fccc8c585911e0943ca5cc9dc
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+backend: codex_exec
+timeout_seconds: 900
+scope: 'release v8.15.0 candidate: task-run events-log receive-time stamping and task
+  status --commands since v8.14.9, plus drafted release notes'
+lens: 'release lock-in over code and drafted notes only. Version, manifest and claims-review
+  surfaces are produced by the publish helper after this critique and are out of scope.
+  Judge: (Gawande) is the stamping pipe operationally safe (events bytes preserved,
+  no lost or duplicated output, close and flush on timeout and interrupt) and is the
+  timing reader correct and tested at its stated level; (Minto) do the drafted notes
+  in charness-artifacts/release/2026-10-20-v8.15.0-notes.md match what the code range
+  changes; (Raskin) is the new --commands option and its refusal wording sound for
+  operators; is minor the right bump.'
+parent_receipt_identity: parent-db8e36ae53bb130a9ab17f75a5c14b877f006f76af8c95f7
+semantic_input:
+  entries:
+  - path: charness
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8150-candidate/semantic-input/0000-content.bin
+    content_sha256: 9fc6c49570773f12029b8158f7da07cae53f1de9b9afae277dde3c7087eeb777
+    carrier_sha256: 9fc6c49570773f12029b8158f7da07cae53f1de9b9afae277dde3c7087eeb777
+    source: 9e4df9c8d427d33310a9a8e3f18ae29294ea5740:charness
+    size_bytes: 98955
+    prompt_encoding: utf-8
+  - path: charness-artifacts/release/.8.14.9-prepush-quality.json.charness-receipt.json
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8150-candidate/semantic-input/0001-content.bin
+    content_sha256: b746fd99576a9dc56d7693642a898bf76791e278b6573190eba74dc2b629a4e7
+    carrier_sha256: b746fd99576a9dc56d7693642a898bf76791e278b6573190eba74dc2b629a4e7
+    source: 9e4df9c8d427d33310a9a8e3f18ae29294ea5740:charness-artifacts/release/.8.14.9-prepush-quality.json.charness-receipt.json
+    size_bytes: 947
+    prompt_encoding: utf-8
+  - path: charness-artifacts/release/2026-10-20-v8.15.0-notes.md
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8150-candidate/semantic-input/0002-content.bin
+    content_sha256: a5e7ff7a8afb6de667bceaca523b44f5530d6f334ea2adf41b2193350067642e
+    carrier_sha256: a5e7ff7a8afb6de667bceaca523b44f5530d6f334ea2adf41b2193350067642e
+    source: 9e4df9c8d427d33310a9a8e3f18ae29294ea5740:charness-artifacts/release/2026-10-20-v8.15.0-notes.md
+    size_bytes: 3245
+    prompt_encoding: utf-8
+  - path: docs/agent-task-runs.md
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8150-candidate/semantic-input/0003-content.bin
+    content_sha256: b101988ff12dd58b72454e060946776c62c307ad56f96d321b4f613e96eddfba
+    carrier_sha256: b101988ff12dd58b72454e060946776c62c307ad56f96d321b4f613e96eddfba
+    source: 9e4df9c8d427d33310a9a8e3f18ae29294ea5740:docs/agent-task-runs.md
+    size_bytes: 8155
+    prompt_encoding: utf-8
+  - path: docs/cli-reference.md
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8150-candidate/semantic-input/0004-content.bin
+    content_sha256: 0f3b0a0966837f3e3af9912ca39dbef92cdaa0bfdea597d468d2b8f557a4cb31
+    carrier_sha256: 0f3b0a0966837f3e3af9912ca39dbef92cdaa0bfdea597d468d2b8f557a4cb31
+    source: 9e4df9c8d427d33310a9a8e3f18ae29294ea5740:docs/cli-reference.md
+    size_bytes: 49322
+    prompt_encoding: utf-8
+  - path: scripts/cli/cmd_task.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8150-candidate/semantic-input/0005-content.bin
+    content_sha256: 260f0ae2348e4607ade0c363e09ac90c7276dc04e9f8517e38a7242eee7a4270
+    carrier_sha256: 260f0ae2348e4607ade0c363e09ac90c7276dc04e9f8517e38a7242eee7a4270
+    source: 9e4df9c8d427d33310a9a8e3f18ae29294ea5740:scripts/cli/cmd_task.py
+    size_bytes: 16022
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_event_timing.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8150-candidate/semantic-input/0006-content.bin
+    content_sha256: c2aba778559018afc6a8565e6668ede8656e10313609bfae8d83f22776806ddb
+    carrier_sha256: c2aba778559018afc6a8565e6668ede8656e10313609bfae8d83f22776806ddb
+    source: 9e4df9c8d427d33310a9a8e3f18ae29294ea5740:scripts/task_run/task_run_event_timing.py
+    size_bytes: 11051
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_execution.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8150-candidate/semantic-input/0007-content.bin
+    content_sha256: 505fc772e6f07d63cf886847c86d24ea0e832c8238bfad9be9fe5cd76fcaff48
+    carrier_sha256: 505fc772e6f07d63cf886847c86d24ea0e832c8238bfad9be9fe5cd76fcaff48
+    source: 9e4df9c8d427d33310a9a8e3f18ae29294ea5740:scripts/task_run/task_run_execution.py
+    size_bytes: 19764
+    prompt_encoding: utf-8
+  - path: tests/charness_cli/test_task_run_event_timing.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8150-candidate/semantic-input/0008-content.bin
+    content_sha256: 17b9fd195d060f06310c30ad0f1acc9ec0ab2861487abff77294320fa8cf76c3
+    carrier_sha256: 17b9fd195d060f06310c30ad0f1acc9ec0ab2861487abff77294320fa8cf76c3
+    source: 9e4df9c8d427d33310a9a8e3f18ae29294ea5740:tests/charness_cli/test_task_run_event_timing.py
+    size_bytes: 8321
+    prompt_encoding: utf-8
+  - path: tests/charness_cli/test_task_run_result.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8150-candidate/semantic-input/0009-content.bin
+    content_sha256: 47323b4e8670f6f49c7e24d91b3a8e321da329e6b7ab0bdeaf0ff25bea31bbed
+    carrier_sha256: 47323b4e8670f6f49c7e24d91b3a8e321da329e6b7ab0bdeaf0ff25bea31bbed
+    source: 9e4df9c8d427d33310a9a8e3f18ae29294ea5740:tests/charness_cli/test_task_run_result.py
+    size_bytes: 19140
+    prompt_encoding: utf-8
+  manifest: charness-artifacts/critique/workers/release-8150-candidate/semantic-input/manifest.json
+  size_bytes: 234922
+runner_output:
+  status: runner-completed
+  returncode: 1
+runner_stream:
+  consistent: true
+  reason: null
+  runner_stdout_sha256: 42c6b51a1ac9655d407d86f14c4e5f0df892f506d7d1646a017a6143dfbdde3e
+  canonical_report_sha256: 42c6b51a1ac9655d407d86f14c4e5f0df892f506d7d1646a017a6143dfbdde3e
+boundary_readback:
+  mode: read-only-worker
+  required: false
+goal_lineage:
+  kind: charness.goal-lineage
+  schema_version: 1
+  disposition: not-goal-bound
+  draft: null
+  binding: null
+  goal_run: null
+  work_item: null
+  reason: critique review was run without a Goal Run Work Item identity
+identity_check:
+  status: matched
+  matches: true
+  checks:
+    packet_identity:
+      expected: a811b3bca5583e13dbd4a8e2867f2f4b12b9e00bb07ce5c2b4e16b9a380b8ede
+      actual: a811b3bca5583e13dbd4a8e2867f2f4b12b9e00bb07ce5c2b4e16b9a380b8ede
+      matches: true
+      provenance: a811b3bca5583e13dbd4a8e2867f2f4b12b9e00bb07ce5c2b4e16b9a380b8ede
+    reviewed_input_identity:
+      expected: dfa5a810da19f62aefa530784c17b27a93cbf93fccc8c585911e0943ca5cc9dc
+      actual: dfa5a810da19f62aefa530784c17b27a93cbf93fccc8c585911e0943ca5cc9dc
+      matches: true
+      provenance: dfa5a810da19f62aefa530784c17b27a93cbf93fccc8c585911e0943ca5cc9dc
+    parent_receipt_identity:
+      expected: parent-db8e36ae53bb130a9ab17f75a5c14b877f006f76af8c95f7
+      actual: parent-db8e36ae53bb130a9ab17f75a5c14b877f006f76af8c95f7
+      matches: true
+      provenance: parent-db8e36ae53bb130a9ab17f75a5c14b877f006f76af8c95f7
+  reason: null

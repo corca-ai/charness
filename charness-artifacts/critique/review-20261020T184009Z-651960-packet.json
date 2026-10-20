@@ -1,0 +1,252 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-10-20T09:40:09Z",
+  "prepared_for": "release-8150-followup",
+  "changed_ref": "9e4df9c8d427d33310a9a8e3f18ae29294ea5740..526fbaa1723d4e6d66f344af5c4ec8d47a46cb49",
+  "substrate_mode": "committed-ref",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Bound review paths for ref `9e4df9c8d427d33310a9a8e3f18ae29294ea5740..526fbaa1723d4e6d66f344af5c4ec8d47a46cb49`: (narrow follow-up scope)\nExact reviewed-path manifest:\n- charness-artifacts/release/2026-10-20-v8.15.0-notes.md\n- docs/agent-task-runs.md\n- scripts/task_run/task_run_event_timing.py\n- scripts/task_run/task_run_execution.py\n- tests/charness_cli/test_task_run_event_capture.py\n- tests/charness_cli/test_task_run_event_timing.py\n\nOwning surfaces:\n- materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/task_run/task_run_event_timing.py, scripts/task_run/task_run_execution.py\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/release/2026-10-20-v8.15.0-notes.md, docs/agent-task-runs.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- operational-evidence-records: Durable issue, quality, and release evidence attachments produced by local planning and closeout workflows.\n  source matches: charness-artifacts/release/2026-10-20-v8.15.0-notes.md\n  verify: python3 scripts/gates/check_release_issue_ledger.py --repo-root . --ledger charness-artifacts/issues/2026-08-20-next-release-ledger.json, python3 scripts/gates/validate_quality_artifact.py --repo-root ., python3 scripts/gates/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/task_run/task_run_event_timing.py, scripts/task_run/task_run_execution.py, tests/charness_cli/test_task_run_event_capture.py, tests/charness_cli/test_task_run_event_timing.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/task_run/task_run_event_timing.py, scripts/task_run/task_run_execution.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-6-luna",
+      "reasoning_effort": "xhigh",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "committed-ref",
+    "substrate_mode": "committed-ref",
+    "changed_ref": "9e4df9c8d427d33310a9a8e3f18ae29294ea5740..526fbaa1723d4e6d66f344af5c4ec8d47a46cb49",
+    "resolved_changed_ref": [
+      "9e4df9c8d427d33310a9a8e3f18ae29294ea5740",
+      "526fbaa1723d4e6d66f344af5c4ec8d47a46cb49"
+    ],
+    "base_head": "526fbaa1723d4e6d66f344af5c4ec8d47a46cb49",
+    "base_head_role": "target",
+    "reviewed_paths": [
+      "charness-artifacts/release/2026-10-20-v8.15.0-notes.md",
+      "docs/agent-task-runs.md",
+      "scripts/task_run/task_run_event_timing.py",
+      "scripts/task_run/task_run_execution.py",
+      "tests/charness_cli/test_task_run_event_capture.py",
+      "tests/charness_cli/test_task_run_event_timing.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/release/2026-10-20-v8.15.0-notes.md",
+        "content_sha256": "a3be2f1501e326ba47edaa91d9ae7691b5bf328646213bae6c4ce245ad3672b9"
+      },
+      {
+        "path": "docs/agent-task-runs.md",
+        "content_sha256": "9f472dc4eba83b47e6ceea845783fd6e68398fa96312eb89358fff06422814ce"
+      },
+      {
+        "path": "scripts/task_run/task_run_event_timing.py",
+        "content_sha256": "720699675dda8ced9bea455a4cf83d3fa5f8c9bb9275854d9f192ac7801778d2"
+      },
+      {
+        "path": "scripts/task_run/task_run_execution.py",
+        "content_sha256": "5e182443f6d580b68db5f81c25a84255cda7ba2f9d3f36e7ca45f343d15bf3c1"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run_event_capture.py",
+        "content_sha256": "70db9b42700bcf6ad8ee3e44dc161c4957dc8fc851ea80a8c223ffd460d9c92c"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run_event_timing.py",
+        "content_sha256": "1d8d6653e1c823d479c583ccf1d0e0a798801c436d1f599a7f791df584e0d712"
+      }
+    ],
+    "reviewed_patch_sha256": "a6b4571d0558b21599565994bff0c1c1cf6020ec35fc401ed377439420a602d8",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "e3023c9dd207351733eaba567ee1a90ae7b7d9bed3e65d632ddb75075ed9bc39"
+  },
+  "follow_up": {
+    "kind": "charness.review_followup_context.v1",
+    "source": "charness-artifacts/critique/workers/release-8150-candidate/result.json",
+    "source_sha256": "ea5eb3ed57607c5d3a97ec15d11af09bebaad4ec6eacf407e986e56cadad11a0",
+    "prior_attempt_id": "release-8150-candidate",
+    "prior_verdict": "block",
+    "prior_scope": "release v8.15.0 candidate: task-run events-log receive-time stamping and task status --commands since v8.14.9, plus drafted release notes",
+    "prior_lens": "Release lock-in over code and drafted notes",
+    "prior_packet_path": "charness-artifacts/critique/release-8150-candidate-packet.json",
+    "prior_packet_sha256": "a811b3bca5583e13dbd4a8e2867f2f4b12b9e00bb07ce5c2b4e16b9a380b8ede",
+    "prior_reviewed_input_identity_sha256": "dfa5a810da19f62aefa530784c17b27a93cbf93fccc8c585911e0943ca5cc9dc",
+    "selection": "explicit-with-selection-receipt",
+    "selected_paths": [
+      "charness-artifacts/release/2026-10-20-v8.15.0-notes.md",
+      "docs/agent-task-runs.md",
+      "scripts/task_run/task_run_event_timing.py",
+      "scripts/task_run/task_run_execution.py",
+      "tests/charness_cli/test_task_run_event_capture.py",
+      "tests/charness_cli/test_task_run_event_timing.py"
+    ],
+    "prior_reviewed_paths": 10,
+    "comparison": {
+      "prior_paths": 10,
+      "changed_prior_paths": [],
+      "selected_changed_prior_paths": [],
+      "new_paths": [
+        "tests/charness_cli/test_task_run_event_capture.py"
+      ],
+      "unchanged_selected_paths": [],
+      "omitted_changed_prior_paths": [],
+      "comparison_ref": {
+        "prior": "1f09b80122e5e4ec01cee4c9f3b05ef6cfa4964d..9e4df9c8d427d33310a9a8e3f18ae29294ea5740",
+        "current": "9e4df9c8d427d33310a9a8e3f18ae29294ea5740..526fbaa1723d4e6d66f344af5c4ec8d47a46cb49"
+      }
+    },
+    "selection_receipt": {
+      "prior_binding": {
+        "status": "verified",
+        "attempt_id": "release-8150-candidate",
+        "packet_sha256": "a811b3bca5583e13dbd4a8e2867f2f4b12b9e00bb07ce5c2b4e16b9a380b8ede",
+        "reviewed_input_identity_sha256": "dfa5a810da19f62aefa530784c17b27a93cbf93fccc8c585911e0943ca5cc9dc",
+        "packet_verification": "canonical-integrity-only",
+        "identity_verification": "recorded-self-digest",
+        "semantic_input": {
+          "status": "verified",
+          "entries": 10
+        },
+        "result_carrier": {
+          "status": "verified",
+          "attempt_id": "release-8150-candidate",
+          "partial_result_sha256": null,
+          "result_sha256": "ea5eb3ed57607c5d3a97ec15d11af09bebaad4ec6eacf407e986e56cadad11a0",
+          "source_path": null
+        }
+      },
+      "explicit_paths": true,
+      "rationale": "Explicit paths were supplied because the committed review ref differs from the prior ref; selection is not approval."
+    },
+    "prior_findings": [
+      {
+        "id": "R1",
+        "severity": "blocker",
+        "summary": "The stamping pipe can silently lose event bytes during close or on a sink error.",
+        "action": "Make incomplete drains and sink errors observable in the task result, and ensure the sink remains available until the reader finishes. Add integration coverage for timeout and interrupt, including final partial output, and assert byte-for-byte retention.",
+        "evidence": [
+          "In scripts/task_run/task_run_event_timing.py, StampingPipe.close() closes its writer and joins the reader for 10 seconds, but does not check whether the reader finished.",
+          "The reader catches OSError and ValueError and returns without exposing a drain error. If a descendant still holds the pipe after process-group cleanup, or the sink fails, output can be dropped without a recorded failure.",
+          "tests/charness_cli/test_task_run_event_timing.py covers normal close and a final line without a newline. The interrupted-result test in tests/charness_cli/test_task_run_result.py replaces _execute_codex, so it does not exercise pipe cleanup on interruption; no supplied test exercises timeout cleanup."
+        ]
+      },
+      {
+        "id": "R2",
+        "severity": "medium",
+        "summary": "The timing reader accepts timezone-naive stamps, which can crash when mixed with generated UTC stamps.",
+        "action": "Require timezone-aware receive stamps and treat invalid values as unstamped; add a mixed naive/UTC input test that confirms task status returns a partial timing report instead of failing.",
+        "evidence": [
+          "stamp_event_line() leaves an event unchanged when it already contains charness_received_at.",
+          "_parse_stamp() accepts any datetime.fromisoformat() value, including one without a timezone; _seconds() subtracts parsed values directly, so mixing a naive value with a UTC-aware stamp raises TypeError.",
+          "The supplied timing tests cover valid UTC stamps and unstamped events, but not malformed or timezone-naive stamp values."
+        ]
+      }
+    ],
+    "omitted_finding_ids": [],
+    "prior_next_move": "Before release lock-in, make pipe drain completion and failures observable, then verify timeout and interrupt cleanup with retained-output assertions. Harden timestamp parsing against naive values and add a mixed-timestamp case.",
+    "prior_non_claims": [
+      "This review does not assess version, manifest, or claims-review surfaces, which are out of scope.",
+      "The timing intervals are based on carrier receive times and are not proof of executor-internal wall-clock durations.",
+      "This review used the supplied inline semantic payload and did not independently run the test suite."
+    ],
+    "approval_rule": "This is prior evidence only. Reuse findings as hypotheses; do not treat a prior block, defer, timeout, or partial result as approval. The new reviewer must bind the new packet and current selected paths independently.",
+    "final_reviewed_input_identity_sha256": "e3023c9dd207351733eaba567ee1a90ae7b7d9bed3e65d632ddb75075ed9bc39",
+    "final_selected_path_count": 6,
+    "context_size_bytes": 5837
+  },
+  "follow_up_scope": {
+    "kind": "charness.follow_up_scope_receipt.v1",
+    "status": "verified",
+    "selected_paths": [
+      "charness-artifacts/release/2026-10-20-v8.15.0-notes.md",
+      "docs/agent-task-runs.md",
+      "scripts/task_run/task_run_event_timing.py",
+      "scripts/task_run/task_run_execution.py",
+      "tests/charness_cli/test_task_run_event_capture.py",
+      "tests/charness_cli/test_task_run_event_timing.py"
+    ],
+    "sections": [
+      {
+        "section_id": "changed-files-and-owning-surfaces",
+        "mode": "selected-paths",
+        "binding": "CHARNESS_CRITIQUE_REVIEWED_PATHS",
+        "path_binding": "exact-path-manifest",
+        "selected_path_count": 6,
+        "path_set_sha256": "c715ddd3c40f01c05dae250040a8de0e2bbe83f3c71fffbb952da206957f583c",
+        "status": "verified",
+        "path_check": "exact-manifest"
+      },
+      {
+        "section_id": "critique-prepare-non-goals",
+        "mode": "static",
+        "binding": "adapter-static-content",
+        "path_binding": null,
+        "selected_path_count": 6,
+        "path_set_sha256": null,
+        "status": "verified",
+        "path_check": "not-applicable"
+      },
+      {
+        "section_id": "reviewer-packet-semantic-question",
+        "mode": "static",
+        "binding": "adapter-static-content",
+        "path_binding": null,
+        "selected_path_count": 6,
+        "path_set_sha256": null,
+        "status": "verified",
+        "path_check": "not-applicable"
+      }
+    ],
+    "contract": "Adapter-declared follow-up scope; selected-path sections must expose every identity-bound path, and static sections must declare that they are not path-bearing."
+  }
+}

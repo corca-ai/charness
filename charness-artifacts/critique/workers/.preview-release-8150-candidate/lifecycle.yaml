@@ -1,0 +1,148 @@
+schema_version: charness.reviewer_lifecycle.v1
+status: dry-run-ready
+execution_state: preflight-blocked
+lifecycle_state: preflight-blocked
+reviewer_started: false
+delivery_state: none
+verdict_state: not-applicable
+review_verdict: null
+classification: null
+approval_eligible: false
+output:
+  state: none
+  approval_eligible: false
+  artifacts: []
+output_state: none
+failure_identity: null
+next_move: repair the named preflight boundary and rerun; reviewer did not start
+runner_returncode: null
+runner_status: dry-run-ready
+boundary_mode: read-only-worker
+boundary_ok: true
+boundary_reason: null
+paths:
+  packet: charness-artifacts/critique/.preview-release-8150-candidate-packet.json
+  schema: charness-artifacts/critique/workers/.preview-release-8150-candidate/bounded-review-result.schema.json
+  capability: charness-artifacts/critique/workers/.preview-release-8150-candidate/capability.json
+  prompt: charness-artifacts/critique/workers/.preview-release-8150-candidate/review-prompt.md
+  plan: charness-artifacts/critique/workers/.preview-release-8150-candidate/run-plan.json
+  summary: charness-artifacts/critique/workers/.preview-release-8150-candidate/lifecycle.yaml
+ok: true
+carrier_ok: true
+packet_verification:
+  ok: true
+  status: current
+  reason: current
+  reason_code: current
+  expected_kind: charness.critique_prepare_packet
+  packet_path: charness-artifacts/critique/.preview-release-8150-candidate-packet.json
+  packet_sha256: 331b6087d65aacb8aa061be0e8dc0b3e276910d928090529484d037ec874608b
+  identity_sha256: dfa5a810da19f62aefa530784c17b27a93cbf93fccc8c585911e0943ca5cc9dc
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+backend: codex_exec
+reviewer_tier: high-leverage
+timeout_seconds: 900
+scope: 'release v8.15.0 candidate: task-run events-log receive-time stamping and task
+  status --commands since v8.14.9, plus drafted release notes'
+lens: 'release lock-in over code and drafted notes only. Version, manifest and claims-review
+  surfaces are produced by the publish helper after this critique and are out of scope.
+  Judge: (Gawande) is the stamping pipe operationally safe (events bytes preserved,
+  no lost or duplicated output, close and flush on timeout and interrupt) and is the
+  timing reader correct and tested at its stated level; (Minto) do the drafted notes
+  in charness-artifacts/release/2026-10-20-v8.15.0-notes.md match what the code range
+  changes; (Raskin) is the new --commands option and its refusal wording sound for
+  operators; is minor the right bump.'
+semantic_input:
+  entries:
+  - path: charness
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/.preview-release-8150-candidate/semantic-input/0000-content.bin
+    content_sha256: 9fc6c49570773f12029b8158f7da07cae53f1de9b9afae277dde3c7087eeb777
+    carrier_sha256: 9fc6c49570773f12029b8158f7da07cae53f1de9b9afae277dde3c7087eeb777
+    source: 9e4df9c8d427d33310a9a8e3f18ae29294ea5740:charness
+    size_bytes: 98955
+    prompt_encoding: utf-8
+  - path: charness-artifacts/release/.8.14.9-prepush-quality.json.charness-receipt.json
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/.preview-release-8150-candidate/semantic-input/0001-content.bin
+    content_sha256: b746fd99576a9dc56d7693642a898bf76791e278b6573190eba74dc2b629a4e7
+    carrier_sha256: b746fd99576a9dc56d7693642a898bf76791e278b6573190eba74dc2b629a4e7
+    source: 9e4df9c8d427d33310a9a8e3f18ae29294ea5740:charness-artifacts/release/.8.14.9-prepush-quality.json.charness-receipt.json
+    size_bytes: 947
+    prompt_encoding: utf-8
+  - path: charness-artifacts/release/2026-10-20-v8.15.0-notes.md
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/.preview-release-8150-candidate/semantic-input/0002-content.bin
+    content_sha256: a5e7ff7a8afb6de667bceaca523b44f5530d6f334ea2adf41b2193350067642e
+    carrier_sha256: a5e7ff7a8afb6de667bceaca523b44f5530d6f334ea2adf41b2193350067642e
+    source: 9e4df9c8d427d33310a9a8e3f18ae29294ea5740:charness-artifacts/release/2026-10-20-v8.15.0-notes.md
+    size_bytes: 3245
+    prompt_encoding: utf-8
+  - path: docs/agent-task-runs.md
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/.preview-release-8150-candidate/semantic-input/0003-content.bin
+    content_sha256: b101988ff12dd58b72454e060946776c62c307ad56f96d321b4f613e96eddfba
+    carrier_sha256: b101988ff12dd58b72454e060946776c62c307ad56f96d321b4f613e96eddfba
+    source: 9e4df9c8d427d33310a9a8e3f18ae29294ea5740:docs/agent-task-runs.md
+    size_bytes: 8155
+    prompt_encoding: utf-8
+  - path: docs/cli-reference.md
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/.preview-release-8150-candidate/semantic-input/0004-content.bin
+    content_sha256: 0f3b0a0966837f3e3af9912ca39dbef92cdaa0bfdea597d468d2b8f557a4cb31
+    carrier_sha256: 0f3b0a0966837f3e3af9912ca39dbef92cdaa0bfdea597d468d2b8f557a4cb31
+    source: 9e4df9c8d427d33310a9a8e3f18ae29294ea5740:docs/cli-reference.md
+    size_bytes: 49322
+    prompt_encoding: utf-8
+  - path: scripts/cli/cmd_task.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/.preview-release-8150-candidate/semantic-input/0005-content.bin
+    content_sha256: 260f0ae2348e4607ade0c363e09ac90c7276dc04e9f8517e38a7242eee7a4270
+    carrier_sha256: 260f0ae2348e4607ade0c363e09ac90c7276dc04e9f8517e38a7242eee7a4270
+    source: 9e4df9c8d427d33310a9a8e3f18ae29294ea5740:scripts/cli/cmd_task.py
+    size_bytes: 16022
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_event_timing.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/.preview-release-8150-candidate/semantic-input/0006-content.bin
+    content_sha256: c2aba778559018afc6a8565e6668ede8656e10313609bfae8d83f22776806ddb
+    carrier_sha256: c2aba778559018afc6a8565e6668ede8656e10313609bfae8d83f22776806ddb
+    source: 9e4df9c8d427d33310a9a8e3f18ae29294ea5740:scripts/task_run/task_run_event_timing.py
+    size_bytes: 11051
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_execution.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/.preview-release-8150-candidate/semantic-input/0007-content.bin
+    content_sha256: 505fc772e6f07d63cf886847c86d24ea0e832c8238bfad9be9fe5cd76fcaff48
+    carrier_sha256: 505fc772e6f07d63cf886847c86d24ea0e832c8238bfad9be9fe5cd76fcaff48
+    source: 9e4df9c8d427d33310a9a8e3f18ae29294ea5740:scripts/task_run/task_run_execution.py
+    size_bytes: 19764
+    prompt_encoding: utf-8
+  - path: tests/charness_cli/test_task_run_event_timing.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/.preview-release-8150-candidate/semantic-input/0008-content.bin
+    content_sha256: 17b9fd195d060f06310c30ad0f1acc9ec0ab2861487abff77294320fa8cf76c3
+    carrier_sha256: 17b9fd195d060f06310c30ad0f1acc9ec0ab2861487abff77294320fa8cf76c3
+    source: 9e4df9c8d427d33310a9a8e3f18ae29294ea5740:tests/charness_cli/test_task_run_event_timing.py
+    size_bytes: 8321
+    prompt_encoding: utf-8
+  - path: tests/charness_cli/test_task_run_result.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/.preview-release-8150-candidate/semantic-input/0009-content.bin
+    content_sha256: 47323b4e8670f6f49c7e24d91b3a8e321da329e6b7ab0bdeaf0ff25bea31bbed
+    carrier_sha256: 47323b4e8670f6f49c7e24d91b3a8e321da329e6b7ab0bdeaf0ff25bea31bbed
+    source: 9e4df9c8d427d33310a9a8e3f18ae29294ea5740:tests/charness_cli/test_task_run_result.py
+    size_bytes: 19140
+    prompt_encoding: utf-8
+  manifest: charness-artifacts/critique/workers/.preview-release-8150-candidate/semantic-input/manifest.json
+  size_bytes: 234922
+goal_lineage:
+  kind: charness.goal-lineage
+  schema_version: 1
+  disposition: not-goal-bound
+  draft: null
+  binding: null
+  goal_run: null
+  work_item: null
+  reason: critique review was run without a Goal Run Work Item identity

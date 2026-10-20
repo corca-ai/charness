@@ -1,0 +1,10 @@
+charness
+charness-artifacts/release/.8.14.9-prepush-quality.json.charness-receipt.json
+charness-artifacts/release/2026-10-20-v8.15.0-notes.md
+docs/agent-task-runs.md
+docs/cli-reference.md
+scripts/cli/cmd_task.py
+scripts/task_run/task_run_event_timing.py
+scripts/task_run/task_run_execution.py
+tests/charness_cli/test_task_run_event_timing.py
+tests/charness_cli/test_task_run_result.py

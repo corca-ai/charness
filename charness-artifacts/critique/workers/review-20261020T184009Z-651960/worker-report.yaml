@@ -1,0 +1,71 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: follow-up of the v8.15.0 release critique (R1 blocker, R2, notes watch item)
+  after commit 526fbaa17; version, manifest and claims-review surfaces are out of
+  scope
+attempt_id: review-20261020T184009Z-651960
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 8256f225ab158f5acdee918bef3fff995187c49509179ad6b166cf7bee6a3ad4
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: charness-artifacts/critique/workers/review-20261020T184009Z-651960/receipt.json
+ledger_path: charness-artifacts/critique/workers/review-20261020T184009Z-651960/delivery.json
+producer_run_id: run-review-20261020T184009Z-651960
+producer_binding:
+  output_file: charness-artifacts/critique/workers/review-20261020T184009Z-651960/result.json
+  receipt_file: charness-artifacts/critique/workers/review-20261020T184009Z-651960/receipt.json
+  producer_run_id: run-review-20261020T184009Z-651960
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 40302c987354fbfec2fcd088506af56a561e4561c793921e00dced22e6e92ba8
+receipt_output_sha256: 40302c987354fbfec2fcd088506af56a561e4561c793921e00dced22e6e92ba8
+packet_identity: 470f764c37f39d7bfddc1c9c86cb936cd28a506e288e1ac32bfb2a8607daa6c4
+reviewed_input_identity: e3023c9dd207351733eaba567ee1a90ae7b7d9bed3e65d632ddb75075ed9bc39
+parent_receipt_identity: parent-ccc008003b31574b8578fa98459cbd7b2939e32521aa228a
+provenance:
+  scope: follow-up of the v8.15.0 release critique (R1 blocker, R2, notes watch item)
+    after commit 526fbaa17; version, manifest and claims-review surfaces are out of
+    scope
+  packet_identity: 470f764c37f39d7bfddc1c9c86cb936cd28a506e288e1ac32bfb2a8607daa6c4
+  reviewed_input_identity: e3023c9dd207351733eaba567ee1a90ae7b7d9bed3e65d632ddb75075ed9bc39
+  parent_receipt_identity: parent-ccc008003b31574b8578fa98459cbd7b2939e32521aa228a
+  expected_targets_sha256: null
+  attempt_id: review-20261020T184009Z-651960
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 8256f225ab158f5acdee918bef3fff995187c49509179ad6b166cf7bee6a3ad4
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes
