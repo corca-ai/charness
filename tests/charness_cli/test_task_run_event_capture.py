@@ -159,6 +159,25 @@ def test_a_failing_sink_is_reported_and_never_blocks_the_executor() -> None:
     assert capture["dropped_bytes"] > 0
 
 
+class _ShortSink(io.BytesIO):
+    def write(self, data: bytes) -> int:  # type: ignore[override]
+        return super().write(bytes(data)[:-1]) if len(data) > 1 else super().write(data)
+
+
+def test_a_short_sink_write_is_recorded_as_lost_bytes() -> None:
+    """A sink that accepts only part of a line must not leave capture 'complete'
+    (release critique follow-up R-002)."""
+    sink = _ShortSink()
+    pipe = timing.StampingPipe(sink, clock=lambda: STAMP)
+    os.write(pipe.fileno(), b'{"type":"a"}\n{"type":"b"}\n')
+    pipe.close()
+
+    capture = pipe.capture()
+    assert capture["complete"] is False
+    assert capture["error"].startswith("short write: ")
+    assert capture["dropped_bytes"] > 0
+
+
 def test_incomplete_capture_reaches_the_execution_record(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

@@ -7,7 +7,8 @@ executor's stdout through a pipe and inserts `charness_received_at` (UTC,
 millisecond ISO-8601) at the front of every JSON-object line as it arrives.
 Non-JSON lines pass through unchanged. The stamp is the time charness
 received the line, not the time the executor produced it; pipe buffering
-makes it an upper bound on the producer's own time.
+makes it an upper bound on the producer's own time, so a duration between
+two stamps can err in either direction.
 
 `command_timing` reads a stamped events log back into per-command durations
 (`item.started` to `item.completed` for Codex, `task.lifecycle.started` to
@@ -145,7 +146,13 @@ class StampingPipe:
                 return
             if not self._sink_failed:
                 try:
-                    self._sink.write(data)
+                    written = self._sink.write(data)
+                    if isinstance(written, int) and written < len(data):
+                        # A sink that accepted part of the line: record the rest as lost.
+                        self._sink_failed = True
+                        self.error = self.error or f"short write: {written} of {len(data)} bytes"
+                        self.dropped_bytes += len(data) - written
+                        return
                     self._sink.flush()
                     return
                 except (OSError, ValueError) as exc:
