@@ -103,9 +103,10 @@ class StampingPipe:
     moment of close: once the executor's process group is killed, everything
     it wrote is in the kernel pipe buffer, so the drain reads it all.
 
-    Three things can still lose bytes, and none is silent: a descendant
+    Four things can still lose bytes, and none is silent: a descendant
     outside the killed group that keeps the pipe open (its later output is
-    not captured, `writer_open_at_close`), a sink write that fails or is
+    not captured, `writer_open_at_close`), a pipe read that fails (`error`;
+    the reader stops and bytes still queued are not drained), a sink write that fails or is
     short (`error`; the reader keeps reading and counts `dropped_bytes`, so
     the executor does not block on a full pipe), and a sink write that hangs.
     A hung write holds the reader, so the pipe stops draining; `close()`
