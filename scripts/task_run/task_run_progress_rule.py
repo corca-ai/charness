@@ -52,6 +52,7 @@ from scripts.task_run import task_run_event_timing as _timing  # noqa: E402
 #: reads, searches, todo lists and bash input are activity, not outcomes.
 MUSE_EDIT_TOOL_KINDS = frozenset({"tool.edit", "tool.edit_file", "tool.write_file"})
 PROGRESS_WINDOW_ENV = "CHARNESS_TASK_RUN_PROGRESS_WINDOW_SECONDS"
+_NO_PROBE = object()  # sentinel: no tree probe was taken before the lock
 DEFAULT_PROGRESS_WINDOW_SECONDS = 1200.0
 LOOP_FAMILIES = frozenset({"test", "lint", "typecheck"})
 _FINGERPRINT_PROBE_SECONDS = 60.0
@@ -149,6 +150,7 @@ class ProgressRule:
         self.window_source = window_source
         self._fingerprint = fingerprint
         self._lock = threading.Lock()
+        self._completion_state: object = _NO_PROBE
         self._timeline = _timing._Timeline(on_complete=self._on_complete)
         self._muse_kinds: dict[str, str] = {}
         self._outcomes: dict[tuple[str, str], int] = {}
@@ -188,13 +190,29 @@ class ProgressRule:
         }
 
     def on_event(self, event: Mapping[str, Any]) -> Action | None:
+        # A command completion keys its outcome to the tree; probe it before
+        # taking the lock, so the next event (a command start) is never queued
+        # behind a slow probe while a window check decides what is running.
+        state = self._fingerprint() if self._is_command_completion(event) else _NO_PROBE
         with self._lock:
             if self.stop_reason is not None or self.window_seconds <= 0:
                 return None  # stopped, or the rule is off: no message reaches the lane
             self._count_edit_outcome(event)
+            self._completion_state = state
             self._timeline.feed(None, event)
             action, self._pending = self._pending, None
             return self._record(action)
+
+    def _is_command_completion(self, event: Mapping[str, Any]) -> bool:
+        item = event.get("item")
+        if event.get("type") == "item.completed" and isinstance(item, Mapping):
+            return item.get("type") == "command_execution"
+        payload = event.get("payload")
+        return (
+            event.get("payload_type") == "task.lifecycle.completed"
+            and isinstance(payload, Mapping)
+            and str(payload.get("task_id")) in self._timeline.bash_tasks()
+        )
 
     def _count_edit_outcome(self, event: Mapping[str, Any]) -> None:
         """File edits the executor reports are outcomes even when git cannot be read."""
@@ -221,7 +239,9 @@ class ProgressRule:
         if not command:
             self._new_outcomes += 1  # an unnamed command cannot be proven a repeat
             return
-        state = self._fingerprint()
+        state = self._completion_state
+        if state is _NO_PROBE:
+            state = self._fingerprint()
         # An unreadable tree is one unknown state: a new command is still new,
         # a rerun is not, and no loop is claimed without seeing the tree.
         key = (command.strip(), state or "unobservable")
@@ -286,6 +306,10 @@ class ProgressRule:
                 return None
             if now - self._last_check_at < self.window_seconds:
                 return None
+            # Only commands already running before this probe count as seen at
+            # this check: one that starts mid-probe stays young at the next
+            # check too, so nothing is killed before it has run a full window.
+            seen_before_probe = set(self._in_flight())
         # Probe the tree without the lock, so executor events keep arriving: a
         # command that starts during a slow probe is in flight (and young) below
         # instead of waiting on the lock while the check decides to preempt.
@@ -295,7 +319,7 @@ class ProgressRule:
             progressed = tree_changed or self._new_outcomes > 0
             in_flight = self._in_flight()
             young = set(in_flight) - self._in_flight_at_check
-            self._in_flight_at_check = set(in_flight)
+            self._in_flight_at_check = seen_before_probe & set(in_flight)
             check = {
                 "elapsed_s": round(now - self._last_check_at, 3),
                 "progress": progressed,

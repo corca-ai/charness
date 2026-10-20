@@ -389,6 +389,10 @@ class _Timeline:
             if self._on_complete is not None:
                 self._on_complete(entry["command"], entry.get("exit_code"))
 
+    def bash_tasks(self) -> frozenset[str]:
+        """Muse task ids proposed as `tool.bash` so far (a snapshot)."""
+        return frozenset(self._bash_tasks)
+
     def in_flight(self) -> dict[str, str]:
         """Commands whose start was seen and whose completion was not, by item id."""
         return {

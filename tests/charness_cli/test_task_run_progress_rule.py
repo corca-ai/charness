@@ -318,6 +318,39 @@ def test_a_command_started_during_a_slow_tree_probe_is_young_not_killed() -> Non
     ticking.set()
     assert rule.on_tick(100.0) is None  # deferred for the command started mid-probe
     assert rule.checks[-1]["deferred_for_young_command"] is True
+    ticking.clear()
+    # It started after this check's probe began, so the next check still
+    # counts it young; only the check after that may interrupt it (review 29).
+    assert rule.on_tick(200.0) is None
+    assert rule.checks[-1]["deferred_for_young_command"] is True
+    request = rule.on_tick(300.0)
+    assert request is not None and request.kind == "message"
+
+
+def test_a_completion_probe_never_holds_up_the_next_command_start() -> None:
+    """A completion's tree probe runs before the rule lock, so the event reader
+    is never queued behind it (review 29)."""
+    import threading
+
+    rule: rule_owner.ProgressRule
+    probing = threading.Event()
+
+    def fingerprint() -> str:
+        if probing.is_set():
+            start = {"type": "item.started",
+                     "item": {"id": "next", "type": "command_execution", "command": TEST}}
+            feeder = threading.Thread(target=rule.on_event, args=(start,))
+            feeder.start()
+            feeder.join(timeout=2)
+            assert not feeder.is_alive(), "a command start waited behind a completion probe"
+        return "same"
+
+    rule = rule_owner.ProgressRule(window_seconds=100.0, fingerprint=fingerprint)
+    rule.start(0.0)
+    probing.set()
+    rule.on_event(_completed(TEST, "c1"))
+    probing.clear()
+    assert any(key.endswith(":next") for key in rule._in_flight())  # fed, not queued
 
 
 def test_a_command_started_after_the_request_is_not_killed_until_it_is_a_window_old() -> None:
