@@ -236,7 +236,7 @@ class ProgressRule:
             # produced nothing new: deliver it now. It arrives between checks,
             # so the next check opens its full window rather than stopping.
             self._request = "delivered-between-checks"
-            self._pending = self._checkpoint_request(interrupted=None)
+            self._pending = self._checkpoint_request(interrupted=[])
             return
         if count < 3 or not LOOP_FAMILIES & set(_timing.command_families(command)):
             return
@@ -262,14 +262,17 @@ class ProgressRule:
                 "loop-stop",
             )
 
-    def _checkpoint_request(self, *, interrupted: str | None) -> Action:
+    def _checkpoint_request(self, *, interrupted: list[str]) -> Action:
         text = CHECKPOINT_REQUEST.format(window=_duration(self.window_seconds))
         if interrupted:
+            # The kill takes the executor's whole process group, so every
+            # running command is interrupted, not only the oldest one.
+            named = ", ".join(f"`{command[:200]}`" for command in interrupted)
             text += (
-                f" Your running command `{interrupted[:200]}` was interrupted after "
-                f"running for at least {_duration(self.window_seconds)}; it may have "
-                "left partial output or files. Do not simply rerun it: run a narrower "
-                "or faster variant, or report that it needs longer."
+                f" Every command still running was interrupted ({named}), each after "
+                f"running for at least {_duration(self.window_seconds)}; they may have "
+                "left partial output or files. Do not simply rerun them: run a narrower "
+                "or faster variant, or report that one needs longer."
             )
         return Action("message", text, "no-progress")
 
@@ -320,8 +323,7 @@ class ProgressRule:
                 return None
             if self._request in (None, "deferred"):
                 self._request = "delivered"
-                interrupted = list(in_flight.values())[-1] if in_flight else None
-                return self._record(self._checkpoint_request(interrupted=interrupted))
+                return self._record(self._checkpoint_request(interrupted=list(in_flight.values())))
             self._mark_answered(False, "unanswered")
             window = _duration(self.window_seconds)
             return self._record(

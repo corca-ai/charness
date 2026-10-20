@@ -105,6 +105,34 @@ def test_an_unobservable_worktree_falls_back_to_the_executors_own_events() -> No
     assert rule.on_tick(300.0).kind == "stop"
 
 
+def test_the_checkpoint_names_every_command_the_kill_interrupts() -> None:
+    """The kill takes the whole process group, so the message names every
+    running command, not only the last one (follow-up review 24)."""
+    rule, _tree = _rule()
+    for item_id, command in (("c1", TEST), ("c2", "sleep 900")):
+        rule.on_event({"type": "item.started",
+                       "item": {"id": item_id, "type": "command_execution", "command": command}})
+    assert rule.on_tick(100.0) is None  # both young: deferred
+    request = rule.on_tick(200.0)
+    assert request is not None and f"`{TEST}`" in request.text and "`sleep 900`" in request.text
+
+
+def test_a_loop_repeat_that_resolves_a_deferred_request_delivers_the_checkpoint() -> None:
+    """A third identical test run arriving while a request is deferred sends the
+    checkpoint request, not the loop message, so the state the next check reads
+    matches what the lane received (follow-up review 24)."""
+    rule, _tree = _rule()
+    rule.on_event(_completed(TEST, "c1"))
+    rule.on_event(_completed(TEST, "c2"))
+    assert rule.on_tick(100.0) is None  # the first run was a new outcome
+    rule.on_event({"type": "item.started",
+                   "item": {"id": "c3", "type": "command_execution", "command": TEST}})
+    assert rule.on_tick(200.0) is None  # deferred for the young third run
+    action = rule.on_event(_completed(TEST, "c3"))
+    assert action is not None and action.reason_code == "no-progress"
+    assert rule.snapshot(200.0)["checkpoint_request"] == "delivered-between-checks"
+
+
 def test_a_command_in_flight_defers_the_request_instead_of_killing_it() -> None:
     rule, _tree = _rule()
     started = {"type": "item.started",
@@ -116,7 +144,8 @@ def test_a_command_in_flight_defers_the_request_instead_of_killing_it() -> None:
     # Still running at the next check: now it is interrupted with the request.
     request = rule.on_tick(200.0)
     assert request is not None and request.kind == "message"
-    assert "was interrupted after running for at least" in request.text
+    assert "Every command still running was interrupted" in request.text
+    assert TEST in request.text
     assert rule.on_tick(300.0).kind == "stop"
 
 
