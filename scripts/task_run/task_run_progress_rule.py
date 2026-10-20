@@ -191,8 +191,9 @@ class ProgressRule:
 
     def on_event(self, event: Mapping[str, Any]) -> Action | None:
         # A command completion keys its outcome to the tree; probe it before
-        # taking the lock, so the next event (a command start) is never queued
-        # behind a slow probe while a window check decides what is running.
+        # taking the lock, so a window check is never held behind it. The
+        # event reader itself still waits for the probe before it reads the
+        # next line, so a start arriving during it is seen only afterwards.
         state = self._fingerprint() if self._is_command_completion(event) else _NO_PROBE
         with self._lock:
             if self.stop_reason is not None or self.window_seconds <= 0:
