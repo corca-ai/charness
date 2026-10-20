@@ -257,7 +257,10 @@ def _execute_codex(
         result["exec_error"] = str(exc)
     finish_lane = getattr(lane_watch, "finish_lane", None)
     if finish_lane is not None and not result.get("progress_stopped"):
-        finish_lane()
+        finish_lane(
+            ended_normally=result.get("exit_code") == 0
+            and not (result.get("exec_error") or result["timed_out"] or result["interrupted"])
+        )
     event_window = _evidence._log_window(event_log, event_log_offset)
     result["event_log_window"] = {
         "path": str(event_window.path),

@@ -150,20 +150,38 @@ class ProgressRule:
         self._new_outcomes = 0
         self._request: str | None = None
         self._in_flight_at_check: set[str] = set()
+        self._invocation = 0
         self.checks: list[dict[str, Any]] = []
         self.messages: list[dict[str, Any]] = []
         self.stop_reason: str | None = None
 
     def start(self, now: float) -> None:
-        """Begin observing at `now`; a later call (after a preemption) continues."""
+        """Begin observing at `now`; a later call starts the next invocation.
+
+        Window state carries over a preemption; command state does not: the
+        previous executor process is dead, and a resumed Codex session reuses
+        item ids, so each invocation gets a fresh timeline and its own keys.
+        """
         with self._lock:
             if self._last_check_at is None:
                 self._last_check_at = now
                 self._last_progress_at = now
                 self._last_state = self._fingerprint()
+            else:
+                self._invocation += 1
+                self._timeline = _timing._Timeline(on_complete=self._on_complete)
+                self._muse_kinds = {}
+
+    def _in_flight(self) -> dict[str, str]:
+        return {
+            f"{self._invocation}:{key}": command
+            for key, command in self._timeline.in_flight().items()
+        }
 
     def on_event(self, event: Mapping[str, Any]) -> Action | None:
         with self._lock:
+            if self.stop_reason is not None:
+                return None  # stopped: no message can reach the lane any more
             self._count_edit_outcome(event)
             self._timeline.feed(None, event)
             action, self._pending = self._pending, None
@@ -205,7 +223,7 @@ class ProgressRule:
             self._new_outcomes += 1
         if state is None:
             return
-        if count > 1 and self._request == "deferred" and not self._timeline.in_flight():
+        if count > 1 and self._request == "deferred" and not self._in_flight():
             # The deferred request waited for this boundary, and the command
             # produced nothing new: deliver it now.
             self._request = "delivered"
@@ -241,7 +259,8 @@ class ProgressRule:
             text += (
                 f" Your running command `{interrupted[:200]}` was interrupted after "
                 f"running for at least {_duration(self.window_seconds)}; it may have "
-                "left partial output or files."
+                "left partial output or files. Do not simply rerun it: run a narrower "
+                "or faster variant, or report that it needs longer."
             )
         return Action("message", text, "no-progress")
 
@@ -254,7 +273,7 @@ class ProgressRule:
             state = self._fingerprint()
             tree_changed = state is not None and state != self._last_state
             progressed = tree_changed or self._new_outcomes > 0
-            in_flight = self._timeline.in_flight()
+            in_flight = self._in_flight()
             young = set(in_flight) - self._in_flight_at_check
             self._in_flight_at_check = set(in_flight)
             check = {
@@ -307,11 +326,19 @@ class ProgressRule:
                     message.update(answered=answered, answered_by=by)
                 return
 
-    def finish(self) -> None:
-        """The lane ended on its own: a delivered request was answered by that end."""
+    def finish(self, *, ended_normally: bool) -> None:
+        """The executor stopped running; a clean end answers a delivered request.
+
+        A clean end is the executor's own exit 0 (its final report or a
+        `BLOCKED:` line ends the turn); a timeout, interruption, or failure
+        leaves the request unanswered.
+        """
         with self._lock:
             if self._request == "delivered":
-                self._mark_answered(True, "lane-ended")
+                if ended_normally:
+                    self._mark_answered(True, "lane-ended")
+                else:
+                    self._mark_answered(False, "lane-failed")
             self._request = None
 
     def _record(self, action: Action | None) -> Action | None:

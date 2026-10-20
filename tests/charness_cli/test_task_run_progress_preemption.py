@@ -215,11 +215,50 @@ def test_messages_in_one_invocation_share_one_preemption_and_lose_to_a_stop(
     assert (watch.preemptions, kills) == (1, ["kill"])
     assert len(task_run_lane_runner.read_steer_queue(queue)) == 2
 
+    # The stop wins before the resume delivers them: both are superseded and
+    # the preemption that never became a resume is not counted.
     watch._stop_now("stopped by the rule")
+    queued = task_run_lane_runner.read_steer_queue(queue)
+    assert {(item["disposition"], item["reason_code"]) for item in queued} == {
+        ("nacked", "superseded-by-stop")
+    }
+    assert (watch.preemptions, watch.take_preempted()) == (0, False)
     watch._apply(Action("message", "too late", "no-progress"))
-    assert watch.suppressed_actions == 1
+    assert watch.suppressed_actions == 3
     assert len(task_run_lane_runner.read_steer_queue(queue)) == 2
-    assert watch.receipt()["suppressed_actions"] == 1
+    assert watch.receipt()["suppressed_actions"] == 3
+
+
+def test_a_message_raised_after_the_rule_decided_to_stop_is_suppressed(
+    tmp_path: Path,
+) -> None:
+    from scripts.task_run.task_run_progress_rule import Action
+
+    watch, kills, queue = _started_watch(tmp_path)
+    watch._progress_rule.stop_reason = "the rule stopped first"  # watch not yet told
+    watch._apply(Action("message", "late", "loop-debug"))
+
+    assert (watch.suppressed_actions, kills) == (1, [])
+    assert task_run_lane_runner.read_steer_queue(queue) == []
+
+
+def test_failing_due_checks_stop_the_lane_even_with_quiet_polls_between(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    watch, _kills, _queue = _started_watch(tmp_path)
+    calls = {"n": 0}
+
+    def due_checks_fail(_now: float) -> None:
+        calls["n"] += 1
+        if calls["n"] % 2 == 0:
+            raise RuntimeError("fingerprint exploded")
+        return None  # an ordinary poll: no check was due
+
+    monkeypatch.setattr(watch._progress_rule, "on_tick", due_checks_fail)
+    reasons = [watch._tick_rule(float(n)) for n in range(2 * task_run_progress.MAX_RULE_FAILURES)]
+
+    assert all(reason is None for reason in reasons[:-1])
+    assert reasons[-1] is not None and "cannot be bounded" in reasons[-1]
 
 
 def test_a_watch_that_cannot_check_stops_the_lane_instead_of_leaving_it_unbounded(

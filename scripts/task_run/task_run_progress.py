@@ -131,6 +131,7 @@ class LaneProgressWatch:
         self.preemptions = 0
         self._rule_failures = 0
         self.suppressed_actions = 0
+        self._undelivered: list[dict[str, Any]] = []
 
     def start(
         self,
@@ -204,6 +205,7 @@ class LaneProgressWatch:
     def _tick_rule(self, now: float) -> str | None:
         if self._progress_rule is None:
             return None
+        checks_before = len(self._progress_rule.checks)
         try:
             action = self._progress_rule.on_tick(now)
         except Exception as exc:  # noqa: BLE001 - counted; repeated failure stops the lane
@@ -214,16 +216,19 @@ class LaneProgressWatch:
                 f"progress watch failed {self._rule_failures} consecutive checks "
                 f"({type(exc).__name__}: {exc}); the lane cannot be bounded"
             )
-        self._rule_failures = 0
+        if len(self._progress_rule.checks) > checks_before:
+            # Only a completed due check proves the rule works; a no-op poll
+            # between failing checks must not reset the count.
+            self._rule_failures = 0
         if action is not None and action.kind == "stop":
             return action.text
         self._apply(action)
         return None
 
-    def finish_lane(self) -> None:
-        """The executor ended on its own; resolve an outstanding checkpoint request."""
+    def finish_lane(self, *, ended_normally: bool) -> None:
+        """The executor stopped running; resolve an outstanding checkpoint request."""
         if self._progress_rule is not None:
-            self._progress_rule.finish()
+            self._progress_rule.finish(ended_normally=ended_normally)
 
     def observe_event(self, event: Mapping[str, Any]) -> None:
         """Feed one executor event to the progress rule (runs on the event reader)."""
@@ -246,17 +251,20 @@ class LaneProgressWatch:
         from scripts.task_run import task_run_lane_runner as _lane_runner
 
         with self._action_lock:
-            # First wins: once the lane is stopping, a message would never be
-            # delivered, so it is suppressed and counted instead of queued.
-            if self.stop_reason is not None:
+            # First wins: once the lane is stopping (here or in the rule), a
+            # message would never be delivered, so it is suppressed and counted.
+            rule = self._progress_rule
+            if self.stop_reason is not None or (rule is not None and rule.stop_reason):
                 self.suppressed_actions += 1
                 return
-            _lane_runner.enqueue_steer(
-                self._steer_queue,
-                self._stdout_log.parent.name,
-                action.text,
-                reason=action.reason_code,
-                actor="charness-progress-rule",
+            self._undelivered.append(
+                _lane_runner.enqueue_steer(
+                    self._steer_queue,
+                    self._stdout_log.parent.name,
+                    action.text,
+                    reason=action.reason_code,
+                    actor="charness-progress-rule",
+                )
             )
             if not self._preempted:
                 # One preemption per invocation; later messages ride along.
@@ -270,10 +278,24 @@ class LaneProgressWatch:
         return preempted
 
     def _stop_now(self, reason: str) -> None:
+        from scripts.task_run import task_run_lane_runner as _lane_runner
+
         with self._action_lock:
             if self.stop_reason is not None:
                 return
             self.stop_reason = reason
+            # A message queued in this invocation will never be delivered: the
+            # stop supersedes it, and its preemption did not happen as one.
+            for record in self._undelivered:
+                _lane_runner.update_steer_queue(
+                    self._steer_queue,
+                    {**record, "disposition": "nacked", "reason_code": "superseded-by-stop"},
+                )
+                self.suppressed_actions += 1
+            self._undelivered = []
+            if self._preempted:
+                self._preempted = False
+                self.preemptions -= 1
         try:
             self.fire(reason)
         except Exception:  # noqa: BLE001 - a failed stop must not kill the reader
@@ -289,6 +311,11 @@ class LaneProgressWatch:
     ) -> None:
         """Record the typed delivery disposition after the next invocation starts."""
         by_id = {item.get("message_id"): item for item in self._steer_messages}
+        delivered = {message.get("message_id") for message in messages}
+        with self._action_lock:
+            self._undelivered = [
+                item for item in self._undelivered if item.get("message_id") not in delivered
+            ]
         stamp = _support.utc_now_iso()
         from scripts.task_run import task_run_lane_runner as _lane_runner
 
@@ -420,35 +447,12 @@ class LaneProgressWatch:
         """
         if self._first_scoped_paths is not None:
             return
-        try:
-            refreshed = _support._refresh_scope_specs(self._worktree, list(self._scope_specs))
-            changed = _support._candidate_carrier(self._worktree, self._base_sha)[
-                "changed_paths"
-            ]
-            scoped = _support._paths_in_scopes(changed, refreshed)
-            if not scoped:
-                return
-            self._first_scoped_paths = list(scoped)
-            elapsed = None
-            if self._started_at is not None:
-                elapsed = max(0.0, now - self._started_at)
-            self._first_scoped_elapsed = elapsed
-            # The diff covers the first 50 paths; a longer scoped set is a
-            # second truncation source beside the byte cap below.
-            self._first_scoped_truncated = len(scoped) > 50
-            result = _support._git(
-                self._worktree, "diff", self._base_sha, "--", *scoped[:50]
-            )
-            text = result.stdout if result.returncode == 0 else ""
-        except Exception:  # noqa: BLE001 - an unobservable tree reads as unknown
+        snapshot = _signals.scoped_diff_snapshot(self._worktree, self._base_sha, self._scope_specs)
+        if snapshot is None:
             return
-        limit = 64 * 1024
-        if len(text.encode("utf-8", errors="replace")) > limit:
-            raw = text.encode("utf-8", errors="replace")[:limit]
-            self._first_scoped_diff = raw.decode("utf-8", errors="replace")
-            self._first_scoped_truncated = True
-        else:
-            self._first_scoped_diff = text
+        self._first_scoped_paths, self._first_scoped_diff, self._first_scoped_truncated = snapshot
+        if self._started_at is not None:
+            self._first_scoped_elapsed = max(0.0, now - self._started_at)
 
     def fire(self, reason: str) -> None:
         """Record the typed stop on the transcript and kill the stalled lane."""

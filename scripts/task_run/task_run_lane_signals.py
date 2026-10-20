@@ -156,3 +156,31 @@ def _worktree_liveliness(worktree: Path, base_sha: str) -> dict[str, Any] | None
         "commits": len(subjects),
         "last_commit_subject": subjects[0][:120] if subjects else None,
     }
+
+
+def scoped_diff_snapshot(
+    worktree: Path, base_sha: str, scope_specs: Sequence[Mapping[str, Any]]
+) -> tuple[list[str], str, bool] | None:
+    """The current scoped paths, their diff (capped), and whether it was truncated.
+
+    None when nothing in scope changed or the tree cannot be read: the watch
+    must never fail a lane it is watching (#834).
+    """
+    try:
+        refreshed = _support._refresh_scope_specs(worktree, list(scope_specs))
+        changed = _support._candidate_carrier(worktree, base_sha)["changed_paths"]
+        scoped = _support._paths_in_scopes(changed, refreshed)
+        if not scoped:
+            return None
+        # The diff covers the first 50 paths; a longer scoped set is a second
+        # truncation source beside the byte cap below.
+        truncated = len(scoped) > 50
+        result = _support._git(worktree, "diff", base_sha, "--", *scoped[:50])
+        text = result.stdout if result.returncode == 0 else ""
+    except Exception:  # noqa: BLE001 - an unobservable tree reads as unknown
+        return None
+    raw = text.encode("utf-8", errors="replace")
+    limit = 64 * 1024
+    if len(raw) > limit:
+        return list(scoped), raw[:limit].decode("utf-8", errors="replace"), True
+    return list(scoped), text, truncated

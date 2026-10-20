@@ -10,6 +10,8 @@ import json
 import subprocess
 from pathlib import Path
 
+import pytest
+
 from scripts.task_run import task_run_progress_rule as rule_owner
 
 from .test_task_run_fixtures import _repo
@@ -240,11 +242,40 @@ def test_a_command_started_after_the_request_is_not_killed_until_it_is_a_window_
     assert stop is not None and stop.kind == "stop"
 
 
-def test_a_lane_that_ends_answers_its_checkpoint_request() -> None:
+@pytest.mark.parametrize(
+    ("ended_normally", "answer"), [(True, (True, "lane-ended")), (False, (False, "lane-failed"))]
+)
+def test_only_a_clean_end_answers_a_checkpoint_request(
+    ended_normally: bool, answer: tuple[bool, str]
+) -> None:
     rule, _tree = _rule()
     assert rule.on_tick(100.0).kind == "message"
-    rule.finish()
+    rule.finish(ended_normally=ended_normally)
 
     message = rule.receipt()["messages"][0]
-    assert (message["answered"], message["answered_by"]) == (True, "lane-ended")
+    assert (message["answered"], message["answered_by"]) == answer
     assert rule.snapshot(100.0)["checkpoint_request"] is None
+
+
+def test_a_resumed_session_reusing_an_item_id_is_a_new_young_command() -> None:
+    """Codex numbers items per turn, so `item_1` after a resume is a new command."""
+    rule, _tree = _rule()
+    started = {"type": "item.started",
+               "item": {"id": "item_1", "type": "command_execution", "command": "sleep 300"}}
+    rule.on_event(started)
+    assert rule.on_tick(100.0) is None  # young: deferred
+    assert rule.on_tick(200.0).kind == "message"  # a window old: request, killing it
+    rule.start(210.0)  # the resumed invocation
+    rule.on_event(started)  # the lane restarts it under the same item id
+
+    assert rule.on_tick(300.0) is None
+    assert rule.receipt()["checks"][-1]["deferred_for_young_command"] is True
+    assert rule.on_tick(400.0).kind == "stop"
+
+
+def test_a_stopped_rule_raises_no_more_messages() -> None:
+    rule, _tree = _rule()
+    assert rule.on_tick(100.0).kind == "message"
+    assert rule.on_tick(200.0).kind == "stop"
+    for index in range(3):
+        assert rule.on_event(_completed(TEST, f"c{index}")) is None
