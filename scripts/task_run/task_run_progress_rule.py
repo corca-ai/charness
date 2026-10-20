@@ -132,7 +132,8 @@ class ProgressRule:
     `on_tick` runs on the watch's poll. Both return an `Action` or None.
     Request states: None, `deferred` (a command was in flight at an empty
     check; delivery waits for its completion or the next check), and
-    `delivered` (the next empty check stops the lane).
+    `delivered` (an empty check stops the lane, unless a command younger
+    than one window is running, which defers the stop a check).
     """
 
     def __init__(
