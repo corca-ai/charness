@@ -1,0 +1,45 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in follow-up",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R-003",
+      "severity": "medium",
+      "summary": "The cross-namespace alias is fixed for the tested branches, but the universal slug and uniqueness claims still overstate the implementation.",
+      "evidence": [
+        "In debug_followup_routing.py, a non-default branch with an empty normalized slug returns only the digest (`return f\"{slug}-{digest}\" if slug else digest`). The new test includes `task/__`, which reaches this fallback.",
+        "The release notes say every non-default branch gets a readable slug plus an 8-hex hash, which is not true for `task/__`.",
+        "The test name says lane names “never collide,” although the implementation uses only an 8-hex hash prefix and the release notes correctly allow hash-prefix collisions."
+      ],
+      "action": "Give slugless branches a readable fallback slug plus the raw-branch hash, and qualify the test’s uniqueness claim to acknowledge the hash-prefix collision limit."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "A task lane named after another branch’s slug-plus-hash could still alias it.",
+      "bin": "resolved for the reviewed example",
+      "disposition": "The new test covers `task/<slug>-<hash-of-raw-branch>`; every branch token now includes a hash of its raw branch."
+    },
+    {
+      "concern": "Different branches could share an 8-hex hash prefix.",
+      "bin": "bounded residual risk",
+      "disposition": "The release notes disclose this limit; distinct slugs can still keep the full record names different."
+    },
+    {
+      "concern": "Previously dispositioned R-001, R-002, R-004, R-005, and R-006.",
+      "bin": "outside this finding",
+      "disposition": "No regression is identified in the reviewed inputs; their prior dispositions stand."
+    }
+  ],
+  "next_move": "Add a readable fallback slug for branches whose normalized slug is empty, qualify the test’s “never collide” claim, then request a fresh bounded review.",
+  "non_claims": [
+    "Reviewed only the six identity-bound inline semantic inputs; no workspace paths were read and no tests were run.",
+    "This review does not assess publish-helper version, manifest, or claims-review surfaces."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "82ca27de0a752e42c0b479f92ec2360a00f21ef1b8ddfa8c2d2d35d9dc4c63ce",
+  "reviewed_input_identity_sha256": "7dd0c216ac54873b55ff5020a77f5503245cac7c2a3cde358e918f73192849dd"
+}

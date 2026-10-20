@@ -1,0 +1,215 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-10-20T12:04:51Z",
+  "prepared_for": "release-8150-final",
+  "changed_ref": null,
+  "substrate_mode": "working-tree",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Bound review paths for working tree: (narrow follow-up scope)\nExact reviewed-path manifest:\n- charness\n- charness-artifacts/release/2026-10-20-v8.15.0-notes.md\n- charness-artifacts/spec/lane-progress-rule.md\n- docs/agent-task-runs.md\n- docs/cli-reference.md\n- scripts/task_run/task_run.py\n- scripts/task_run/task_run_attempts.py\n- scripts/task_run/task_run_detach.py\n- scripts/task_run/task_run_event_timing.py\n- scripts/task_run/task_run_execution.py\n- scripts/task_run/task_run_lane_runner.py\n- scripts/task_run/task_run_lane_signals.py\n- scripts/task_run/task_run_plan.py\n- scripts/task_run/task_run_progress.py\n- scripts/task_run/task_run_progress_rule.py\n- scripts/task_run/task_run_runtime.py\n- skills/public/debug/scripts/debug_followup_routing.py\n- tests/charness_cli/test_task_run.py\n- tests/charness_cli/test_task_run_event_capture.py\n- tests/charness_cli/test_task_run_event_timing.py\n- tests/charness_cli/test_task_run_implementation_lane.py\n- tests/charness_cli/test_task_run_muse_executor.py\n- tests/charness_cli/test_task_run_progress_preemption.py\n- tests/charness_cli/test_task_run_progress_rule.py\n- tests/charness_cli/test_task_run_self_review.py\n- tests/charness_cli/test_task_run_steer.py\n- tests/test_debug_scaffold.py\n\nOwning surfaces:\n- materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/task_run/task_run.py, scripts/task_run/task_run_attempts.py, scripts/task_run/task_run_detach.py, scripts/task_run/task_run_event_timing.py, scripts/task_run/task_run_execution.py, scripts/task_run/task_run_lane_runner.py, scripts/task_run/task_run_lane_signals.py, scripts/task_run/task_run_plan.py, scripts/task_run/task_run_progress.py, scripts/task_run/task_run_progress_rule.py, scripts/task_run/task_run_runtime.py, skills/public/debug/scripts/debug_followup_routing.py\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/release/2026-10-20-v8.15.0-notes.md, charness-artifacts/spec/lane-progress-rule.md, docs/agent-task-runs.md, docs/cli-reference.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- operational-evidence-records: Durable issue, quality, and release evidence attachments produced by local planning and closeout workflows.\n  source matches: charness-artifacts/release/2026-10-20-v8.15.0-notes.md\n  verify: python3 scripts/gates/check_release_issue_ledger.py --repo-root . --ledger charness-artifacts/issues/2026-08-20-next-release-ledger.json, python3 scripts/gates/validate_quality_artifact.py --repo-root ., python3 scripts/gates/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/debug/scripts/debug_followup_routing.py\n  verify: python3 -m tools.validate_skills --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/gates/check_skill_ownership_overlap.py --repo-root ., python3 scripts/gates/validate_skill_ergonomics.py --repo-root .\n- capability-catalog: Deterministic capability inventory, stale-path resolver, and canonical current-pointer artifacts.\n  source matches: charness\n  verify: python3 -m pytest -q tests/test_capability_catalog.py, python3 -m tools.validate_current_pointer_freshness --repo-root ., python3 -m json.tool .agents/surfaces.json\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/debug/scripts/debug_followup_routing.py\n  verify: python3 -m tools.validate_public_skill_validation --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/debug/scripts/debug_followup_routing.py\n  verify: python3 -m tools.validate_public_skill_dogfood --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: charness, scripts/task_run/task_run.py, scripts/task_run/task_run_attempts.py, scripts/task_run/task_run_detach.py, scripts/task_run/task_run_event_timing.py, scripts/task_run/task_run_execution.py, scripts/task_run/task_run_lane_runner.py, scripts/task_run/task_run_lane_signals.py, scripts/task_run/task_run_plan.py, scripts/task_run/task_run_progress.py, scripts/task_run/task_run_progress_rule.py, scripts/task_run/task_run_runtime.py, tests/charness_cli/test_task_run.py, tests/charness_cli/test_task_run_event_capture.py, tests/charness_cli/test_task_run_event_timing.py, tests/charness_cli/test_task_run_implementation_lane.py, tests/charness_cli/test_task_run_muse_executor.py, tests/charness_cli/test_task_run_progress_preemption.py, tests/charness_cli/test_task_run_progress_rule.py, tests/charness_cli/test_task_run_self_review.py, tests/charness_cli/test_task_run_steer.py, tests/test_debug_scaffold.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/task_run/task_run.py, scripts/task_run/task_run_attempts.py, scripts/task_run/task_run_detach.py, scripts/task_run/task_run_event_timing.py, scripts/task_run/task_run_execution.py, scripts/task_run/task_run_lane_runner.py, scripts/task_run/task_run_lane_signals.py, scripts/task_run/task_run_plan.py, scripts/task_run/task_run_progress.py, scripts/task_run/task_run_progress_rule.py, scripts/task_run/task_run_runtime.py, skills/public/debug/scripts/debug_followup_routing.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-6-luna",
+      "reasoning_effort": "xhigh",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "substrate_mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "9b6e75a7e0f81e726e637ebc41eb1ba1016af6c4",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "charness",
+      "charness-artifacts/release/2026-10-20-v8.15.0-notes.md",
+      "charness-artifacts/spec/lane-progress-rule.md",
+      "docs/agent-task-runs.md",
+      "docs/cli-reference.md",
+      "scripts/task_run/task_run.py",
+      "scripts/task_run/task_run_attempts.py",
+      "scripts/task_run/task_run_detach.py",
+      "scripts/task_run/task_run_event_timing.py",
+      "scripts/task_run/task_run_execution.py",
+      "scripts/task_run/task_run_lane_runner.py",
+      "scripts/task_run/task_run_lane_signals.py",
+      "scripts/task_run/task_run_plan.py",
+      "scripts/task_run/task_run_progress.py",
+      "scripts/task_run/task_run_progress_rule.py",
+      "scripts/task_run/task_run_runtime.py",
+      "skills/public/debug/scripts/debug_followup_routing.py",
+      "tests/charness_cli/test_task_run.py",
+      "tests/charness_cli/test_task_run_event_capture.py",
+      "tests/charness_cli/test_task_run_event_timing.py",
+      "tests/charness_cli/test_task_run_implementation_lane.py",
+      "tests/charness_cli/test_task_run_muse_executor.py",
+      "tests/charness_cli/test_task_run_progress_preemption.py",
+      "tests/charness_cli/test_task_run_progress_rule.py",
+      "tests/charness_cli/test_task_run_self_review.py",
+      "tests/charness_cli/test_task_run_steer.py",
+      "tests/test_debug_scaffold.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness",
+        "content_sha256": "f82ce881deeacc2cc6ff3a63f067d586039d5674756b72937d63b740ac80150d"
+      },
+      {
+        "path": "charness-artifacts/release/2026-10-20-v8.15.0-notes.md",
+        "content_sha256": "9a73bb40dd8c5634d060cbb32e7895dcf6421a579ea742f69613041a6acb2f14"
+      },
+      {
+        "path": "charness-artifacts/spec/lane-progress-rule.md",
+        "content_sha256": "9d6b28f40fa12f71c9791d372ccf587a33f286680bf18acb23dad3f4cf712ef1"
+      },
+      {
+        "path": "docs/agent-task-runs.md",
+        "content_sha256": "fd723841ec7e0522498f526675469a17ae93b761d9a2aaff79aea2c865bb3ff4"
+      },
+      {
+        "path": "docs/cli-reference.md",
+        "content_sha256": "28c4a57fc6da1f3147298a5d997bbaac1694e1d7468bb96c8438e2a4d35837c5"
+      },
+      {
+        "path": "scripts/task_run/task_run.py",
+        "content_sha256": "0dd00fb5498dbaaddfa4f08a043f0e406ed13eff73c1a8ea3cb81b2f673fb5ad"
+      },
+      {
+        "path": "scripts/task_run/task_run_attempts.py",
+        "content_sha256": "df077228849f1b355ca3fd7bbe7dd8e61f6464418a7eb9eb581a5b134990923e"
+      },
+      {
+        "path": "scripts/task_run/task_run_detach.py",
+        "content_sha256": "525171dbf14502fd8c53d7a78751754ee0465077552c080ebb1607693b8a23fb"
+      },
+      {
+        "path": "scripts/task_run/task_run_event_timing.py",
+        "content_sha256": "fcdf3319056a66d4787487fbc486b09b180abeb30381bf8569030f811310ef6b"
+      },
+      {
+        "path": "scripts/task_run/task_run_execution.py",
+        "content_sha256": "f353fe6cf38d74f72e99b1dc6bae441b14d05f0b9966a9ef4ec8ea05f4063d6f"
+      },
+      {
+        "path": "scripts/task_run/task_run_lane_runner.py",
+        "content_sha256": "a4f97ad6835102ad4ec4f9d856ed48ae382e0a75ad6d49ce6b47651698a230aa"
+      },
+      {
+        "path": "scripts/task_run/task_run_lane_signals.py",
+        "content_sha256": "85346f24e32dd098cc283581433e1d2837e840568b07789771860553ddb0f0cb"
+      },
+      {
+        "path": "scripts/task_run/task_run_plan.py",
+        "content_sha256": "d4bb29820587f6331a070c5c320b3f39344d90ab937894ad18faab2e7fe31e40"
+      },
+      {
+        "path": "scripts/task_run/task_run_progress.py",
+        "content_sha256": "df4bd8c8c0f8642178265b77d43566f9dd6144ab58955e0d3add7d6e46a0c5f0"
+      },
+      {
+        "path": "scripts/task_run/task_run_progress_rule.py",
+        "content_sha256": "afb8fd2b6ef8b82dcaa0aa48c0a14702272ba425d1d04b9cc8d9b03b102d7e9f"
+      },
+      {
+        "path": "scripts/task_run/task_run_runtime.py",
+        "content_sha256": "63aec590602c12bd683f7287f1613de68c9c49854c22ff817b51c65dcf91b8bc"
+      },
+      {
+        "path": "skills/public/debug/scripts/debug_followup_routing.py",
+        "content_sha256": "79d8918e1c2f90476c8622894b3dd5570e53bfd09af9a80f99deacb63e48aa0f"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run.py",
+        "content_sha256": "e9d3bda25bc6e028a68d2ef6dee25f93a331de8556a1335b3e94d84077ad1c44"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run_event_capture.py",
+        "content_sha256": "ae0745a4afe6357a8225a88ec60374fd3d8118aa69eddf77a7e104924388619e"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run_event_timing.py",
+        "content_sha256": "3d3403044c46bf4f9739cd9134bf8f247fbbeedde4e5ac3b752cbdd3fafb42b9"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run_implementation_lane.py",
+        "content_sha256": "42f745c47df7adfda1642e8554cbfdaa3fa557b1d77d83d4c3d80cd86d8944aa"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run_muse_executor.py",
+        "content_sha256": "5f9cd4b45bb42830fab648e2470b444dfd7557415e9581c2a243ae4083a973ca"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run_progress_preemption.py",
+        "content_sha256": "2c2b0173d12022a2e67f3fae255bf7ad9a66816c2f95eed7a81ae91db326c419"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run_progress_rule.py",
+        "content_sha256": "e8580c8f42e5b74274642c28a28dc82d20368335649bf9b465ce0c0b450c2f58"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run_self_review.py",
+        "content_sha256": "d15e183a0b1f93b22a77bb13cd2567fab128a405cb73468390888d12d8da2704"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run_steer.py",
+        "content_sha256": "bda5021db5cca84c15b3af9e2fc8293cd7465b2ee71d19cb9d85b6b561fc7fef"
+      },
+      {
+        "path": "tests/test_debug_scaffold.py",
+        "content_sha256": "4752cca551e453b0a6da805e73bd62453ffd1114a39e75a247a96c2e2b735e93"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "7bade79e814a4b9ba70f3055afd4de35c16871997e6c99df9707c6ef2c1ca70c"
+  }
+}

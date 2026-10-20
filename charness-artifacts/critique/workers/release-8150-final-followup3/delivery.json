@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8150-final-followup3",
+      "scope": "third follow-up at e1ebbcbff on release-8150-final-followup2: R-003 repaired by giving every non-default branch token its readable slug plus an 8-hex hash of the raw branch (no exemption), with a task/<slug>-<hash> aliasing test and the notes aligned",
+      "packet_identity": "82ca27de0a752e42c0b479f92ec2360a00f21ef1b8ddfa8c2d2d35d9dc4c63ce",
+      "parent_receipt_identity": "parent-4b70fb1a7a703e60ff817dc974619b15aa39d65f81991cce",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T12:35:09Z",
+      "history": [
+        {
+          "event_id": "c4f012590db846509f300b451d1208bb",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T12:34:28Z",
+          "attempt_id": "release-8150-final-followup3",
+          "scope": "third follow-up at e1ebbcbff on release-8150-final-followup2: R-003 repaired by giving every non-default branch token its readable slug plus an 8-hex hash of the raw branch (no exemption), with a task/<slug>-<hash> aliasing test and the notes aligned",
+          "packet_identity": "82ca27de0a752e42c0b479f92ec2360a00f21ef1b8ddfa8c2d2d35d9dc4c63ce",
+          "parent_receipt_identity": "parent-4b70fb1a7a703e60ff817dc974619b15aa39d65f81991cce",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "35b8e4fbb0a540debd4c122b323fb140",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T12:34:28Z",
+          "attempt_id": "release-8150-final-followup3",
+          "scope": "third follow-up at e1ebbcbff on release-8150-final-followup2: R-003 repaired by giving every non-default branch token its readable slug plus an 8-hex hash of the raw branch (no exemption), with a task/<slug>-<hash> aliasing test and the notes aligned",
+          "packet_identity": "82ca27de0a752e42c0b479f92ec2360a00f21ef1b8ddfa8c2d2d35d9dc4c63ce",
+          "parent_receipt_identity": "parent-4b70fb1a7a703e60ff817dc974619b15aa39d65f81991cce",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "387304423a80463f9ff126bdb6f84f78",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T12:35:09Z",
+          "attempt_id": "release-8150-final-followup3",
+          "scope": "third follow-up at e1ebbcbff on release-8150-final-followup2: R-003 repaired by giving every non-default branch token its readable slug plus an 8-hex hash of the raw branch (no exemption), with a task/<slug>-<hash> aliasing test and the notes aligned",
+          "packet_identity": "82ca27de0a752e42c0b479f92ec2360a00f21ef1b8ddfa8c2d2d35d9dc4c63ce",
+          "parent_receipt_identity": "parent-4b70fb1a7a703e60ff817dc974619b15aa39d65f81991cce",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "7ec3552524c2ac53d4cc8b8e9aa1c78af11e888fe33406c7721b2805cde02a41"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "7dd0c216ac54873b55ff5020a77f5503245cac7c2a3cde358e918f73192849dd",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "6f6e45e16049c3d28fefa9e259d91bce343ea5a0b0d5f4b7137e56e6d77da088",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8150-final-followup3/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8150-final-followup3/receipt.json",
+      "producer_run_id": "run-release-8150-final-followup3",
+      "findings_identity": "7ec3552524c2ac53d4cc8b8e9aa1c78af11e888fe33406c7721b2805cde02a41"
+    }
+  ]
+}

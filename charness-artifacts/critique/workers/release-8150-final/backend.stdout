@@ -1,0 +1,98 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R-001",
+      "severity": "high",
+      "summary": "The default progress rule can kill a productive long-running command.",
+      "evidence": [
+        "scripts/task_run/task_run_progress_rule.py: an in-flight command is deferred while young, but on the next no-progress check the rule delivers the checkpoint request and preempts it.",
+        "scripts/task_run/task_run_execution.py: a preemption kills the executor process group; the default window is 1200 seconds, so a command with no other observable progress can be killed after roughly two windows.",
+        "charness-artifacts/spec/lane-progress-rule.md says to set W above the longest legitimate command, but the release Update section does not tell launchers to account for that."
+      ],
+      "action": "Before lock-in, define how consumers protect legitimate commands longer than the default window, and state that requirement in the launcher guidance."
+    },
+    {
+      "id": "R-002",
+      "severity": "high",
+      "summary": "A negative progress window silently disables the only general lane bound after the timeout default is removed.",
+      "evidence": [
+        "scripts/task_run/task_run_progress.py parses the progress-window environment value through _env_seconds without rejecting negative finite values.",
+        "scripts/task_run/task_run_progress_rule.py returns no action when window_seconds <= 0; for non-require-change lanes, build_progress_watch returns None for a nonpositive window.",
+        "With --timeout-seconds omitted, a require-change lane can also have its separate first-edit budget disabled with --no-progress-seconds 0, leaving no effective stop."
+      ],
+      "action": "Reject negative window values or fall back to the positive default. If the documented zero opt-out remains, make the resulting unbounded behavior an explicit launcher decision paired with a hard timeout."
+    },
+    {
+      "id": "R-003",
+      "severity": "high",
+      "summary": "Debug follow-up lane tokens are lossy, so distinct lanes can still choose the same record path.",
+      "evidence": [
+        "skills/public/debug/scripts/debug_followup_routing.py lowercases lane tokens and replaces runs of non-alphanumeric characters with hyphens.",
+        "Distinct valid task branches such as task/foo_bar and task/foo-bar both produce the token foo-bar; task/Foo and task/foo also collapse to the same token.",
+        "tests/test_debug_scaffold.py checks several token examples but does not exercise colliding lane identities."
+      ],
+      "action": "Use an injective lane identifier or add a stable hash of the original branch or lane id to the record name, and add collision cases to the tests."
+    },
+    {
+      "id": "R-004",
+      "severity": "medium",
+      "summary": "Distinct follow-up filenames do not prevent parallel lanes from conflicting on the shared latest.md pointer.",
+      "evidence": [
+        "skills/public/debug/scripts/debug_followup_routing.py routes each lane to a distinct follow-up record, while tests/test_debug_scaffold.py asserts update_current_pointer_after_write is true for those records.",
+        "Parallel lanes from the same base can therefore refresh the same latest.md path to different lane-specific targets; the reviewed tests verify the update flag but not merging those pointer changes."
+      ],
+      "action": "Define a parallel integration rule for latest.md, such as updating the pointer after lane records are integrated, and verify that two lane records merge without a pointer conflict."
+    },
+    {
+      "id": "R-005",
+      "severity": "medium",
+      "summary": "The release notes claim behavior beyond the evidence in the reviewed tests.",
+      "evidence": [
+        "The notes say the progress rule resumes the same session; the spec records a live Codex probe but explicitly says Muse resume after SIGKILL is unprobed.",
+        "The notes say tests that bind a local port or fetch through the proxy no longer fail; the reviewed Codex and Muse tests assert command arguments, but do not demonstrate successful bind or fetch behavior."
+      ],
+      "action": "Qualify the same-session claim by executor and evidence level, and describe network access as enabled by configuration unless a bind/fetch test supports the success claim."
+    },
+    {
+      "id": "R-006",
+      "severity": "low",
+      "summary": "The event-capture note's byte-for-byte wording is not literal.",
+      "evidence": [
+        "The notes say executor output reaches the events log byte for byte, while scripts/task_run/task_run_event_timing.py inserts a timestamp into JSON lines.",
+        "tests/charness_cli/test_task_run_event_capture.py expects an unterminated final line to gain a newline during retention."
+      ],
+      "action": "Say that original event payload bytes are retained, with timestamps added to JSON lines and a newline added to an unterminated final line."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Watcher failure could leave a lane running indefinitely.",
+      "bin": "resolved",
+      "disposition": "The watch counts consecutive progress-rule failures and stops after eight; the reviewed tests cover repeated due-check failures and a failing poll."
+    },
+    {
+      "concern": "Preemption may fail to resume a Codex session.",
+      "bin": "resolved for Codex; defer for Muse",
+      "disposition": "The spec records a live Codex resume probe and the code falls back to relaunch-in-place when resume fails; Muse resume after SIGKILL is explicitly unprobed."
+    },
+    {
+      "concern": "Workspace-write network access may affect read-only reviewers.",
+      "bin": "pass within reviewed scope",
+      "disposition": "The network setting is attached to task-run lane commands, and the reviewed self-review test confirms it uses read-only sandbox mode without the workspace-write setting."
+    },
+    {
+      "concern": "A minor release may be insufficient for removing the timeout default and enabling network by default.",
+      "bin": "defer",
+      "disposition": "These are material default changes, but the reviewed packet contains no project semver compatibility policy to establish whether they require a major bump."
+    }
+  ],
+  "next_move": "Resolve the progress-window safety and debug-routing issues, revise the release notes to match demonstrated behavior, then run a fresh bounded review before lock-in.",
+  "non_claims": [
+    "This review judges only the supplied inline semantic payload; no workspace paths were read and no tests were run.",
+    "Publish-helper version, manifest, and claims-review surfaces were out of scope."
+  ]
+}

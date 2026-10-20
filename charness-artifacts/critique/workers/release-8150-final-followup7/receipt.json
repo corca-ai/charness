@@ -1,0 +1,82 @@
+{
+  "attempt_id": "release-8150-final-followup7",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/release-8150-final-followup7/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-10-20T13:01:23Z",
+  "model_application_state": "unverified-by-provider",
+  "output_file": "charness-artifacts/critique/workers/release-8150-final-followup7/result.json",
+  "output_fresh": true,
+  "output_sha256": "9bbb44b962443ff9d336d5c7da6c0b1e22249d36b0f96e2988cec40ef57d975d",
+  "output_size": 1972,
+  "packet_identity": "4b77a64769c139b0d3ddb414640389fe739c4ab2925d0ac2e03b14c80ed897a7",
+  "parent_receipt_identity": "parent-07b8bf23869166fe9dc515b9004f7ea0886e7fc0acc30fd8",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/release-8150-final-followup7/review-prompt.md",
+  "prompt_sha256": "882a9f0f079e11eb7517cc91f2cc7ef3a3e040fcfe0b141bda29c4d062927511",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "requested_model": "gpt-6-luna",
+  "requested_reasoning_effort": "xhigh",
+  "reviewed_input_identity": "8e28fcc50b56126ff6e07cb95eede64cd92a1b62c6949c56627027fefc41d1ea",
+  "reviewer_tier": "high-leverage",
+  "run_id": "run-release-8150-final-followup7",
+  "schema_file": "charness-artifacts/critique/workers/release-8150-final-followup7/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "seventh follow-up at 539d8f64c on release-8150-final-followup6: the debug naming note now scopes the hash name to a readable non-default branch and lists unreadable branch metadata with the counter fallback; code unchanged",
+  "started_at": "2026-10-20T13:00:46Z",
+  "status": "succeeded",
+  "stderr_file": "charness-artifacts/critique/workers/release-8150-final-followup7/backend.stderr",
+  "stdout_file": "charness-artifacts/critique/workers/release-8150-final-followup7/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "unsupported_reviewer_fields": [
+    "service_tier=priority",
+    "fork_turns=none"
+  ],
+  "workspace": "/home/hwidong/codes/charness"
+}

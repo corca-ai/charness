@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8150-final",
+      "scope": "release v8.15.0 final candidate at 9b6e75a7e: everything since the approved 526fbaa17 candidate review (ddab9c888..9b6e75a7e): event-capture close/clock repair, network access in executor lanes, the lane progress rule replacing the wall-clock default, debug follow-up naming per lane, and the extended release notes",
+      "packet_identity": "69b47fe61f359038464b0e4492490bdd0814023a859c86eda8dc0d379d155c35",
+      "parent_receipt_identity": "parent-3f0c51200fca62c3a5a2a791b7e86e7ae4d3c8b3733cbc2f",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T12:07:16Z",
+      "history": [
+        {
+          "event_id": "1661a0e6270c46b485acf231c190c207",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T12:04:57Z",
+          "attempt_id": "release-8150-final",
+          "scope": "release v8.15.0 final candidate at 9b6e75a7e: everything since the approved 526fbaa17 candidate review (ddab9c888..9b6e75a7e): event-capture close/clock repair, network access in executor lanes, the lane progress rule replacing the wall-clock default, debug follow-up naming per lane, and the extended release notes",
+          "packet_identity": "69b47fe61f359038464b0e4492490bdd0814023a859c86eda8dc0d379d155c35",
+          "parent_receipt_identity": "parent-3f0c51200fca62c3a5a2a791b7e86e7ae4d3c8b3733cbc2f",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "245e800fcbb143cab6536cdc79fbb241",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T12:04:57Z",
+          "attempt_id": "release-8150-final",
+          "scope": "release v8.15.0 final candidate at 9b6e75a7e: everything since the approved 526fbaa17 candidate review (ddab9c888..9b6e75a7e): event-capture close/clock repair, network access in executor lanes, the lane progress rule replacing the wall-clock default, debug follow-up naming per lane, and the extended release notes",
+          "packet_identity": "69b47fe61f359038464b0e4492490bdd0814023a859c86eda8dc0d379d155c35",
+          "parent_receipt_identity": "parent-3f0c51200fca62c3a5a2a791b7e86e7ae4d3c8b3733cbc2f",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "9b1ad93c9d124f02bc9baa0088dd1d5f",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T12:07:16Z",
+          "attempt_id": "release-8150-final",
+          "scope": "release v8.15.0 final candidate at 9b6e75a7e: everything since the approved 526fbaa17 candidate review (ddab9c888..9b6e75a7e): event-capture close/clock repair, network access in executor lanes, the lane progress rule replacing the wall-clock default, debug follow-up naming per lane, and the extended release notes",
+          "packet_identity": "69b47fe61f359038464b0e4492490bdd0814023a859c86eda8dc0d379d155c35",
+          "parent_receipt_identity": "parent-3f0c51200fca62c3a5a2a791b7e86e7ae4d3c8b3733cbc2f",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "24f57583531d6cf6fdda620853e809388c1827f8a143194226360701e9ec178c"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "7bade79e814a4b9ba70f3055afd4de35c16871997e6c99df9707c6ef2c1ca70c",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "7f295bd03f9a3ed260de432dbed4b0b66c9d1e30141ce688c77554399ca212a0",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8150-final/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8150-final/receipt.json",
+      "producer_run_id": "run-release-8150-final",
+      "findings_identity": "24f57583531d6cf6fdda620853e809388c1827f8a143194226360701e9ec178c"
+    }
+  ]
+}

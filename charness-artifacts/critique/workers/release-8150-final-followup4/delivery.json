@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8150-final-followup4",
+      "scope": "fourth follow-up at 1ad900e68 on release-8150-final-followup3: a slugless branch now yields branch-<hash>, and the collision test is renamed and qualified to the 8-hex hash-prefix guarantee",
+      "packet_identity": "1f17ee16b3e2e7f7546879848fee8c670870923034ee2c3b199d8bef810c20b8",
+      "parent_receipt_identity": "parent-49e7d9b5388948604f7134a0c4611580a94b213f228fec59",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T12:43:08Z",
+      "history": [
+        {
+          "event_id": "6b583ea5ec45447996a062464570e4c1",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T12:42:22Z",
+          "attempt_id": "release-8150-final-followup4",
+          "scope": "fourth follow-up at 1ad900e68 on release-8150-final-followup3: a slugless branch now yields branch-<hash>, and the collision test is renamed and qualified to the 8-hex hash-prefix guarantee",
+          "packet_identity": "1f17ee16b3e2e7f7546879848fee8c670870923034ee2c3b199d8bef810c20b8",
+          "parent_receipt_identity": "parent-49e7d9b5388948604f7134a0c4611580a94b213f228fec59",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "710fdff0cdee4c3fbf7e00da68b37719",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T12:42:22Z",
+          "attempt_id": "release-8150-final-followup4",
+          "scope": "fourth follow-up at 1ad900e68 on release-8150-final-followup3: a slugless branch now yields branch-<hash>, and the collision test is renamed and qualified to the 8-hex hash-prefix guarantee",
+          "packet_identity": "1f17ee16b3e2e7f7546879848fee8c670870923034ee2c3b199d8bef810c20b8",
+          "parent_receipt_identity": "parent-49e7d9b5388948604f7134a0c4611580a94b213f228fec59",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "adac665c0d424aab89cf2e9c70a2dcaa",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T12:43:08Z",
+          "attempt_id": "release-8150-final-followup4",
+          "scope": "fourth follow-up at 1ad900e68 on release-8150-final-followup3: a slugless branch now yields branch-<hash>, and the collision test is renamed and qualified to the 8-hex hash-prefix guarantee",
+          "packet_identity": "1f17ee16b3e2e7f7546879848fee8c670870923034ee2c3b199d8bef810c20b8",
+          "parent_receipt_identity": "parent-49e7d9b5388948604f7134a0c4611580a94b213f228fec59",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "b0a8bf7141229ff40bf431acb81071a7c94794304802722673979820ab3ce237"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "19bcc1e78e26ba99cb82b6804c7374835e3335a64d46523b44b25c24c10ca611",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "909b50197470131589a1bfe0bfe6562a184d258e16feead11c4917131a8a301d",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8150-final-followup4/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8150-final-followup4/receipt.json",
+      "producer_run_id": "run-release-8150-final-followup4",
+      "findings_identity": "b0a8bf7141229ff40bf431acb81071a7c94794304802722673979820ab3ce237"
+    }
+  ]
+}

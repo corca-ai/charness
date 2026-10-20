@@ -1,0 +1,71 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'seventh follow-up at 539d8f64c on release-8150-final-followup6: the debug
+  naming note now scopes the hash name to a readable non-default branch and lists
+  unreadable branch metadata with the counter fallback; code unchanged'
+attempt_id: release-8150-final-followup7
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 882a9f0f079e11eb7517cc91f2cc7ef3a3e040fcfe0b141bda29c4d062927511
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-ecda343103fc92a4b3a2bf469692d733/receipt.json
+ledger_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-ecda343103fc92a4b3a2bf469692d733/delivery.json
+producer_run_id: run-release-8150-final-followup7
+producer_binding:
+  output_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-ecda343103fc92a4b3a2bf469692d733/result.json
+  receipt_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-ecda343103fc92a4b3a2bf469692d733/receipt.json
+  producer_run_id: run-release-8150-final-followup7
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 9bbb44b962443ff9d336d5c7da6c0b1e22249d36b0f96e2988cec40ef57d975d
+receipt_output_sha256: 9bbb44b962443ff9d336d5c7da6c0b1e22249d36b0f96e2988cec40ef57d975d
+packet_identity: 4b77a64769c139b0d3ddb414640389fe739c4ab2925d0ac2e03b14c80ed897a7
+reviewed_input_identity: 8e28fcc50b56126ff6e07cb95eede64cd92a1b62c6949c56627027fefc41d1ea
+parent_receipt_identity: parent-07b8bf23869166fe9dc515b9004f7ea0886e7fc0acc30fd8
+provenance:
+  scope: 'seventh follow-up at 539d8f64c on release-8150-final-followup6: the debug
+    naming note now scopes the hash name to a readable non-default branch and lists
+    unreadable branch metadata with the counter fallback; code unchanged'
+  packet_identity: 4b77a64769c139b0d3ddb414640389fe739c4ab2925d0ac2e03b14c80ed897a7
+  reviewed_input_identity: 8e28fcc50b56126ff6e07cb95eede64cd92a1b62c6949c56627027fefc41d1ea
+  parent_receipt_identity: parent-07b8bf23869166fe9dc515b9004f7ea0886e7fc0acc30fd8
+  expected_targets_sha256: null
+  attempt_id: release-8150-final-followup7
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 882a9f0f079e11eb7517cc91f2cc7ef3a3e040fcfe0b141bda29c4d062927511
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

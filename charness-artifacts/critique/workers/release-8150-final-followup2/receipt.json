@@ -1,0 +1,82 @@
+{
+  "attempt_id": "release-8150-final-followup2",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/release-8150-final-followup2/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-10-20T12:25:33Z",
+  "model_application_state": "unverified-by-provider",
+  "output_file": "charness-artifacts/critique/workers/release-8150-final-followup2/result.json",
+  "output_fresh": true,
+  "output_sha256": "2a4bbb82b9d84df34b3985da615cea9dd9195e5873ddf312240f57b9bed7fedb",
+  "output_size": 2367,
+  "packet_identity": "83d4ec97f3471bd8f3091978d33d11d3b61cdedd221477986aac9463e1d9dd83",
+  "parent_receipt_identity": "parent-505ae61eff351588402797ab0172105a5887f985a9877dfe",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/release-8150-final-followup2/review-prompt.md",
+  "prompt_sha256": "3132cf26a94a2838a1bc38d463cae463a90850e45f110f7eb4c727c55f0c5026",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "requested_model": "gpt-6-luna",
+  "requested_reasoning_effort": "xhigh",
+  "reviewed_input_identity": "27cdba15b1221c28e265bc85f300fdc12a4f37a841de3620fefbb06273cdca1c",
+  "reviewer_tier": "high-leverage",
+  "run_id": "run-release-8150-final-followup2",
+  "schema_file": "charness-artifacts/critique/workers/release-8150-final-followup2/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "second follow-up at dd32d4012 on release-8150-final-followup: R-003 repaired again (only a task lane id that is already a lowercase slug stays unhashed; every other non-default branch carries an 8-hex hash of the raw branch), with a task/foo-bar vs foo-bar test and the notes aligned",
+  "started_at": "2026-10-20T12:24:48Z",
+  "status": "succeeded",
+  "stderr_file": "charness-artifacts/critique/workers/release-8150-final-followup2/backend.stderr",
+  "stdout_file": "charness-artifacts/critique/workers/release-8150-final-followup2/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "unsupported_reviewer_fields": [
+    "service_tier=priority",
+    "fork_turns=none"
+  ],
+  "workspace": "/home/hwidong/codes/charness"
+}

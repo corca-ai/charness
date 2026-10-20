@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8150-final-followup2",
+      "scope": "second follow-up at dd32d4012 on release-8150-final-followup: R-003 repaired again (only a task lane id that is already a lowercase slug stays unhashed; every other non-default branch carries an 8-hex hash of the raw branch), with a task/foo-bar vs foo-bar test and the notes aligned",
+      "packet_identity": "83d4ec97f3471bd8f3091978d33d11d3b61cdedd221477986aac9463e1d9dd83",
+      "parent_receipt_identity": "parent-505ae61eff351588402797ab0172105a5887f985a9877dfe",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T12:25:33Z",
+      "history": [
+        {
+          "event_id": "8bff6b7a5cba4beb976ca1d125eebe1f",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T12:24:48Z",
+          "attempt_id": "release-8150-final-followup2",
+          "scope": "second follow-up at dd32d4012 on release-8150-final-followup: R-003 repaired again (only a task lane id that is already a lowercase slug stays unhashed; every other non-default branch carries an 8-hex hash of the raw branch), with a task/foo-bar vs foo-bar test and the notes aligned",
+          "packet_identity": "83d4ec97f3471bd8f3091978d33d11d3b61cdedd221477986aac9463e1d9dd83",
+          "parent_receipt_identity": "parent-505ae61eff351588402797ab0172105a5887f985a9877dfe",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "4841c75fdf03488ab4cd7f1f46bc0d37",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T12:24:48Z",
+          "attempt_id": "release-8150-final-followup2",
+          "scope": "second follow-up at dd32d4012 on release-8150-final-followup: R-003 repaired again (only a task lane id that is already a lowercase slug stays unhashed; every other non-default branch carries an 8-hex hash of the raw branch), with a task/foo-bar vs foo-bar test and the notes aligned",
+          "packet_identity": "83d4ec97f3471bd8f3091978d33d11d3b61cdedd221477986aac9463e1d9dd83",
+          "parent_receipt_identity": "parent-505ae61eff351588402797ab0172105a5887f985a9877dfe",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "b7e391b425b5481cbeb5725b8c10d5ed",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T12:25:33Z",
+          "attempt_id": "release-8150-final-followup2",
+          "scope": "second follow-up at dd32d4012 on release-8150-final-followup: R-003 repaired again (only a task lane id that is already a lowercase slug stays unhashed; every other non-default branch carries an 8-hex hash of the raw branch), with a task/foo-bar vs foo-bar test and the notes aligned",
+          "packet_identity": "83d4ec97f3471bd8f3091978d33d11d3b61cdedd221477986aac9463e1d9dd83",
+          "parent_receipt_identity": "parent-505ae61eff351588402797ab0172105a5887f985a9877dfe",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "2a4bbb82b9d84df34b3985da615cea9dd9195e5873ddf312240f57b9bed7fedb"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "27cdba15b1221c28e265bc85f300fdc12a4f37a841de3620fefbb06273cdca1c",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "3132cf26a94a2838a1bc38d463cae463a90850e45f110f7eb4c727c55f0c5026",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8150-final-followup2/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8150-final-followup2/receipt.json",
+      "producer_run_id": "run-release-8150-final-followup2",
+      "findings_identity": "2a4bbb82b9d84df34b3985da615cea9dd9195e5873ddf312240f57b9bed7fedb"
+    }
+  ]
+}

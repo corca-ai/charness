@@ -1,0 +1,271 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-10-20T12:54:51Z",
+  "prepared_for": "release-8150-final-followup6",
+  "changed_ref": null,
+  "substrate_mode": "working-tree",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Bound review paths for working tree: (narrow follow-up scope)\nExact reviewed-path manifest:\n- charness-artifacts/release/2026-10-20-v8.15.0-notes.md\n- charness-artifacts/spec/lane-progress-rule.md\n- scripts/task_run/task_run_progress.py\n- skills/public/debug/scripts/debug_followup_routing.py\n- tests/charness_cli/test_task_run_progress_preemption.py\n- tests/test_debug_scaffold.py\n\nOwning surfaces:\n- materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/task_run/task_run_progress.py, skills/public/debug/scripts/debug_followup_routing.py\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/release/2026-10-20-v8.15.0-notes.md, charness-artifacts/spec/lane-progress-rule.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- operational-evidence-records: Durable issue, quality, and release evidence attachments produced by local planning and closeout workflows.\n  source matches: charness-artifacts/release/2026-10-20-v8.15.0-notes.md\n  verify: python3 scripts/gates/check_release_issue_ledger.py --repo-root . --ledger charness-artifacts/issues/2026-08-20-next-release-ledger.json, python3 scripts/gates/validate_quality_artifact.py --repo-root ., python3 scripts/gates/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/debug/scripts/debug_followup_routing.py\n  verify: python3 -m tools.validate_skills --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/gates/check_skill_ownership_overlap.py --repo-root ., python3 scripts/gates/validate_skill_ergonomics.py --repo-root .\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/debug/scripts/debug_followup_routing.py\n  verify: python3 -m tools.validate_public_skill_validation --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/debug/scripts/debug_followup_routing.py\n  verify: python3 -m tools.validate_public_skill_dogfood --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/task_run/task_run_progress.py, tests/charness_cli/test_task_run_progress_preemption.py, tests/test_debug_scaffold.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/task_run/task_run_progress.py, skills/public/debug/scripts/debug_followup_routing.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-6-luna",
+      "reasoning_effort": "xhigh",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "substrate_mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "d2e754c4da9eda35cdc71539d260ed5bdd22c7ad",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "charness-artifacts/release/2026-10-20-v8.15.0-notes.md",
+      "charness-artifacts/spec/lane-progress-rule.md",
+      "scripts/task_run/task_run_progress.py",
+      "skills/public/debug/scripts/debug_followup_routing.py",
+      "tests/charness_cli/test_task_run_progress_preemption.py",
+      "tests/test_debug_scaffold.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/release/2026-10-20-v8.15.0-notes.md",
+        "content_sha256": "6d60a79fd4abc687c93af8908dfc11309b12adfaa98497482de59fba2d82de7a"
+      },
+      {
+        "path": "charness-artifacts/spec/lane-progress-rule.md",
+        "content_sha256": "7dc2546fdbefd816657d80884c327ebcf9324fef77a7955afeba551eb5eabed1"
+      },
+      {
+        "path": "scripts/task_run/task_run_progress.py",
+        "content_sha256": "50f08ea0c3ef6eeb1cf9f0782fe7034b340e3f8403b04a67875d5e838a511471"
+      },
+      {
+        "path": "skills/public/debug/scripts/debug_followup_routing.py",
+        "content_sha256": "a018736c2a56555f6d181fdabd657b1582e5077d5386d5e8b47683d4958e3623"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run_progress_preemption.py",
+        "content_sha256": "214b09b5db7b492f8e72fe833f0d7ade6d9953d9a46ee9b2becfc5271765b328"
+      },
+      {
+        "path": "tests/test_debug_scaffold.py",
+        "content_sha256": "502e6ad25a5c28b6434cc95b718a3d6e9da17a3ac9b62829b1406a84a85ca2d0"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "4a62de00b89185d35452a4bf6b6ae1794371b7ad8fa2a089769fdf1830d144fd"
+  },
+  "follow_up": {
+    "kind": "charness.review_followup_context.v1",
+    "source": "charness-artifacts/critique/workers/release-8150-final-followup5/result.json",
+    "source_sha256": "37fbd63199b64ee353d1adbe404dc36a7d5903d9f886cc0858dfce73ebb5698b",
+    "prior_attempt_id": "release-8150-final-followup5",
+    "prior_verdict": "block",
+    "prior_scope": "fifth follow-up at 8acc77f85 on release-8150-final-followup4: the notes now name the lane slug and the empty-slug fallback ; code unchanged since the fourth follow-up",
+    "prior_lens": "release lock-in follow-up",
+    "prior_packet_path": "charness-artifacts/critique/release-8150-final-followup5-packet.json",
+    "prior_packet_sha256": "a3478f60d1dada96e5d9935c6dc1601253f06f7ce5b942c89dd781780cdc3092",
+    "prior_reviewed_input_identity_sha256": "c798585d8129282a8ec53afa8f14c64975d0f30e602d576629c44ea474411a07",
+    "selection": "explicit-with-selection-receipt",
+    "selected_paths": [
+      "charness-artifacts/release/2026-10-20-v8.15.0-notes.md",
+      "charness-artifacts/spec/lane-progress-rule.md",
+      "scripts/task_run/task_run_progress.py",
+      "skills/public/debug/scripts/debug_followup_routing.py",
+      "tests/charness_cli/test_task_run_progress_preemption.py",
+      "tests/test_debug_scaffold.py"
+    ],
+    "prior_reviewed_paths": 6,
+    "comparison": {
+      "prior_paths": 6,
+      "changed_prior_paths": [
+        "charness-artifacts/release/2026-10-20-v8.15.0-notes.md"
+      ],
+      "selected_changed_prior_paths": [
+        "charness-artifacts/release/2026-10-20-v8.15.0-notes.md"
+      ],
+      "new_paths": [],
+      "unchanged_selected_paths": [
+        "charness-artifacts/spec/lane-progress-rule.md",
+        "scripts/task_run/task_run_progress.py",
+        "skills/public/debug/scripts/debug_followup_routing.py",
+        "tests/charness_cli/test_task_run_progress_preemption.py",
+        "tests/test_debug_scaffold.py"
+      ],
+      "omitted_changed_prior_paths": [],
+      "comparison_identity_sha256": "4a62de00b89185d35452a4bf6b6ae1794371b7ad8fa2a089769fdf1830d144fd",
+      "comparison_identity_paths": [
+        "charness-artifacts/release/2026-10-20-v8.15.0-notes.md",
+        "charness-artifacts/spec/lane-progress-rule.md",
+        "scripts/task_run/task_run_progress.py",
+        "skills/public/debug/scripts/debug_followup_routing.py",
+        "tests/charness_cli/test_task_run_progress_preemption.py",
+        "tests/test_debug_scaffold.py"
+      ]
+    },
+    "selection_receipt": {
+      "prior_binding": {
+        "status": "verified",
+        "attempt_id": "release-8150-final-followup5",
+        "packet_sha256": "a3478f60d1dada96e5d9935c6dc1601253f06f7ce5b942c89dd781780cdc3092",
+        "reviewed_input_identity_sha256": "c798585d8129282a8ec53afa8f14c64975d0f30e602d576629c44ea474411a07",
+        "packet_verification": "canonical-integrity-only",
+        "identity_verification": "recorded-self-digest",
+        "semantic_input": {
+          "status": "verified",
+          "entries": 6
+        },
+        "result_carrier": {
+          "status": "verified",
+          "attempt_id": "release-8150-final-followup5",
+          "partial_result_sha256": null,
+          "result_sha256": "37fbd63199b64ee353d1adbe404dc36a7d5903d9f886cc0858dfce73ebb5698b",
+          "source_path": null
+        }
+      },
+      "explicit_paths": true,
+      "prior_identity_sha256": "c798585d8129282a8ec53afa8f14c64975d0f30e602d576629c44ea474411a07",
+      "comparison_identity_sha256": "4a62de00b89185d35452a4bf6b6ae1794371b7ad8fa2a089769fdf1830d144fd",
+      "comparison_identity_paths": [
+        "charness-artifacts/release/2026-10-20-v8.15.0-notes.md",
+        "charness-artifacts/spec/lane-progress-rule.md",
+        "scripts/task_run/task_run_progress.py",
+        "skills/public/debug/scripts/debug_followup_routing.py",
+        "tests/charness_cli/test_task_run_progress_preemption.py",
+        "tests/test_debug_scaffold.py"
+      ],
+      "selected_changed_prior_paths": [
+        "charness-artifacts/release/2026-10-20-v8.15.0-notes.md"
+      ],
+      "new_paths": [],
+      "unchanged_selected_paths": [
+        "charness-artifacts/spec/lane-progress-rule.md",
+        "scripts/task_run/task_run_progress.py",
+        "skills/public/debug/scripts/debug_followup_routing.py",
+        "tests/charness_cli/test_task_run_progress_preemption.py",
+        "tests/test_debug_scaffold.py"
+      ],
+      "omitted_changed_prior_paths": [],
+      "rationale": "Explicit paths were supplied to include newly introduced consumers or intentionally widen the stimulus; selection is not approval."
+    },
+    "prior_findings": [
+      {
+        "id": "R-003",
+        "severity": "medium",
+        "summary": "The repair and updated fallback description are accurate for non-default branches, but the unqualified uniqueness claim overstates the guarantee.",
+        "action": "Qualify the uniqueness claim as applying to non-default branches, and say that the default-branch and detached-HEAD counter can still produce shared names across worktrees.",
+        "evidence": [
+          "The router returns no token for `main`, `master`, `trunk`, and `develop`; those branches use the shared `followup` naming sequence instead.",
+          "The notes say “Distinct branches share a record name only on a hash-prefix collision,” then state that on a default branch or detached HEAD the counter remains. Separate worktrees on distinct default branches can select the same counter-based record name."
+        ]
+      }
+    ],
+    "omitted_finding_ids": [],
+    "prior_next_move": "Narrow the uniqueness claim to non-default branches and retain the stated counter behavior for default branches and detached HEADs.",
+    "prior_non_claims": [
+      "Reviewed the six identity-bound inline semantic inputs; did not inspect workspace paths or run tests.",
+      "The hashed naming guarantee is subject to 8-hex hash-prefix collisions."
+    ],
+    "approval_rule": "This is prior evidence only. Reuse findings as hypotheses; do not treat a prior block, defer, timeout, or partial result as approval. The new reviewer must bind the new packet and current selected paths independently.",
+    "final_reviewed_input_identity_sha256": "4a62de00b89185d35452a4bf6b6ae1794371b7ad8fa2a089769fdf1830d144fd",
+    "final_selected_path_count": 6,
+    "context_size_bytes": 6113
+  },
+  "follow_up_scope": {
+    "kind": "charness.follow_up_scope_receipt.v1",
+    "status": "verified",
+    "selected_paths": [
+      "charness-artifacts/release/2026-10-20-v8.15.0-notes.md",
+      "charness-artifacts/spec/lane-progress-rule.md",
+      "scripts/task_run/task_run_progress.py",
+      "skills/public/debug/scripts/debug_followup_routing.py",
+      "tests/charness_cli/test_task_run_progress_preemption.py",
+      "tests/test_debug_scaffold.py"
+    ],
+    "sections": [
+      {
+        "section_id": "changed-files-and-owning-surfaces",
+        "mode": "selected-paths",
+        "binding": "CHARNESS_CRITIQUE_REVIEWED_PATHS",
+        "path_binding": "exact-path-manifest",
+        "selected_path_count": 6,
+        "path_set_sha256": "b50119edbee061fb43c5e21e98f0c227197f455e713062e9f12fd7e7b7c5f7cf",
+        "status": "verified",
+        "path_check": "exact-manifest"
+      },
+      {
+        "section_id": "critique-prepare-non-goals",
+        "mode": "static",
+        "binding": "adapter-static-content",
+        "path_binding": null,
+        "selected_path_count": 6,
+        "path_set_sha256": null,
+        "status": "verified",
+        "path_check": "not-applicable"
+      },
+      {
+        "section_id": "reviewer-packet-semantic-question",
+        "mode": "static",
+        "binding": "adapter-static-content",
+        "path_binding": null,
+        "selected_path_count": 6,
+        "path_set_sha256": null,
+        "status": "verified",
+        "path_check": "not-applicable"
+      }
+    ],
+    "contract": "Adapter-declared follow-up scope; selected-path sections must expose every identity-bound path, and static sections must declare that they are not path-bearing."
+  }
+}

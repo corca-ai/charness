@@ -1,0 +1,71 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'fifth follow-up at 8acc77f85 on release-8150-final-followup4: the notes now
+  name the lane slug and the empty-slug fallback ; code unchanged since the fourth
+  follow-up'
+attempt_id: release-8150-final-followup5
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 8fb7b69a6b284517f67f0451a5e969d25bcfda33f00ecbf7cd0451db99978c30
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: charness-artifacts/critique/workers/release-8150-final-followup5/receipt.json
+ledger_path: charness-artifacts/critique/workers/release-8150-final-followup5/delivery.json
+producer_run_id: run-release-8150-final-followup5
+producer_binding:
+  output_file: charness-artifacts/critique/workers/release-8150-final-followup5/result.json
+  receipt_file: charness-artifacts/critique/workers/release-8150-final-followup5/receipt.json
+  producer_run_id: run-release-8150-final-followup5
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: 37fbd63199b64ee353d1adbe404dc36a7d5903d9f886cc0858dfce73ebb5698b
+receipt_output_sha256: 37fbd63199b64ee353d1adbe404dc36a7d5903d9f886cc0858dfce73ebb5698b
+packet_identity: a3478f60d1dada96e5d9935c6dc1601253f06f7ce5b942c89dd781780cdc3092
+reviewed_input_identity: c798585d8129282a8ec53afa8f14c64975d0f30e602d576629c44ea474411a07
+parent_receipt_identity: parent-0bb9a904deeabca717329d3722cd3b6fa31acbdcec0ce080
+provenance:
+  scope: 'fifth follow-up at 8acc77f85 on release-8150-final-followup4: the notes
+    now name the lane slug and the empty-slug fallback ; code unchanged since the
+    fourth follow-up'
+  packet_identity: a3478f60d1dada96e5d9935c6dc1601253f06f7ce5b942c89dd781780cdc3092
+  reviewed_input_identity: c798585d8129282a8ec53afa8f14c64975d0f30e602d576629c44ea474411a07
+  parent_receipt_identity: parent-0bb9a904deeabca717329d3722cd3b6fa31acbdcec0ce080
+  expected_targets_sha256: null
+  attempt_id: release-8150-final-followup5
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 8fb7b69a6b284517f67f0451a5e969d25bcfda33f00ecbf7cd0451db99978c30
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

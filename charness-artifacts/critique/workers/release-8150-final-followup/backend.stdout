@@ -1,0 +1,51 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in follow-up",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R-003",
+      "severity": "high",
+      "summary": "Branch hashing still permits collisions when a task branch and a plain branch share the same name.",
+      "evidence": [
+        "In debug_followup_routing.py, task/foo-bar becomes token foo-bar; because it is already a lowercase slug, no hash is added.",
+        "A distinct foo-bar branch produces the same token and also receives no hash, so both can select the same record path.",
+        "The collision test covers task-prefixed branches with different slug forms, but not task/foo-bar against foo-bar."
+      ],
+      "action": "Include a stable branch-identity hash when stripping the task/ prefix can alias another branch, or hash every non-default branch. Add a collision test for task/foo-bar and foo-bar."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "R-001: legitimate long-running commands can be preempted",
+      "bin": "repaired",
+      "disposition": "The release notes warn that a command can be killed after a window and tell launchers to set the window above their longest legitimate command."
+    },
+    {
+      "concern": "R-002: negative progress windows disable the lane bound",
+      "bin": "repaired",
+      "disposition": "Negative values fall back to the default before the non-require-change early return; the parameterized test covers negative fallback and preserves zero as the explicit opt-out."
+    },
+    {
+      "concern": "R-004: parallel lanes can conflict on latest.md",
+      "bin": "dispositioned",
+      "disposition": "The release notes explicitly retain the existing pointer behavior and state that parallel lanes can both change latest.md, matching the stated operator constraint."
+    },
+    {
+      "concern": "R-005: same-session and network behavior exceed evidence",
+      "bin": "repaired",
+      "disposition": "The notes distinguish the live Codex resume probe from unprobed Muse resume, describe the Muse fallback, name the network configuration flags, and state that tests do not verify binding or fetching."
+    },
+    {
+      "concern": "R-006: byte-for-byte event retention wording",
+      "bin": "repaired",
+      "disposition": "The notes describe timestamp insertion and final-newline addition, and separately identify conditions that can cause recorded incomplete capture."
+    }
+  ],
+  "next_move": "Fix the branch-namespace collision in debug follow-up naming and add the missing cross-namespace collision case, then run a fresh bounded review.",
+  "non_claims": [
+    "Review was limited to the six identity-bound inline semantic inputs; no workspace paths were read and no tests were run.",
+    "This review does not assess publish-helper version, manifest, or claims-review surfaces."
+  ]
+}

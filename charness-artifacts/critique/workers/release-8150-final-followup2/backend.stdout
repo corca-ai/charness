@@ -1,0 +1,32 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in follow-up",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R-003",
+      "severity": "high",
+      "summary": "The new rule fixes the task/foo-bar versus foo-bar case, but task lane IDs and hashed branch tokens can still occupy the same name.",
+      "evidence": [
+        "In debug_followup_routing.py, a lowercase-slug task lane ID is returned unchanged; another branch maps to its slug plus the first 8 hex characters of its raw-branch SHA-256.",
+        "For a non-task branch B with slug S and hash h, B maps to S-h. A distinct branch task/S-h also maps to S-h because S-h is itself a lowercase slug.",
+        "When both branches need a follow-up record for the same title and date, the shared token can produce the same record name.",
+        "The collision test covers task/foo-bar versus foo-bar but not a task lane ID equal to another branch's slug-plus-hash. Its docstring claims names never collide across distinct branches, which the examples do not establish."
+      ],
+      "action": "Make task-lane and other-branch tokens disjoint, or otherwise ensure the task-lane exception cannot match a hashed branch token. Add a test using task/<slug>-<hash-of-raw-branch> and align the test claim and release notes with the resulting guarantee."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "R-001, R-002, R-004, R-005, and R-006 regressions",
+      "bin": "no-regression-evidence",
+      "disposition": "The selected progress-rule implementation and tests are unchanged; no regression in the reviewed notes was identified."
+    }
+  ],
+  "next_move": "Repair the remaining cross-namespace collision and add a test for it, then request a fresh bounded review.",
+  "non_claims": [
+    "Review was limited to the six identity-bound inline semantic inputs; no workspace paths were read and no tests were run.",
+    "This review does not assess publish-helper version, manifest, or claims-review surfaces."
+  ]
+}

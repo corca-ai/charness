@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8150-final-followup",
+      "scope": "follow-up on release-8150-final at 1dc1e685c: repairs for R-001..R-006 (debug lane token now injective via a branch hash, negative progress window falls back to the default, notes revised for window guidance, evidence levels, byte wording and the latest.md limitation)",
+      "packet_identity": "0a1c4dd99a4135eb06d37ead34af2ca53e2754363a517554327d249a109db2de",
+      "parent_receipt_identity": "parent-b898b6b48b389900c01e4d3ce2894fca3ee471bb0c9da260",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T12:16:08Z",
+      "history": [
+        {
+          "event_id": "dd63f4d4ad51479b90c13bf5d878c7f4",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T12:14:53Z",
+          "attempt_id": "release-8150-final-followup",
+          "scope": "follow-up on release-8150-final at 1dc1e685c: repairs for R-001..R-006 (debug lane token now injective via a branch hash, negative progress window falls back to the default, notes revised for window guidance, evidence levels, byte wording and the latest.md limitation)",
+          "packet_identity": "0a1c4dd99a4135eb06d37ead34af2ca53e2754363a517554327d249a109db2de",
+          "parent_receipt_identity": "parent-b898b6b48b389900c01e4d3ce2894fca3ee471bb0c9da260",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "c852578f5301447ca2d918c18e31d797",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T12:14:53Z",
+          "attempt_id": "release-8150-final-followup",
+          "scope": "follow-up on release-8150-final at 1dc1e685c: repairs for R-001..R-006 (debug lane token now injective via a branch hash, negative progress window falls back to the default, notes revised for window guidance, evidence levels, byte wording and the latest.md limitation)",
+          "packet_identity": "0a1c4dd99a4135eb06d37ead34af2ca53e2754363a517554327d249a109db2de",
+          "parent_receipt_identity": "parent-b898b6b48b389900c01e4d3ce2894fca3ee471bb0c9da260",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "2d464bbca4d2462cb0bcc5165e6e4c48",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T12:16:08Z",
+          "attempt_id": "release-8150-final-followup",
+          "scope": "follow-up on release-8150-final at 1dc1e685c: repairs for R-001..R-006 (debug lane token now injective via a branch hash, negative progress window falls back to the default, notes revised for window guidance, evidence levels, byte wording and the latest.md limitation)",
+          "packet_identity": "0a1c4dd99a4135eb06d37ead34af2ca53e2754363a517554327d249a109db2de",
+          "parent_receipt_identity": "parent-b898b6b48b389900c01e4d3ce2894fca3ee471bb0c9da260",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "c12edd9369d8efdcd7b33e743a5a45fb3bd30d341a1e395f76115359d13d2cac"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "685426898746e57610c268e23bff93c0f5ca47b8885aad1edc3421bbda12a337",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "09d2113612c54079f3ee8bd2e68ba5bc74707841f091423d18b279b534c08cb8",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8150-final-followup/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8150-final-followup/receipt.json",
+      "producer_run_id": "run-release-8150-final-followup",
+      "findings_identity": "c12edd9369d8efdcd7b33e743a5a45fb3bd30d341a1e395f76115359d13d2cac"
+    }
+  ]
+}

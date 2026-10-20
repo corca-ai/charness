@@ -1,0 +1,39 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in follow-up",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R-003",
+      "severity": "medium",
+      "summary": "The routing repair and collision-limit qualification are sound, but the release-note pattern omits the slugless fallback for a covered branch.",
+      "evidence": [
+        "The router returns `f\"{slug or 'branch'}-{digest}\"`; the test includes `task/__` and asserts a `-debug-review-followup-branch-` name.",
+        "The notes state that a `task/<lane>` branch gets `...followup-<lane>-<hash>.md`, without qualifying that an empty normalized slug becomes `branch`."
+      ],
+      "action": "Clarify that the token uses a normalized lane or branch slug, with `branch` as the fallback when the slug is empty; retain the raw-branch hash and collision caveat."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "The 8-hex hash prefix does not guarantee absolute uniqueness.",
+      "bin": "accepted limitation",
+      "disposition": "The test and release notes acknowledge that distinct branches can share a name on a hash-prefix collision; this is not an overclaim."
+    },
+    {
+      "concern": "The code and test may still alias the tested branches.",
+      "bin": "not supported by reviewed input",
+      "disposition": "The router hashes the raw branch and the test checks the aliasing examples, including `task/__`, produce distinct names."
+    }
+  ],
+  "next_move": "Update the release-note naming description to include the empty-slug fallback, then request a fresh bounded review.",
+  "non_claims": [
+    "Reviewed only the six identity-bound inline semantic inputs; did not read workspace paths or run tests.",
+    "No regression was identified in the selected unchanged inputs; prior dispositions for R-001, R-002, R-004, R-005, and R-006 were not reassessed."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "1f17ee16b3e2e7f7546879848fee8c670870923034ee2c3b199d8bef810c20b8",
+  "reviewed_input_identity_sha256": "19bcc1e78e26ba99cb82b6804c7374835e3335a64d46523b44b25c24c10ca611"
+}

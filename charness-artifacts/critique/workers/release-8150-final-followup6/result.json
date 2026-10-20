@@ -1,0 +1,36 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in follow-up",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R-007",
+      "severity": "medium",
+      "summary": "The note promises hash-based names for every non-default branch, but the router also falls back to counter names when it cannot read branch identity. Those worktrees can still produce shared names.",
+      "evidence": [
+        "The note says “On any branch other than `main`, `master`, `trunk`, or `develop`” the record includes a branch hash.",
+        "`_head_branch` returns `None` when it cannot read or parse the `.git` link or `HEAD`; `resolved_followup_record_payload` then uses the shared `followup` counter sequence.",
+        "`test_debug_followup_unreadable_git_link_keeps_the_counter` explicitly verifies this fallback."
+      ],
+      "action": "Scope the hash guarantee to non-default branches whose identity the router can read, and state that unreadable branch metadata also uses the counter."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "R-003: the hash uniqueness claim was unqualified and omitted default-branch and detached-HEAD counter collisions.",
+      "bin": "repaired",
+      "disposition": "The note now limits the claim to non-default branches and states that default branches and detached HEADs retain the counter. The unreadable-branch-metadata fallback remains unmentioned."
+    }
+  ],
+  "next_move": "Add the readable-branch-identity condition and mention the counter fallback when branch metadata cannot be read.",
+  "non_claims": [
+    "Reviewed the six identity-bound inline semantic inputs; did not inspect workspace paths or run tests.",
+    "The hashed naming guarantee remains subject to 8-hex hash-prefix collisions.",
+    "Goal evidence lineage (copy exactly):\n{\n  \"binding\": null,\n  \"disposition\": \"not-goal-bound\",\n  \"draft\": null,\n  \"goal_run\": null,\n  \"kind\": \"charness.goal-lineage\",\n  \"reason\": \"critique review was run without a Goal Run Work Item identity\",\n  \"schema_version\": 1,\n  \"work_item\": null\n}"
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "5e8a9f6f995f51a890d59c6d27f6dd0054f0ebc35d78f29840c359e0cfda141c",
+  "reviewed_input_identity_sha256": "4a62de00b89185d35452a4bf6b6ae1794371b7ad8fa2a089769fdf1830d144fd"
+}

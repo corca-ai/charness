@@ -1,0 +1,30 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in follow-up",
+  "verdict": "pass",
+  "target_observations": null,
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "R-003: unreadable branch metadata could still produce shared counter-based names despite the hash guarantee.",
+      "bin": "repaired",
+      "disposition": "The note limits hash naming to readable non-default branch metadata and states that unreadable metadata keeps the counter. The routing code returns no lane token when it cannot read or parse the git link or HEAD, so it uses the counter path."
+    },
+    {
+      "concern": "Other actionable overclaims in the release notes.",
+      "bin": "none found",
+      "disposition": "Read the full notes once; found no additional consumer-actionable overclaim in the reviewed inputs."
+    }
+  ],
+  "next_move": "Proceed with release lock-in; no further change is indicated for this follow-up.",
+  "non_claims": [
+    "Reviewed the six identity-bound inline semantic inputs, including the full release notes; did not inspect workspace paths or run tests.",
+    "Prior dispositions for R-001, R-002, R-004, R-005, and R-006 are unchanged; this review does not re-adjudicate them.",
+    "The hashed naming guarantee remains subject to 8-hex hash-prefix collisions.",
+    "Goal evidence lineage (copy exactly):\n{\n  \"binding\": null,\n  \"disposition\": \"not-goal-bound\",\n  \"draft\": null,\n  \"goal_run\": null,\n  \"kind\": \"charness.goal-lineage\",\n  \"reason\": \"critique review was run without a Goal Run Work Item identity\",\n  \"schema_version\": 1,\n  \"work_item\": null\n}"
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "4b77a64769c139b0d3ddb414640389fe739c4ab2925d0ac2e03b14c80ed897a7",
+  "reviewed_input_identity_sha256": "8e28fcc50b56126ff6e07cb95eede64cd92a1b62c6949c56627027fefc41d1ea"
+}
