@@ -8,7 +8,8 @@ has not completed before; rerunning a command on an unchanged tree is not
 new). Every progress window the rule checks. A window without progress earns
 a checkpoint request; a second one in a row, with the request unanswered,
 stops the lane. A command that started since the previous check and is still
-running defers the request, and so the stop, by one window. A hung command, a silent model and a dead executor are the
+running defers the request, and so the stop, by one check. Windows are
+nominal: the watch runs a due check at its next poll. A hung command, a silent model and a dead executor are the
 same case, so there is no second timer.
 
 Loops are judged at each command completion: the third completion of the

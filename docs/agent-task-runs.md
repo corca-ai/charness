@@ -19,7 +19,7 @@ the agent runner (`codex`/`muse`); carrier names where the candidate lives
 
 `--require-change` shapes implementation prompts and records edit/test phases. A scope mismatch retains a typed blocker rather than silently selecting a substitute owner.
 
-The [progress rule](../charness-artifacts/spec/lane-progress-rule.md) bounds a lane: a `CHARNESS_TASK_RUN_PROGRESS_WINDOW_SECONDS` window (default 1200) without commits, file changes, or new command results brings a checkpoint request; a second, deferred while a young command runs, stops it. `--timeout-seconds` is an optional cap.
+The [progress rule](../charness-artifacts/spec/lane-progress-rule.md) bounds a lane: a `CHARNESS_TASK_RUN_PROGRESS_WINDOW_SECONDS` window (default 1200) without commits, file changes, or new command results brings a checkpoint request; a second due check, deferred while a young command runs, stops it. `--timeout-seconds` is optional.
 
 `--report-only` inspects without changing and never reports a writer conflict.
 Interrupted work with a proven empty scope is `interrupted-before-edit`; WIP is
