@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from scripts.task_run import task_run_evidence as evidence
 from scripts.task_run import task_run_git, task_run_scope
 from scripts.task_run import task_run_lane_runner as lane_runner
@@ -734,18 +736,28 @@ def test_watch_run_records_stop_before_failing_fire(tmp_path: Path) -> None:
     assert watch.stop_reason == "require-change lane produced no EDITING"
 
 
-def test_build_progress_watch_off_without_require_change(tmp_path: Path) -> None:
-    assert (
-        prog.build_progress_watch(
-            require_change=False,
-            stdout_log=tmp_path / "o.log",
-            stderr_log=tmp_path / "e.log",
-            worktree=tmp_path,
-            base_sha="deadbeef",
-            scope_specs=[],
-        )
-        is None
-    )
+def test_every_lane_gets_the_progress_rule_and_only_a_window_of_zero_turns_it_off(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """With no wall clock, the progress rule is the stop every lane has; the
+    first-edit budget and BLOCKED grace stay require-change only."""
+    kwargs = {
+        "require_change": False,
+        "stdout_log": tmp_path / "o.log",
+        "stderr_log": tmp_path / "e.log",
+        "worktree": tmp_path,
+        "base_sha": "deadbeef",
+        "scope_specs": [],
+    }
+    watch = prog.build_progress_watch(**kwargs)
+    assert watch is not None
+    receipt = watch.receipt()
+    assert receipt["stop_enabled"] is False and receipt["linger_stop_enabled"] is False
+    assert receipt["progress_rule"]["window_seconds"] == 1200.0
+    assert receipt["progress_rule"]["window_source"] == "default"
+
+    monkeypatch.setenv("CHARNESS_TASK_RUN_PROGRESS_WINDOW_SECONDS", "0")
+    assert prog.build_progress_watch(**kwargs) is None
 
 
 def test_scope_mismatch_outside_declared_scope_is_typed_refusal(tmp_path: Path) -> None:

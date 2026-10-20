@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import os
 import threading
 import time
@@ -23,18 +22,23 @@ _load_repo_runtime_bootstrap()
 
 from scripts.task_run import task_run_evidence as _evidence  # noqa: E402
 from scripts.task_run import task_run_execution as _execution  # noqa: E402
-from scripts.task_run import task_run_muse_events as _muse_events  # noqa: E402
+from scripts.task_run import task_run_lane_signals as _signals  # noqa: E402
+from scripts.task_run import task_run_progress_rule as _rule  # noqa: E402
 from scripts.task_run import task_run_support as _support  # noqa: E402
 
 _env_seconds = _execution._env_seconds
 _guard_phases = _execution._guard_phases
 _guard_stop_reason = _execution._guard_stop_reason
 
-LANE_PHASES = ("CONTRACT-READ", "EDITING", "TESTING")
+LANE_PHASES = _signals.LANE_PHASES
+NO_PROGRESS_STOP_PREFIX = _signals.NO_PROGRESS_STOP_PREFIX
+lane_progress = _signals.lane_progress
+_transcript_lines = _signals._transcript_lines
+_event_texts = _signals._event_texts
+no_progress_stop_due = _signals.no_progress_stop_due
+scoped_diff_present = _signals.scoped_diff_present
+_worktree_liveliness = _signals._worktree_liveliness
 
-#: Typed stop marker the progress guard appends to the executor transcript
-#: before killing a stalled lane. Parsed like `BLOCKED:` on the receipt.
-NO_PROGRESS_STOP_PREFIX = "NO-PROGRESS-STOP:"
 
 #: Wall-clock budget between `CONTRACT-READ` and the first scoped signal
 #: (`EDITING` or a real scoped diff) before a require-change lane is stopped
@@ -49,131 +53,6 @@ DEFAULT_PROGRESS_POLL_SECONDS = 15.0
 #: lingers past the grace is killed, so a block declaration cannot become a
 #: full-timeout consumption.
 DEFAULT_BLOCKED_GRACE_SECONDS = 60.0
-
-
-def lane_progress(stdout_text: str, stderr_text: str = "") -> dict[str, Any]:
-    """Parse phase markers and the typed blocker from lane output (#815).
-
-    Executors render progress on stderr while stdout carries the machine
-    delivery: a lane whose stdout stayed empty still emitted CONTRACT-READ
-    on stderr, so both streams are parsed (stdout first, stderr second).
-    A guard-issued `NO-PROGRESS-STOP:` line parses as the blocker, like an
-    executor-issued `BLOCKED:` line.
-    """
-    phases: list[str] = []
-    blocker: str | None = None
-    for text in (stdout_text, stderr_text):
-        for line in _transcript_lines(text):
-            stripped = line.strip()
-            if stripped in LANE_PHASES and stripped not in phases:
-                phases.append(stripped)
-            elif blocker is None and stripped.startswith("BLOCKED:"):
-                blocker = stripped[len("BLOCKED:"):].strip() or None
-            elif blocker is None and stripped.startswith(NO_PROGRESS_STOP_PREFIX):
-                blocker = stripped[len(NO_PROGRESS_STOP_PREFIX):].strip() or None
-    return {"phases": phases, "blocker": blocker}
-
-
-def _transcript_lines(text: str):
-    """Expose phase text inside JSONL executor events as transcript lines."""
-    agent_text = _muse_events.accumulated_agent_text(text)
-    if agent_text:
-        # Muse `--json` streams agent text as ordered delta chunks; one
-        # marker line may span several chunks, so phases read the
-        # accumulation, not any single chunk (#886).
-        yield from agent_text.splitlines()
-    for line in text.splitlines():
-        yield line
-        try:
-            event = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-        yield from _event_texts(event)
-
-
-def _event_texts(value: Any):
-    if isinstance(value, Mapping):
-        for key, nested in value.items():
-            if key in {"text", "message", "content", "last_agent_message"} and isinstance(
-                nested, str
-            ):
-                yield from nested.splitlines()
-            else:
-                yield from _event_texts(nested)
-    elif isinstance(value, list):
-        for nested in value:
-            yield from _event_texts(nested)
-
-
-def no_progress_stop_due(
-    *,
-    phases: Sequence[str],
-    contract_read_at: float | None,
-    now: float,
-    budget_seconds: float,
-    diff_present: bool | None,
-) -> str | None:
-    """Whether the no-progress guard must stop the lane now (#815).
-
-    Pure in its inputs (including `now`) so tests drive it on a controlled
-    clock: a require-change lane that announced `CONTRACT-READ` but shows no
-    `EDITING` and no real scoped diff once the budget is spent is a typed
-    stall, not a lane still worth its remaining timeout. An unobservable
-    diff (`None`) suppresses the stop: the guard may only kill on an
-    affirmative observed-absent worktree, never on a failed observation.
-    """
-    if budget_seconds <= 0:
-        return None
-    if "EDITING" in phases or diff_present:
-        return None
-    if diff_present is None:
-        return None
-    if "CONTRACT-READ" not in phases or contract_read_at is None:
-        return None
-    if now - contract_read_at < budget_seconds:
-        return None
-    return (
-        "require-change lane produced no EDITING and no scoped diff within "
-        f"{budget_seconds:g}s after CONTRACT-READ"
-    )
-
-
-def scoped_diff_present(
-    worktree: Path, base_sha: str, scope_specs: Sequence[Mapping[str, Any]]
-) -> bool | None:
-    """Whether the worktree currently holds a real scoped diff.
-
-    Reuses the checkpoint's own classification (refreshed specs plus the
-    carrier's changed paths), so the live guard and the terminal checkpoint
-    agree on what counts as progress. Three-valued: True/False for an
-    observed worktree, None when the worktree cannot be observed — the guard
-    must not kill a lane it cannot see.
-    """
-    try:
-        refreshed = _support._refresh_scope_specs(worktree, list(scope_specs))
-        changed = _support._candidate_carrier(worktree, base_sha)["changed_paths"]
-        return bool(_support._paths_in_scopes(changed, refreshed))
-    except Exception:  # noqa: BLE001 - an unobservable tree reads as unknown
-        return None
-
-
-def _worktree_liveliness(worktree: Path, base_sha: str) -> dict[str, Any] | None:
-    """Changed files, lane-branch commits, and the last subject, or None when unobservable."""
-    try:
-        changed = _support._candidate_carrier(worktree, base_sha)["changed_paths"]
-        log = _support._git(worktree, "log", f"{base_sha}..HEAD", "--format=%s")
-        subjects = (
-            [line.strip() for line in log.stdout.splitlines() if line.strip()]
-            if log.returncode == 0
-            else []
-        )
-    except Exception:  # noqa: BLE001 - an unobservable tree reads as unknown
-        return None
-    return {
-        "files_changed": len(changed),
-        "commits": len(subjects),
-        "last_commit_subject": subjects[0][:120] if subjects else None,
-    }
 
 
 class LaneProgressWatch:
@@ -208,6 +87,7 @@ class LaneProgressWatch:
         observe: Callable[[dict[str, Any]], None] | None = None,
         budget_source: str = "env",
         budget_raw: str | None = None,
+        progress_rule: _rule.ProgressRule | None = None,
     ) -> None:
         self._stdout_log = stdout_log
         self._stderr_log = stderr_log
@@ -242,6 +122,10 @@ class LaneProgressWatch:
         self._steer_queue = _lane_runner.steer_queue_path(stdout_log.parent)
         self._steer_seen: set[str] = set()
         self._steer_messages: list[dict[str, Any]] = []
+        self._progress_rule = progress_rule
+        self._fire_lock = threading.Lock()
+        self._preempted = False
+        self.preemptions = 0
 
     def start(
         self,
@@ -253,6 +137,8 @@ class LaneProgressWatch:
         self._emit = emit
         self._kill = kill
         self._started_at = self._clock()
+        if self._progress_rule is not None:
+            self._progress_rule.start(self._started_at)
         self._stopped.clear()
         self._thread = threading.Thread(
             target=self._run, name="charness-lane-progress", daemon=True
@@ -277,6 +163,10 @@ class LaneProgressWatch:
             "blocked_grace_seconds": self._blocked_grace_seconds,
             "poll_seconds": self._poll_seconds,
             "stop_reason": self.stop_reason,
+            "preemptions": self.preemptions,
+            "progress_rule": (
+                None if self._progress_rule is None else self._progress_rule.receipt()
+            ),
             "last_phases": list(self._last_phases),
             "first_scoped_diff": {
                 "observed": self._first_scoped_paths is not None,
@@ -292,12 +182,64 @@ class LaneProgressWatch:
         self._poll_steer_queue()
         self._track_log_growth(now)
         reason = self._poll(now)
+        if reason is None and self._progress_rule is not None:
+            action = self._progress_rule.on_tick(now)
+            if action is not None and action.kind == "stop":
+                reason = action.text
+            else:
+                self._apply(action)
         if self._observe is not None:
             try:
                 self._observe(self.snapshot(now))
             except Exception:  # noqa: BLE001 - a failed snapshot must not kill the watch
                 pass
         return reason
+
+    def observe_event(self, event: Mapping[str, Any]) -> None:
+        """Feed one executor event to the progress rule (runs on the event reader)."""
+        if self._progress_rule is None or self.stop_reason is not None:
+            return
+        action = self._progress_rule.on_event(event)
+        if action is not None and action.kind == "stop":
+            self._stop_now(action.text)
+        else:
+            self._apply(action)
+
+    def _apply(self, action: _rule.Action | None) -> None:
+        """Deliver the rule's message now: queue it as a steer, then preempt.
+
+        The kill ends this executor invocation; the execution loop sees the
+        preemption and resumes the same session with the queued message.
+        """
+        if action is None or self._kill is None:
+            return
+        from scripts.task_run import task_run_lane_runner as _lane_runner
+
+        _lane_runner.enqueue_steer(
+            self._steer_queue,
+            self._stdout_log.parent.name,
+            action.text,
+            reason=action.reason_code,
+            actor="charness-progress-rule",
+        )
+        self._preempted = True
+        self.preemptions += 1
+        self._kill()
+
+    def take_preempted(self) -> bool:
+        """Whether the last invocation ended because the watch preempted it."""
+        preempted, self._preempted = self._preempted, False
+        return preempted
+
+    def _stop_now(self, reason: str) -> None:
+        with self._fire_lock:
+            if self.stop_reason is not None:
+                return
+            self.stop_reason = reason
+        try:
+            self.fire(reason)
+        except Exception:  # noqa: BLE001 - a failed stop must not kill the reader
+            pass
 
     def pending_steers(self) -> list[dict[str, Any]]:
         """Read the queue once more at the turn boundary and return undelivered entries."""
@@ -344,7 +286,9 @@ class LaneProgressWatch:
         lively = _worktree_liveliness(self._worktree, self._base_sha)
         lively = lively if isinstance(lively, dict) else {}
         age = None if self._last_growth_at is None else max(0.0, now - self._last_growth_at)
+        progress = None if self._progress_rule is None else self._progress_rule.snapshot(now)
         return {
+            "progress_rule": progress,
             "phase": self._last_phases[-1] if self._last_phases else None,
             "phases": list(self._last_phases),
             "files_changed": lively.get("files_changed"),
@@ -481,17 +425,15 @@ class LaneProgressWatch:
 
     def _run(self) -> None:
         while not self._stopped.wait(self._poll_seconds):
+            if self.stop_reason is not None:
+                return
             try:
                 reason = self.tick(self._clock())
             except Exception:  # noqa: BLE001 - a failed poll must not kill the watch
                 continue
             if reason is None:
                 continue
-            self.stop_reason = reason
-            try:
-                self.fire(reason)
-            except Exception:  # noqa: BLE001 - a failed stop must not kill the watch
-                pass
+            self._stop_now(reason)
             return
 
 
@@ -506,25 +448,36 @@ def build_progress_watch(
     observe: Callable[[dict[str, Any]], None] | None = None,
     budget_override: float | None = None,
 ) -> LaneProgressWatch | None:
-    """The live guard for a require-change lane, or None when it is off.
+    """The live watch for a lane, or None when nothing would be watched.
 
-    The guard owns queue polling for watched lanes. Execution checks the same
-    queue at every natural executor boundary when this guard is absent. An
-    explicit ``budget_override`` (``--no-progress-seconds``) wins over the
-    environment so a contract-heavy lane records its budget as a deliberate
-    per-lane choice (#835).
+    Every lane gets the progress rule (`task_run_progress_rule`), the one
+    stop a lane has once no wall clock bounds it; `CHARNESS_TASK_RUN_PROGRESS_WINDOW_SECONDS`
+    sets its window and `0` turns it off. A require-change lane also gets the
+    first-edit budget and the BLOCKED linger grace. The guard owns queue
+    polling for watched lanes. Execution checks the same queue at every
+    natural executor boundary when this guard is absent. An explicit
+    ``budget_override`` (``--no-progress-seconds``) wins over the environment
+    so a contract-heavy lane records its budget as a deliberate per-lane
+    choice (#835).
     """
-    if not require_change:
+    window_seconds, window_parsed = _env_seconds(
+        _rule.PROGRESS_WINDOW_ENV, _rule.DEFAULT_PROGRESS_WINDOW_SECONDS
+    )
+    if not require_change and window_seconds <= 0:
         return None
+    progress_rule = _rule.ProgressRule(
+        window_seconds=window_seconds,
+        fingerprint=lambda: _rule.worktree_fingerprint(worktree),
+        window_source="env" if window_parsed else "default",
+    )
     budget_raw = os.environ.get(NO_PROGRESS_BUDGET_ENV)
-    if budget_override is None:
+    if not require_change:
+        budget_seconds, budget_source = 0.0, "disabled"
+    elif budget_override is None:
         budget_seconds, budget_parsed = _env_seconds(
             NO_PROGRESS_BUDGET_ENV, DEFAULT_NO_PROGRESS_BUDGET_SECONDS
         )
-        budget_source = (
-            "env" if require_change and budget_parsed
-            else "default" if require_change else "disabled"
-        )
+        budget_source = "env" if budget_parsed else "default"
     else:
         budget_seconds = budget_override
         budget_source = "flag"
@@ -538,14 +491,13 @@ def build_progress_watch(
         scope_specs=scope_specs,
         budget_seconds=budget_seconds,
         poll_seconds=poll_seconds,
-        blocked_grace_seconds=(
-            grace_seconds
-            if require_change else 0.0
-        ),
+        blocked_grace_seconds=grace_seconds if require_change else 0.0,
         observe=observe,
         budget_source=budget_source,
         budget_raw=budget_raw,
+        progress_rule=progress_rule,
     )
+
 
 def _execute_watched_lane(payload: dict[str, Any], command: list[str], **kwargs: Any) -> dict[str, Any]:
     """Run the lane executor; the attempt loop owns retries (see task_run_attempts)."""

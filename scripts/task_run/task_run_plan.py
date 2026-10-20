@@ -349,7 +349,7 @@ def resolve_task_inputs(
     require_change: bool | None,
     skip_prepare: bool,
     allow_no_change: bool,
-    timeout_seconds: int,
+    timeout_seconds: int | None,
     repo_snapshot: Mapping[str, Any] | None = None,
     report_only: bool = False,
     no_progress_seconds: float | None = None,
@@ -458,7 +458,7 @@ def resolve_task_inputs(
     )
     # Pure input validation precedes PATH probing: a bad flag must report
     # itself even when no executor executable is installed (#825).
-    if not isinstance(timeout_seconds, int) or timeout_seconds < 1:
+    if timeout_seconds is not None and (not isinstance(timeout_seconds, int) or timeout_seconds < 1):
         raise TaskRunError("--timeout-seconds must be a positive integer")
     resolved_no_progress = _resolve_no_progress_seconds(no_progress_seconds)
     _validate_executor_efforts(executor_order, effort)

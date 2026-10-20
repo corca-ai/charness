@@ -199,7 +199,7 @@ def run_task(
     require_change: bool | None = None,
     skip_prepare: bool = False,
     allow_no_change: bool = False,
-    timeout_seconds: int = 3600,
+    timeout_seconds: int | None = None,
     dry_run: bool = False,
     report_only: bool = False,
     no_progress_seconds: float | None = None,

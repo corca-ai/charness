@@ -157,7 +157,7 @@ def _mode_argv(args: argparse.Namespace) -> list[str]:
         argv += ["--acceptance-skeleton", args.acceptance_skeleton]
     for check in args.premise_check or []:
         argv += ["--premise-check", *check]
-    if args.timeout_seconds != 3600:
+    if args.timeout_seconds is not None:
         argv += ["--timeout-seconds", str(args.timeout_seconds)]
     if args.no_progress_seconds is not None:
         argv += ["--no-progress-seconds", str(args.no_progress_seconds)]

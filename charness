@@ -1708,14 +1708,19 @@ def build_parser() -> argparse.ArgumentParser:
     task_run_parser.add_argument(
         "--timeout-seconds",
         type=int,
-        default=3600,
-        help="Per-attempt executor timeout in seconds; a retried stall reruns the full budget (see CHARNESS_TASK_RUN_MAX_ATTEMPTS).",
+        default=None,
+        help=(
+            "Optional hard wall-clock cap per executor attempt; none by default. A lane "
+            "is bounded by progress instead: CHARNESS_TASK_RUN_PROGRESS_WINDOW_SECONDS "
+            "(default 1200) asks for a checkpoint after a window with no commit, file "
+            "change, or new command result and stops the lane after a second one."
+        ),
     )
     task_run_parser.add_argument(
         "--no-progress-seconds",
         type=float,
         default=None,
-        help="No-progress guard budget in seconds from CONTRACT-READ to first EDITING/scoped diff; 0 turns the stop off. Overrides CHARNESS_TASK_RUN_NO_PROGRESS_SECONDS and is recorded in progress_guard.",
+        help="First-edit budget for require-change lanes: seconds from CONTRACT-READ to the first EDITING or scoped diff; 0 turns this stop off. Overrides CHARNESS_TASK_RUN_NO_PROGRESS_SECONDS and is recorded in progress_guard. Separate from the progress window.",
     )
     task_run_parser.add_argument(
         "--dry-run",

@@ -516,7 +516,7 @@ def record_lane_runner(
     executor: str,
     executable: str,
     effort: str,
-    timeout_seconds: int,
+    timeout_seconds: int | None,
 ) -> None:
     """Record the lane runner block and its legacy `codex` alias."""
     block = {

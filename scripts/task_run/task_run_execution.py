@@ -147,7 +147,7 @@ def _execute_codex(
     configured_env: Mapping[str, str],
     stdout_log: Path,
     stderr_log: Path,
-    timeout_seconds: int,
+    timeout_seconds: int | None,
     lane_watch: Any | None = None,
     executor: str = "codex",
 ) -> dict[str, Any]:
@@ -192,6 +192,12 @@ def _execute_codex(
                     {**capture, "invocation": invocation}
                 )
             result.update(invocation_result)
+            # The progress rule ended this invocation to deliver its own
+            # message: not a failure, a failed resume, or a relaunch.
+            take_preempted = getattr(lane_watch, "take_preempted", None)
+            preempted = bool(take_preempted()) if take_preempted is not None else False
+            if preempted:
+                result["preemptions"] = result.get("preemptions", 0) + 1
             session_id = _retain_invocation_events(
                 executor,
                 stdout_log,
@@ -208,7 +214,8 @@ def _execute_codex(
                 result["progress_stopped"] = lane_watch.stop_reason
                 break
             if (
-                resume_path == "session-resume"
+                not preempted
+                and resume_path == "session-resume"
                 and (result.get("exec_error") or result["exit_code"] not in (None, 0))
             ):
                 if lane_watch is not None:
@@ -262,7 +269,7 @@ def _execute_codex(
     _friction.append_execution_friction(
         stdout_log.parents[2],
         task_id=stdout_log.parent.name,
-        relaunch_count=invocation,
+        relaunch_count=invocation - int(result.get("preemptions", 0)),
         execution_error=(str(result["exec_error"]) if result.get("exec_error") else None),
     )
     return result
@@ -276,7 +283,7 @@ def _run_executor_invocation(
     configured_env: Mapping[str, str],
     stdout_log: Path,
     stderr_log: Path,
-    timeout_seconds: int,
+    timeout_seconds: int | None,
     lane_watch: Any | None,
     executor: str,
     group_path: Path,
@@ -295,7 +302,9 @@ def _run_executor_invocation(
             # Every event line is stamped with its receive time on the way
             # into the lane log, so the events log can time commands/phases.
             stdout_pipe = _event_timing.StampingPipe(
-                stdout_handle, clock=_event_timing.utc_receive_stamp
+                stdout_handle,
+                clock=_event_timing.utc_receive_stamp,
+                observer=getattr(lane_watch, "observe_event", None),
             )
             terminal_stderr = os.fdopen(os.dup(2), "w", buffering=1, closefd=True)
             outcome = None

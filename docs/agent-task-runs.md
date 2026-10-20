@@ -17,7 +17,9 @@ the agent runner (`codex`/`muse`); carrier names where the candidate lives
 (`carrier_kind`: `commit-only`, `commit-plus-dirty`, `worktree-only`,
 `unknown`), not who ran it.
 
-`--require-change` shapes implementation prompts and records edit/test phases. A scope mismatch retains a typed blocker rather than silently selecting a substitute owner. The task runner enforces its configured no-progress and blocked grace budgets; `task run --help` owns the options.
+`--require-change` shapes implementation prompts and records edit/test phases. A scope mismatch retains a typed blocker rather than silently selecting a substitute owner.
+
+The [progress rule](../charness-artifacts/spec/lane-progress-rule.md), not a wall clock, bounds a lane: a `CHARNESS_TASK_RUN_PROGRESS_WINDOW_SECONDS` window (default 1200) without commits, file changes, or new command results resumes the executor with a checkpoint request; a second stops it. `--timeout-seconds` is an optional cap.
 
 `--report-only` inspects without changing and never reports a writer conflict.
 Interrupted work with a proven empty scope is `interrupted-before-edit`; WIP is
@@ -27,13 +29,13 @@ candidate can be retained for review even when blockers deny approval.
 Terminal receipts carry `result_kind` and a stable blocker. The CLI exit-code
 mapping is owned by `charness task run --help`.
 Transient stream stalls retry in the same worktree (three attempts by default,
-30-second backoff); attempts record their failure kind. Finished-but-unapprovable
+30-second backoff), recording each failure kind. Finished-but-unapprovable
 work needs review, merge, or re-scope; it does not need relaunch. Scope closure
 stays warning-only (#831), a typed scope mismatch records a
 `scope_extension_request`, and refresh excludes lane-created directories.
 Secret-pattern environment names are scrubbed except
 executor auth keeps and `CHARNESS_TASK_RUN_KEEP_SECRET_ENV`; the receipt records
-names, never values. Budget wall time as `MAX_ATTEMPTS` x `--timeout-seconds`.
+names, never values.
 
 ## Learning and resumed orchestration
 
@@ -51,10 +53,9 @@ states, friction with repairs, measured improvements with the period
 next-action table. Every section carries measured numbers, not prose claims.
 
 Keep the active principles, DAG file, and handoff in the parent repo's
-`.charness/task-run/orchestration-pointers.md`. When present and nonempty, that
-file is read into every newly built lane prompt. A resumed orchestrator thus
-restores those pointers when it launches the next lane. The prompt builder
-reads it on each launch; it does not detect host compaction itself.
+`.charness/task-run/orchestration-pointers.md`; every newly built lane prompt
+reads it when nonempty, so a resumed orchestrator restores those pointers at
+its next launch (the builder does not detect host compaction).
 
 ## Run
 

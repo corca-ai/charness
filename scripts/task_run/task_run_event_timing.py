@@ -94,7 +94,8 @@ class StampingPipe:
     """A pipe whose reader copies each line into `sink` with its receive time.
 
     `fileno()` is the write end, so the carrier can hand it to the executor
-    as stdout. `close()` releases the write end, then drains every byte that
+    as stdout. An optional `observer` sees each complete JSON event after its
+    bytes reach the sink (the lane progress rule reads commands from it). `close()` releases the write end, then drains every byte that
     is already in the pipe and returns; it never waits on a writer that is
     still alive. Bytes are retained byte-for-byte up to the moment of close:
     once the executor's process group is killed, everything it wrote is in
@@ -109,9 +110,16 @@ class StampingPipe:
     that outlives `close()` can never write into a sink the caller closed.
     """
 
-    def __init__(self, sink: BinaryIO, *, clock: Callable[[], str] = utc_receive_stamp) -> None:
+    def __init__(
+        self,
+        sink: BinaryIO,
+        *,
+        clock: Callable[[], str] = utc_receive_stamp,
+        observer: Callable[[Mapping[str, Any]], None] | None = None,
+    ) -> None:
         self._sink = sink
         self._clock = clock
+        self._observer = observer
         self._read_fd, self._write_fd = os.pipe()
         self._stop = threading.Event()
         self._sink_lock = threading.Lock()
@@ -157,6 +165,21 @@ class StampingPipe:
         *lines, self._pending = (self._pending + chunk).split(b"\n")
         for line in lines:
             self._emit(self._stamped(line + b"\n"))
+            self._observe(line)
+
+    def _observe(self, line: bytes) -> None:
+        """Hand each complete JSON-object event to the observer, after it is kept."""
+        if self._observer is None or not line.lstrip().startswith(b"{"):
+            return
+        try:
+            event = json.loads(line)
+        except ValueError:
+            return
+        if isinstance(event, dict):
+            try:
+                self._observer(event)
+            except Exception:  # noqa: BLE001 - an observer fault must not cost event bytes
+                pass
 
     def _drain(self) -> None:
         deadline: float | None = None

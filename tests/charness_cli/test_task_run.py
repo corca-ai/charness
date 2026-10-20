@@ -228,7 +228,7 @@ def test_task_run_lane_shorthand_owns_safe_defaults_and_external_target(
         "executable": str(executable),
         "model": "gpt-6-luna",
         "effort": "xhigh",
-        "timeout_seconds": 3600,
+        "timeout_seconds": None,
         "timeout_scope": "codex-exec",
     }
 
