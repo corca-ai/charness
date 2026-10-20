@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8150-final-followup9",
+      "scope": "follow-up at 521bcac02 on release-8150-final-followup8: R-002 a short sink write is now recorded as lost bytes and incomplete capture (with a test); R-001 notes and docs call durations estimates that can err in either direction; R-003 notes say a hung log write can still stall the pipe",
+      "packet_identity": "d9db86c4915fba1f0ad3e1175c8365c328f8cc0ad82a566a9a99c21af9650e8f",
+      "parent_receipt_identity": "parent-f637a5ce37c9e324c98211cb1c3e42392333faaa3ab58d1c",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T14:39:56Z",
+      "history": [
+        {
+          "event_id": "08acd885b07d428faaac05d375f2525d",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T14:38:22Z",
+          "attempt_id": "release-8150-final-followup9",
+          "scope": "follow-up at 521bcac02 on release-8150-final-followup8: R-002 a short sink write is now recorded as lost bytes and incomplete capture (with a test); R-001 notes and docs call durations estimates that can err in either direction; R-003 notes say a hung log write can still stall the pipe",
+          "packet_identity": "d9db86c4915fba1f0ad3e1175c8365c328f8cc0ad82a566a9a99c21af9650e8f",
+          "parent_receipt_identity": "parent-f637a5ce37c9e324c98211cb1c3e42392333faaa3ab58d1c",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "3948826b650842fdb36195a8c9ca26e0",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T14:38:22Z",
+          "attempt_id": "release-8150-final-followup9",
+          "scope": "follow-up at 521bcac02 on release-8150-final-followup8: R-002 a short sink write is now recorded as lost bytes and incomplete capture (with a test); R-001 notes and docs call durations estimates that can err in either direction; R-003 notes say a hung log write can still stall the pipe",
+          "packet_identity": "d9db86c4915fba1f0ad3e1175c8365c328f8cc0ad82a566a9a99c21af9650e8f",
+          "parent_receipt_identity": "parent-f637a5ce37c9e324c98211cb1c3e42392333faaa3ab58d1c",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "9e782832f61040d68d901a3df58a65cc",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T14:39:56Z",
+          "attempt_id": "release-8150-final-followup9",
+          "scope": "follow-up at 521bcac02 on release-8150-final-followup8: R-002 a short sink write is now recorded as lost bytes and incomplete capture (with a test); R-001 notes and docs call durations estimates that can err in either direction; R-003 notes say a hung log write can still stall the pipe",
+          "packet_identity": "d9db86c4915fba1f0ad3e1175c8365c328f8cc0ad82a566a9a99c21af9650e8f",
+          "parent_receipt_identity": "parent-f637a5ce37c9e324c98211cb1c3e42392333faaa3ab58d1c",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "6caf8d7ace696ad8928ef9690a499342cbb5e8a528f252af83ec1e0cae27d0bf"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "02b193cd9c2469bff839c77392743e4ae0ef51c03781e7e14241e9a8c0df1086",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "18064a9ee8fef8919d415461755a20f8239693470017a8cc824576adf852ea77",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8150-final-followup9/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8150-final-followup9/receipt.json",
+      "producer_run_id": "run-release-8150-final-followup9",
+      "findings_identity": "6caf8d7ace696ad8928ef9690a499342cbb5e8a528f252af83ec1e0cae27d0bf"
+    }
+  ]
+}

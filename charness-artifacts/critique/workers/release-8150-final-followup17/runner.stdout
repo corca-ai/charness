@@ -1,0 +1,71 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'follow-up at 7ce28354e on release-8150-final-followup16: R-003 the spec bounds
+  now carry an explicit probe allowance (three git probes of at most 60 s each per
+  check: 2W + one poll + 360 s, 3W + 540 s worst case); no code change'
+attempt_id: release-8150-final-followup17
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: e140a9105d87a1caac17702f529dadd44b9206a9836c214d9d15da91dc416548
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-57e88cf5736e3b79dffbadcb792fec49/receipt.json
+ledger_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-57e88cf5736e3b79dffbadcb792fec49/delivery.json
+producer_run_id: run-release-8150-final-followup17
+producer_binding:
+  output_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-57e88cf5736e3b79dffbadcb792fec49/result.json
+  receipt_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-57e88cf5736e3b79dffbadcb792fec49/receipt.json
+  producer_run_id: run-release-8150-final-followup17
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: 876b3c9090026f64d567cfe024a42a042b69bd33e8c5abb425e39407b464282c
+receipt_output_sha256: 876b3c9090026f64d567cfe024a42a042b69bd33e8c5abb425e39407b464282c
+packet_identity: 85b0ec0ce113328cad6a8d4f7cc9b087e59dad9008f8716b483317dc6a34e0fa
+reviewed_input_identity: 5942dea7e9c99c5606892f22ecffeb3b5718584493385ba14a6122b473ba33ba
+parent_receipt_identity: parent-93d858c3046079a5f2a84341bcb43445ac610abd6d06464d
+provenance:
+  scope: 'follow-up at 7ce28354e on release-8150-final-followup16: R-003 the spec
+    bounds now carry an explicit probe allowance (three git probes of at most 60 s
+    each per check: 2W + one poll + 360 s, 3W + 540 s worst case); no code change'
+  packet_identity: 85b0ec0ce113328cad6a8d4f7cc9b087e59dad9008f8716b483317dc6a34e0fa
+  reviewed_input_identity: 5942dea7e9c99c5606892f22ecffeb3b5718584493385ba14a6122b473ba33ba
+  parent_receipt_identity: parent-93d858c3046079a5f2a84341bcb43445ac610abd6d06464d
+  expected_targets_sha256: null
+  attempt_id: release-8150-final-followup17
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: e140a9105d87a1caac17702f529dadd44b9206a9836c214d9d15da91dc416548
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

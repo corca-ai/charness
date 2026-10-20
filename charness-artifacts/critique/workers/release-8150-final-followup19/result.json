@@ -1,0 +1,44 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in final pass",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R-004",
+      "severity": "low",
+      "summary": "The docs summary can imply that the second due check stops the lane even when a young command defers the sequence.",
+      "evidence": [
+        "docs/agent-task-runs.md says “a second due check, deferred while a young command runs, stops it.”",
+        "The spec says that when a young command defers the request at a due check, the next empty due check delivers the request, and the stop waits one more check. That next check does not stop the lane."
+      ],
+      "action": "Clarify that the second empty due check stops only when the request was already delivered; when a young command defers the sequence, the next due check delivers the request and a later empty check stops."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "R-003: snapshot work can delay later checks, so a hard wall-clock bound is not established.",
+      "bin": "fixed",
+      "disposition": "The spec names the live snapshot as work that delays the next check and explicitly states that windows are nominal and it gives no hard wall-clock bound."
+    },
+    {
+      "concern": "R-004: release notes and docstring still describe a fixed extra window.",
+      "bin": "fixed",
+      "disposition": "The notes say deferral is by one more check and explain that windows are nominal; the docstring also says deferral is by one check and that windows are nominal."
+    },
+    {
+      "concern": "R-004: docs summary describes stop timing under young-command deferral.",
+      "bin": "block",
+      "disposition": "The summary’s second-due-check wording is ambiguous in a way that can lead readers to expect a stop before the request is delivered."
+    }
+  ],
+  "next_move": "Clarify the docs summary’s due-check sequence, then repeat the bounded review.",
+  "non_claims": [
+    "Reviewed the identity-bound inline payload; did not inspect workspace paths or run tests.",
+    "Did not independently verify unrelated release-note claims."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "863b4ddfa8e80a0a9ae82df8194558892c3e9a65108fe0be3eaf32811a4e4bdb",
+  "reviewed_input_identity_sha256": "cae5e9eb39725266b3927c8917a68f08041a5b41d8ef1a0b0b502bd69b061162"
+}

@@ -1,0 +1,40 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in final pass",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R-005",
+      "severity": "low",
+      "summary": "The reported R-004 sequence is corrected, but the operator guide’s unconditional post-delivery stop claim omits a case that can delay stopping by another check: a new command started since the previous check is still young. The `ProgressRule` class docstring repeats that oversimplification.",
+      "evidence": [
+        "docs/agent-task-runs.md: “the next empty check after delivery stops it.”",
+        "scripts/task_run/task_run_progress_rule.py: the `ProgressRule` docstring says a delivered request means “the next empty check stops the lane.”",
+        "charness-artifacts/spec/lane-progress-rule.md: a command started since the previous check can defer “the request, or the stop” until completion or the next check.",
+        "tests/charness_cli/test_task_run_progress_rule.py: `test_a_command_started_after_the_request_is_not_killed_until_it_is_a_window_old` covers a young command after request delivery."
+      ],
+      "action": "Qualify the guide and class docstring: a young command can defer either request delivery or stopping by one check; otherwise, the next empty check after delivery stops the lane."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "R-003: readers could take the progress windows as a hard wall-clock bound.",
+      "bin": "fixed",
+      "disposition": "The spec and release notes call windows nominal and explicitly disclaim a hard wall-clock bound; no closed-form bound is needed."
+    },
+    {
+      "concern": "R-004: the request and stop sequence after a young command was described one check too early.",
+      "bin": "fixed for the reported sequence",
+      "disposition": "The guide now says the request is delivered a check later when the command is young, with stopping after delivery; the separate post-delivery young-command case is captured in R-005."
+    }
+  ],
+  "next_move": "Clarify the additional young-command exception in the guide and class docstring, then repeat the bounded review.",
+  "non_claims": [
+    "Reviewed the 17 identity-bound inline files only; did not inspect workspace paths, run tests, or independently verify live runtime behavior."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "9cfb4a28e5b5f795017e51d16f1b60c71b995564c21c636748b28ca1fe0b9f95",
+  "reviewed_input_identity_sha256": "eb953367bc4f0d2e8e33de1da107876aad36889687a63a2ba85011206afd2734"
+}

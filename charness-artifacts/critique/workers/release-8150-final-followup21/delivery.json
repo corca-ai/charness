@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8150-final-followup21",
+      "scope": "follow-up at 53ee4b116 on release-8150-final-followup20: R-004 the operator guide now says the checkpoint request is delivered a check later if a young command runs, and the next empty check after delivery stops the lane; two words trimmed from the stamping paragraph for the docs budget; no code change",
+      "packet_identity": "9cfb4a28e5b5f795017e51d16f1b60c71b995564c21c636748b28ca1fe0b9f95",
+      "parent_receipt_identity": "parent-f9e7b6790d8f7b32f0a800ae57e70a00d30d282c584cff20",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T16:20:04Z",
+      "history": [
+        {
+          "event_id": "db37671f1e4a46c8b7ad4cfdf60ddf63",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T16:17:50Z",
+          "attempt_id": "release-8150-final-followup21",
+          "scope": "follow-up at 53ee4b116 on release-8150-final-followup20: R-004 the operator guide now says the checkpoint request is delivered a check later if a young command runs, and the next empty check after delivery stops the lane; two words trimmed from the stamping paragraph for the docs budget; no code change",
+          "packet_identity": "9cfb4a28e5b5f795017e51d16f1b60c71b995564c21c636748b28ca1fe0b9f95",
+          "parent_receipt_identity": "parent-f9e7b6790d8f7b32f0a800ae57e70a00d30d282c584cff20",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "df79c212e6934480970df92e663797fe",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T16:17:50Z",
+          "attempt_id": "release-8150-final-followup21",
+          "scope": "follow-up at 53ee4b116 on release-8150-final-followup20: R-004 the operator guide now says the checkpoint request is delivered a check later if a young command runs, and the next empty check after delivery stops the lane; two words trimmed from the stamping paragraph for the docs budget; no code change",
+          "packet_identity": "9cfb4a28e5b5f795017e51d16f1b60c71b995564c21c636748b28ca1fe0b9f95",
+          "parent_receipt_identity": "parent-f9e7b6790d8f7b32f0a800ae57e70a00d30d282c584cff20",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "498e3dbc08ec466a94375a2a65661694",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T16:20:04Z",
+          "attempt_id": "release-8150-final-followup21",
+          "scope": "follow-up at 53ee4b116 on release-8150-final-followup20: R-004 the operator guide now says the checkpoint request is delivered a check later if a young command runs, and the next empty check after delivery stops the lane; two words trimmed from the stamping paragraph for the docs budget; no code change",
+          "packet_identity": "9cfb4a28e5b5f795017e51d16f1b60c71b995564c21c636748b28ca1fe0b9f95",
+          "parent_receipt_identity": "parent-f9e7b6790d8f7b32f0a800ae57e70a00d30d282c584cff20",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "eca05afe6bb187cc7eb0f949a4e69ef58b3712ffaa68a5a9ade9d486c2f99d54"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "eb953367bc4f0d2e8e33de1da107876aad36889687a63a2ba85011206afd2734",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "c6236a1a9903870dbfee29b70763e07f44502051c4f551bc0c280a0b5471f79c",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8150-final-followup21/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8150-final-followup21/receipt.json",
+      "producer_run_id": "run-release-8150-final-followup21",
+      "findings_identity": "eca05afe6bb187cc7eb0f949a4e69ef58b3712ffaa68a5a9ade9d486c2f99d54"
+    }
+  ]
+}

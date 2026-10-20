@@ -1,0 +1,75 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in final pass",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R-001",
+      "severity": "medium",
+      "summary": "The current spec presents pre-change timeout behavior as current.",
+      "evidence": [
+        "Under “Current owners reused,” the spec says `--timeout-seconds` has a 3600-second default and is the only wall clock.",
+        "The later “Wall-clock default” section says the flag has no default, contradicting that statement."
+      ],
+      "action": "Label this section as the pre-change baseline or update it to describe the current behavior."
+    },
+    {
+      "id": "R-002",
+      "severity": "medium",
+      "summary": "The progress-watch docstrings misstate which lanes receive the no-progress rule and retain obsolete timeout framing.",
+      "evidence": [
+        "`task_run_progress.py` describes the module and `LaneProgressWatch` as a no-progress guard for require-change lanes.",
+        "Its class description says the first-edit guard prevents the lane from consuming its “full timeout,” while `build_progress_watch` below says every lane gets the progress rule and only require-change lanes get the first-edit budget."
+      ],
+      "action": "Distinguish the every-lane progress rule from the require-change-only first-edit guard, and remove or qualify the obsolete timeout wording."
+    },
+    {
+      "id": "R-003",
+      "severity": "medium",
+      "summary": "The stated reclamation bounds omit time spent checking the worktree.",
+      "evidence": [
+        "The spec promises a silent model or dead executor is reclaimed within `2W` plus one poll, and a hung command within `3W`.",
+        "`worktree_fingerprint` runs three Git probes sequentially, each with a 60-second timeout, so a due check can take materially longer than one poll."
+      ],
+      "action": "Account for fingerprint-probe time in the bounds or enforce a total check deadline consistent with them."
+    },
+    {
+      "id": "R-004",
+      "severity": "medium",
+      "summary": "Muse progress accounting treats every completed non-Bash tool as progress, broader than the spec’s stated signals.",
+      "evidence": [
+        "`ProgressRule._count_edit_outcome` increments progress for any completed Muse task whose kind starts with `tool.` except `tool.bash`.",
+        "The spec defines executor-event progress as a completed file-change item or a new completed command; the supplied test covers `tool.edit` but not non-mutating tool kinds."
+      ],
+      "action": "Limit Muse progress to the contract’s eligible outcomes, or explicitly define and justify which non-Bash tool completions count."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "F-001: operator guide omitted young-command deferral",
+      "bin": "fixed",
+      "disposition": "The guide now states that a second no-progress stop can be deferred while a young command runs."
+    },
+    {
+      "concern": "F-002: unreadable worktree described as progress",
+      "bin": "fixed",
+      "disposition": "The docstring now treats the unreadable worktree as unknown and says the window check relies on executor events."
+    },
+    {
+      "concern": "Event-capture clock failure is recorded as incomplete even when bytes are retained",
+      "bin": "advisory",
+      "disposition": "The selected tests show this case; the release notes enumerate byte-loss cases but do not say they are the only causes of an incomplete receipt."
+    }
+  ],
+  "next_move": "Correct the stale spec and watch descriptions, align the timing bounds and Muse progress accounting with the contract, then repeat the bounded lock-in review.",
+  "non_claims": [
+    "Reviewed the inline semantic payload for all 17 selected paths once; did not inspect workspace paths or run tests.",
+    "Did not independently verify unrelated release-note claims against their owners.",
+    "Goal evidence lineage (copy exactly):\n{\n  \"binding\": null,\n  \"disposition\": \"not-goal-bound\",\n  \"draft\": null,\n  \"goal_run\": null,\n  \"kind\": \"charness.goal-lineage\",\n  \"reason\": \"critique review was run without a Goal Run Work Item identity\",\n  \"schema_version\": 1,\n  \"work_item\": null\n}"
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "4357be729b6dc2c9511175b55ce3006e3a768fd721bd4b301eb70c5febaf3542",
+  "reviewed_input_identity_sha256": "fd713cd7621d6ed9671b4ccfa260185aa85e03344a00d3b562d3b66f5d589959"
+}

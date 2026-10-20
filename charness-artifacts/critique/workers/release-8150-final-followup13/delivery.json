@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8150-final-followup13",
+      "scope": "follow-up at 669ef1d12 on release-8150-final-followup12 (defer): binds the execution coordinator scripts/task_run/task_run_execution.py, whose _run_executor_invocation records any incomplete StampingPipe capture (including an error from a failed pipe read) as result.event_capture and the loop appends it to execution.event_capture_incomplete; no code change since followup12",
+      "packet_identity": "41c7c77764b878c3cf9b6afda0025d07ef1f4da7e447710ef96556a7a7cf8ffd",
+      "parent_receipt_identity": "parent-cd5aaa3c8e4551b7c60a979eb5c0bdb772531237fc28d96f",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T15:13:57Z",
+      "history": [
+        {
+          "event_id": "782e015c355b45f38243c85e2184fd48",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T15:11:32Z",
+          "attempt_id": "release-8150-final-followup13",
+          "scope": "follow-up at 669ef1d12 on release-8150-final-followup12 (defer): binds the execution coordinator scripts/task_run/task_run_execution.py, whose _run_executor_invocation records any incomplete StampingPipe capture (including an error from a failed pipe read) as result.event_capture and the loop appends it to execution.event_capture_incomplete; no code change since followup12",
+          "packet_identity": "41c7c77764b878c3cf9b6afda0025d07ef1f4da7e447710ef96556a7a7cf8ffd",
+          "parent_receipt_identity": "parent-cd5aaa3c8e4551b7c60a979eb5c0bdb772531237fc28d96f",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "e4e70db96a104efa9eb0b1eea5bf5cad",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T15:11:32Z",
+          "attempt_id": "release-8150-final-followup13",
+          "scope": "follow-up at 669ef1d12 on release-8150-final-followup12 (defer): binds the execution coordinator scripts/task_run/task_run_execution.py, whose _run_executor_invocation records any incomplete StampingPipe capture (including an error from a failed pipe read) as result.event_capture and the loop appends it to execution.event_capture_incomplete; no code change since followup12",
+          "packet_identity": "41c7c77764b878c3cf9b6afda0025d07ef1f4da7e447710ef96556a7a7cf8ffd",
+          "parent_receipt_identity": "parent-cd5aaa3c8e4551b7c60a979eb5c0bdb772531237fc28d96f",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "fa4d65b510e5428d8e6e35b24c7842fd",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T15:13:57Z",
+          "attempt_id": "release-8150-final-followup13",
+          "scope": "follow-up at 669ef1d12 on release-8150-final-followup12 (defer): binds the execution coordinator scripts/task_run/task_run_execution.py, whose _run_executor_invocation records any incomplete StampingPipe capture (including an error from a failed pipe read) as result.event_capture and the loop appends it to execution.event_capture_incomplete; no code change since followup12",
+          "packet_identity": "41c7c77764b878c3cf9b6afda0025d07ef1f4da7e447710ef96556a7a7cf8ffd",
+          "parent_receipt_identity": "parent-cd5aaa3c8e4551b7c60a979eb5c0bdb772531237fc28d96f",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "f98b1d267deb18136e321fb4d284e7113a3d6cc52ca72bb28993b40d54bc713b"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "b1602d2dc4d7d22231b5a60eece6a74c8cdf03c3f814a939a8d203bd79222f40",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "70129ba26ca7425b9bcd0205a50d5ef0d2218cc4aca75f5089bdf37bd3672270",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8150-final-followup13/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8150-final-followup13/receipt.json",
+      "producer_run_id": "run-release-8150-final-followup13",
+      "findings_identity": "f98b1d267deb18136e321fb4d284e7113a3d6cc52ca72bb28993b40d54bc713b"
+    }
+  ]
+}

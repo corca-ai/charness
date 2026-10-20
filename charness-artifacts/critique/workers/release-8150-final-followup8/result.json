@@ -1,0 +1,72 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in follow-up",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R-001",
+      "severity": "high",
+      "summary": "The notes overstate receive-time duration estimates as upper bounds.",
+      "evidence": [
+        "The release notes say pipe buffering makes command and phase durations upper bounds on executor timing.",
+        "StampingPipe timestamps lines when the reader receives them; it has no producer-side timestamps. Variable delay for the start and completion lines can make their receive-time difference either larger or smaller than the actual duration.",
+        "The timing tests supply fixed timestamps and do not verify that measured durations are upper bounds."
+      ],
+      "action": "Revise the claim to say receive-time deltas can understate or overstate producer timing. Do not recommend setting the progress window from them as though they were guaranteed upper bounds."
+    },
+    {
+      "id": "R-002",
+      "severity": "high",
+      "summary": "A short sink write can silently lose event bytes while capture reports complete.",
+      "evidence": [
+        "StampingPipe._emit calls self._sink.write(data) but does not check its returned byte count.",
+        "capture() reports complete unless there is an error, an open writer at close, or dropped_bytes; a short write without an exception sets none of these.",
+        "The release notes promise that event bytes are never silently lost and the supplied pipe test uses BytesIO, which does not exercise short writes."
+      ],
+      "action": "Write until all bytes are accepted or record the unwritten remainder as dropped and the capture as incomplete; add a short-writing sink test."
+    },
+    {
+      "id": "R-003",
+      "severity": "medium",
+      "summary": "A blocked log write can stop pipe draining and block the executor on a full pipe.",
+      "evidence": [
+        "StampingPipe._emit writes and flushes synchronously on the same thread that drains the executor pipe.",
+        "If the sink write or flush stalls, _drain cannot read more bytes; the pipe can fill while the executor is writing.",
+        "The notes claim the reader keeps draining so the executor never blocks on a full pipe, but the supplied tests do not exercise a stalled sink."
+      ],
+      "action": "Qualify the no-blocking guarantee or change the capture path so a stalled sink cannot stop pipe draining, with any resulting loss recorded as incomplete."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "B1: a zero window disables loop checks as well as window checks.",
+      "bin": "verified",
+      "disposition": "The on_event guard returns before counting outcomes or feeding the timeline when window_seconds <= 0; the zero-window test checks both on_tick and repeated loop-family events."
+    },
+    {
+      "concern": "B2: a resumed Codex session that reuses an item id starts a separate command in --commands timing.",
+      "bin": "verified",
+      "disposition": "A repeated start allocates a new command key and updates the item-id mapping; the test verifies two starts, separate family counts, and only the resumed command's duration."
+    },
+    {
+      "concern": "A6: read-only Codex reviewers use read-only mode and drop the lane network config pair.",
+      "bin": "verified",
+      "disposition": "read_only_codex changes the sandbox value and removes only the exact lane network -c pair. The supplied self-review and brief-critique tests exercise the resulting command."
+    },
+    {
+      "concern": "Other release-note claims outside these findings.",
+      "bin": "no additional actionable overclaim found",
+      "disposition": "The notes disclose that release tests check passed flags rather than an actual bind or fetch, and scope the debug-name collision and fallback caveats."
+    }
+  ],
+  "next_move": "Correct the timing-bound claim and close or qualify the sink-write capture guarantees, then review the updated bound inputs.",
+  "non_claims": [
+    "Reviewed all ten identity-bound inline payloads, including the complete release notes once; did not inspect workspace paths or execute tests.",
+    "Goal evidence lineage (copy exactly):\n{\n  \"binding\": null,\n  \"disposition\": \"not-goal-bound\",\n  \"draft\": null,\n  \"goal_run\": null,\n  \"kind\": \"charness.goal-lineage\",\n  \"reason\": \"critique review was run without a Goal Run Work Item identity\",\n  \"schema_version\": 1,\n  \"work_item\": null\n}"
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "95f764b5f3aab0e6d181e67aea4bf9f6338688727292d0122326f99c97d889de",
+  "reviewed_input_identity_sha256": "0b004800af56eccbafa16da5bf3dfd897f698580154d1955dcfec7819df01cd1"
+}

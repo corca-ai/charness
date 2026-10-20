@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8150-final-followup19",
+      "scope": "follow-up at 026be86a8 on release-8150-final-followup18: R-003 the spec now states windows are nominal and gives no hard wall-clock bound, only the count of due checks (a tick, including probes and the live snapshot, delays the next); R-004 notes, docs and docstring describe the deferral as one more check; no code change",
+      "packet_identity": "863b4ddfa8e80a0a9ae82df8194558892c3e9a65108fe0be3eaf32811a4e4bdb",
+      "parent_receipt_identity": "parent-ca1bd4037cb04f9a56310d4e7038e34c40f68e9b3b63a71d",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T16:08:09Z",
+      "history": [
+        {
+          "event_id": "4ac3c214712349c3826e62dbcbe62355",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T16:07:21Z",
+          "attempt_id": "release-8150-final-followup19",
+          "scope": "follow-up at 026be86a8 on release-8150-final-followup18: R-003 the spec now states windows are nominal and gives no hard wall-clock bound, only the count of due checks (a tick, including probes and the live snapshot, delays the next); R-004 notes, docs and docstring describe the deferral as one more check; no code change",
+          "packet_identity": "863b4ddfa8e80a0a9ae82df8194558892c3e9a65108fe0be3eaf32811a4e4bdb",
+          "parent_receipt_identity": "parent-ca1bd4037cb04f9a56310d4e7038e34c40f68e9b3b63a71d",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "19b63db57649420fab35407bbdc3e23e",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T16:07:21Z",
+          "attempt_id": "release-8150-final-followup19",
+          "scope": "follow-up at 026be86a8 on release-8150-final-followup18: R-003 the spec now states windows are nominal and gives no hard wall-clock bound, only the count of due checks (a tick, including probes and the live snapshot, delays the next); R-004 notes, docs and docstring describe the deferral as one more check; no code change",
+          "packet_identity": "863b4ddfa8e80a0a9ae82df8194558892c3e9a65108fe0be3eaf32811a4e4bdb",
+          "parent_receipt_identity": "parent-ca1bd4037cb04f9a56310d4e7038e34c40f68e9b3b63a71d",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "2ad03a8ad17e4c8bacd53be6d0d5c0e3",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T16:08:09Z",
+          "attempt_id": "release-8150-final-followup19",
+          "scope": "follow-up at 026be86a8 on release-8150-final-followup18: R-003 the spec now states windows are nominal and gives no hard wall-clock bound, only the count of due checks (a tick, including probes and the live snapshot, delays the next); R-004 notes, docs and docstring describe the deferral as one more check; no code change",
+          "packet_identity": "863b4ddfa8e80a0a9ae82df8194558892c3e9a65108fe0be3eaf32811a4e4bdb",
+          "parent_receipt_identity": "parent-ca1bd4037cb04f9a56310d4e7038e34c40f68e9b3b63a71d",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "0e791cefd392c0a959df3e8dbbacf4a006ca569b8233759731a5b04e079b8dd0"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "cae5e9eb39725266b3927c8917a68f08041a5b41d8ef1a0b0b502bd69b061162",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "5582fdd14ff3150d7042fb5e0584002207b98eb6ad2f9c0a65329ec87e781e2e",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8150-final-followup19/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8150-final-followup19/receipt.json",
+      "producer_run_id": "run-release-8150-final-followup19",
+      "findings_identity": "0e791cefd392c0a959df3e8dbbacf4a006ca569b8233759731a5b04e079b8dd0"
+    }
+  ]
+}

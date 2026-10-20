@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8150-final-followup18",
+      "scope": "follow-up at 7c94beb53 on release-8150-final-followup17: R-003 the spec no longer gives closed-form worst-case seconds; it counts reclamation in due checks (second for a silent lane, third for a hung command) and states that each check can run up to one poll plus the previous check probe time late; no code change",
+      "packet_identity": "cbf54ce41ed9440b634946ee3cabbc789a518e39369efd6c83c9ab0470c872fb",
+      "parent_receipt_identity": "parent-e54ac3293c4b77d1e1118f7437dc29c028f089d25c381e64",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T16:00:06Z",
+      "history": [
+        {
+          "event_id": "31933c977f6a42799e867a49562a0940",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T15:57:44Z",
+          "attempt_id": "release-8150-final-followup18",
+          "scope": "follow-up at 7c94beb53 on release-8150-final-followup17: R-003 the spec no longer gives closed-form worst-case seconds; it counts reclamation in due checks (second for a silent lane, third for a hung command) and states that each check can run up to one poll plus the previous check probe time late; no code change",
+          "packet_identity": "cbf54ce41ed9440b634946ee3cabbc789a518e39369efd6c83c9ab0470c872fb",
+          "parent_receipt_identity": "parent-e54ac3293c4b77d1e1118f7437dc29c028f089d25c381e64",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "ae907e808e7d42fc9e97b0e173e68453",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T15:57:44Z",
+          "attempt_id": "release-8150-final-followup18",
+          "scope": "follow-up at 7c94beb53 on release-8150-final-followup17: R-003 the spec no longer gives closed-form worst-case seconds; it counts reclamation in due checks (second for a silent lane, third for a hung command) and states that each check can run up to one poll plus the previous check probe time late; no code change",
+          "packet_identity": "cbf54ce41ed9440b634946ee3cabbc789a518e39369efd6c83c9ab0470c872fb",
+          "parent_receipt_identity": "parent-e54ac3293c4b77d1e1118f7437dc29c028f089d25c381e64",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "f6664eff28dd4ce58d9ca357fee1d099",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T16:00:06Z",
+          "attempt_id": "release-8150-final-followup18",
+          "scope": "follow-up at 7c94beb53 on release-8150-final-followup17: R-003 the spec no longer gives closed-form worst-case seconds; it counts reclamation in due checks (second for a silent lane, third for a hung command) and states that each check can run up to one poll plus the previous check probe time late; no code change",
+          "packet_identity": "cbf54ce41ed9440b634946ee3cabbc789a518e39369efd6c83c9ab0470c872fb",
+          "parent_receipt_identity": "parent-e54ac3293c4b77d1e1118f7437dc29c028f089d25c381e64",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "59f400f51a22ff87ea096499b90cd482bd89799762e43fd2ab26d146c5bd7e20"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "3b20ea4dab866e1151efa0b033095bf3abbe69161ebf8dcbea62c0e10f09bed4",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "cb45013f2d16be3edd5f3f7c0eeb62ddd893a3df15be45aa9a05291d8db4c8f0",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8150-final-followup18/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8150-final-followup18/receipt.json",
+      "producer_run_id": "run-release-8150-final-followup18",
+      "findings_identity": "59f400f51a22ff87ea096499b90cd482bd89799762e43fd2ab26d146c5bd7e20"
+    }
+  ]
+}

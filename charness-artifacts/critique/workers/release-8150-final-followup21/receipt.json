@@ -1,0 +1,82 @@
+{
+  "attempt_id": "release-8150-final-followup21",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/release-8150-final-followup21/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-10-20T16:20:04Z",
+  "model_application_state": "unverified-by-provider",
+  "output_file": "charness-artifacts/critique/workers/release-8150-final-followup21/result.json",
+  "output_fresh": true,
+  "output_sha256": "eca05afe6bb187cc7eb0f949a4e69ef58b3712ffaa68a5a9ade9d486c2f99d54",
+  "output_size": 2688,
+  "packet_identity": "9cfb4a28e5b5f795017e51d16f1b60c71b995564c21c636748b28ca1fe0b9f95",
+  "parent_receipt_identity": "parent-f9e7b6790d8f7b32f0a800ae57e70a00d30d282c584cff20",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/release-8150-final-followup21/review-prompt.md",
+  "prompt_sha256": "c6236a1a9903870dbfee29b70763e07f44502051c4f551bc0c280a0b5471f79c",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "requested_model": "gpt-6-luna",
+  "requested_reasoning_effort": "xhigh",
+  "reviewed_input_identity": "eb953367bc4f0d2e8e33de1da107876aad36889687a63a2ba85011206afd2734",
+  "reviewer_tier": "high-leverage",
+  "run_id": "run-release-8150-final-followup21",
+  "schema_file": "charness-artifacts/critique/workers/release-8150-final-followup21/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "follow-up at 53ee4b116 on release-8150-final-followup20: R-004 the operator guide now says the checkpoint request is delivered a check later if a young command runs, and the next empty check after delivery stops the lane; two words trimmed from the stamping paragraph for the docs budget; no code change",
+  "started_at": "2026-10-20T16:17:50Z",
+  "status": "succeeded",
+  "stderr_file": "charness-artifacts/critique/workers/release-8150-final-followup21/backend.stderr",
+  "stdout_file": "charness-artifacts/critique/workers/release-8150-final-followup21/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "unsupported_reviewer_fields": [
+    "service_tier=priority",
+    "fork_turns=none"
+  ],
+  "workspace": "/home/hwidong/codes/charness"
+}

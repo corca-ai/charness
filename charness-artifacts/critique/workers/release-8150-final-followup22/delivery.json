@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8150-final-followup22",
+      "scope": "follow-up at 51cf7f6e5 on release-8150-final-followup21: R-005 the operator guide and the ProgressRule docstring now say a young command can delay request delivery or the stop by a check; no code change",
+      "packet_identity": "da15314d94891442d7035b4efe28d6dedb622088358074887d0a56eaa53d0d30",
+      "parent_receipt_identity": "parent-717e8a967ac547a5dec3d99e6830c2cd2b87c93c049e188c",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T16:21:51Z",
+      "history": [
+        {
+          "event_id": "b21fedb48a634757b247c62f474d88f1",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T16:20:23Z",
+          "attempt_id": "release-8150-final-followup22",
+          "scope": "follow-up at 51cf7f6e5 on release-8150-final-followup21: R-005 the operator guide and the ProgressRule docstring now say a young command can delay request delivery or the stop by a check; no code change",
+          "packet_identity": "da15314d94891442d7035b4efe28d6dedb622088358074887d0a56eaa53d0d30",
+          "parent_receipt_identity": "parent-717e8a967ac547a5dec3d99e6830c2cd2b87c93c049e188c",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "0ba9fba73dcf4bdeb16b3bbbeea9d5c2",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T16:20:23Z",
+          "attempt_id": "release-8150-final-followup22",
+          "scope": "follow-up at 51cf7f6e5 on release-8150-final-followup21: R-005 the operator guide and the ProgressRule docstring now say a young command can delay request delivery or the stop by a check; no code change",
+          "packet_identity": "da15314d94891442d7035b4efe28d6dedb622088358074887d0a56eaa53d0d30",
+          "parent_receipt_identity": "parent-717e8a967ac547a5dec3d99e6830c2cd2b87c93c049e188c",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "26a4efe636244d1ab293719540652292",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T16:21:51Z",
+          "attempt_id": "release-8150-final-followup22",
+          "scope": "follow-up at 51cf7f6e5 on release-8150-final-followup21: R-005 the operator guide and the ProgressRule docstring now say a young command can delay request delivery or the stop by a check; no code change",
+          "packet_identity": "da15314d94891442d7035b4efe28d6dedb622088358074887d0a56eaa53d0d30",
+          "parent_receipt_identity": "parent-717e8a967ac547a5dec3d99e6830c2cd2b87c93c049e188c",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "e05204d2ad6f041d0ea41cd504682b16dfbf46ca6f51e128fa437d29410dc3c6"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "d07e49295279da50a8e6c39f33bb8d3ad4c0d58be4135e576008627cfc7b3e8b",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "e88d957ca367df37855955d74e67fa105e693013225bfcaba41784c78e07af93",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8150-final-followup22/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8150-final-followup22/receipt.json",
+      "producer_run_id": "run-release-8150-final-followup22",
+      "findings_identity": "e05204d2ad6f041d0ea41cd504682b16dfbf46ca6f51e128fa437d29410dc3c6"
+    }
+  ]
+}

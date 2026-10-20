@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8150-final-followup10",
+      "scope": "follow-up at 1d331d041 on release-8150-final-followup9: R-003 the StampingPipe class contract now states the hung-sink limits; R-004 family starts are labelled command-pattern matches in notes and docs; code behavior unchanged",
+      "packet_identity": "6597416685c082096137da234af6e9a6ea9c31e06db6a47f99d80cfd85068f14",
+      "parent_receipt_identity": "parent-ec3f5bf9904ec3ccfbcfe50d7dabd49313dd70b43dc4144b",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T14:48:39Z",
+      "history": [
+        {
+          "event_id": "4ddda2581d774653ad6db262b17355c5",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T14:47:06Z",
+          "attempt_id": "release-8150-final-followup10",
+          "scope": "follow-up at 1d331d041 on release-8150-final-followup9: R-003 the StampingPipe class contract now states the hung-sink limits; R-004 family starts are labelled command-pattern matches in notes and docs; code behavior unchanged",
+          "packet_identity": "6597416685c082096137da234af6e9a6ea9c31e06db6a47f99d80cfd85068f14",
+          "parent_receipt_identity": "parent-ec3f5bf9904ec3ccfbcfe50d7dabd49313dd70b43dc4144b",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "be8d74e02a4c44f0a6f7509a045a0b1c",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T14:47:06Z",
+          "attempt_id": "release-8150-final-followup10",
+          "scope": "follow-up at 1d331d041 on release-8150-final-followup9: R-003 the StampingPipe class contract now states the hung-sink limits; R-004 family starts are labelled command-pattern matches in notes and docs; code behavior unchanged",
+          "packet_identity": "6597416685c082096137da234af6e9a6ea9c31e06db6a47f99d80cfd85068f14",
+          "parent_receipt_identity": "parent-ec3f5bf9904ec3ccfbcfe50d7dabd49313dd70b43dc4144b",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "55b0f927de6c410f964935f14451aee2",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T14:48:39Z",
+          "attempt_id": "release-8150-final-followup10",
+          "scope": "follow-up at 1d331d041 on release-8150-final-followup9: R-003 the StampingPipe class contract now states the hung-sink limits; R-004 family starts are labelled command-pattern matches in notes and docs; code behavior unchanged",
+          "packet_identity": "6597416685c082096137da234af6e9a6ea9c31e06db6a47f99d80cfd85068f14",
+          "parent_receipt_identity": "parent-ec3f5bf9904ec3ccfbcfe50d7dabd49313dd70b43dc4144b",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "628e04d218d2836e1668d141b28161bf2d96e831c6a08020955b5760c80e7bf6"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "10e6069185666948fe5fb2346222c3e3b207bbf70a2fe027f551da277e019c5c",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "81f69a3aa521be4121890a12138a3e9ed6a9f94787b257faadc09ea441770517",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8150-final-followup10/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8150-final-followup10/receipt.json",
+      "producer_run_id": "run-release-8150-final-followup10",
+      "findings_identity": "628e04d218d2836e1668d141b28161bf2d96e831c6a08020955b5760c80e7bf6"
+    }
+  ]
+}

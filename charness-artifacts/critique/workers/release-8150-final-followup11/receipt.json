@@ -1,0 +1,82 @@
+{
+  "attempt_id": "release-8150-final-followup11",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/release-8150-final-followup11/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-10-20T14:58:04Z",
+  "model_application_state": "unverified-by-provider",
+  "output_file": "charness-artifacts/critique/workers/release-8150-final-followup11/result.json",
+  "output_fresh": true,
+  "output_sha256": "67335db00708abc8d21a5e2b8b2a8391deecd1206628614e363e6fa0e5b3f03c",
+  "output_size": 4090,
+  "packet_identity": "9bdfa870efe1e8ea8639ca1aec56b4bc2e5bc649f292d846ff644c77f4b0d8af",
+  "parent_receipt_identity": "parent-e589e49d6a86c94d3e24dcb054fbb058e0b710eaeb05a661",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/release-8150-final-followup11/review-prompt.md",
+  "prompt_sha256": "a5987a98e4ba2bbde89c3cda6628ec2db3e08bf9e97821e7b12475e65e6e11a2",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "requested_model": "gpt-6-luna",
+  "requested_reasoning_effort": "xhigh",
+  "reviewed_input_identity": "453d671b99573ee6257facc9654b534ff5950177b7747b2e1796f01786098a47",
+  "reviewer_tier": "high-leverage",
+  "run_id": "run-release-8150-final-followup11",
+  "schema_file": "charness-artifacts/critique/workers/release-8150-final-followup11/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "follow-up at bc63496ef on release-8150-final-followup10: R-003 the StampingPipe contract and the notes now state the byte guarantee only outside the listed loss cases, and list a hung log write as a loss case recorded in execution.event_capture_incomplete; code behavior unchanged",
+  "started_at": "2026-10-20T14:55:40Z",
+  "status": "succeeded",
+  "stderr_file": "charness-artifacts/critique/workers/release-8150-final-followup11/backend.stderr",
+  "stdout_file": "charness-artifacts/critique/workers/release-8150-final-followup11/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "unsupported_reviewer_fields": [
+    "service_tier=priority",
+    "fork_turns=none"
+  ],
+  "workspace": "/home/hwidong/codes/charness"
+}

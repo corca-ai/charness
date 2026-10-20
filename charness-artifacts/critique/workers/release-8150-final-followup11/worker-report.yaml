@@ -1,0 +1,73 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'follow-up at bc63496ef on release-8150-final-followup10: R-003 the StampingPipe
+  contract and the notes now state the byte guarantee only outside the listed loss
+  cases, and list a hung log write as a loss case recorded in execution.event_capture_incomplete;
+  code behavior unchanged'
+attempt_id: release-8150-final-followup11
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: a5987a98e4ba2bbde89c3cda6628ec2db3e08bf9e97821e7b12475e65e6e11a2
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: charness-artifacts/critique/workers/release-8150-final-followup11/receipt.json
+ledger_path: charness-artifacts/critique/workers/release-8150-final-followup11/delivery.json
+producer_run_id: run-release-8150-final-followup11
+producer_binding:
+  output_file: charness-artifacts/critique/workers/release-8150-final-followup11/result.json
+  receipt_file: charness-artifacts/critique/workers/release-8150-final-followup11/receipt.json
+  producer_run_id: run-release-8150-final-followup11
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: 67335db00708abc8d21a5e2b8b2a8391deecd1206628614e363e6fa0e5b3f03c
+receipt_output_sha256: 67335db00708abc8d21a5e2b8b2a8391deecd1206628614e363e6fa0e5b3f03c
+packet_identity: 9bdfa870efe1e8ea8639ca1aec56b4bc2e5bc649f292d846ff644c77f4b0d8af
+reviewed_input_identity: 453d671b99573ee6257facc9654b534ff5950177b7747b2e1796f01786098a47
+parent_receipt_identity: parent-e589e49d6a86c94d3e24dcb054fbb058e0b710eaeb05a661
+provenance:
+  scope: 'follow-up at bc63496ef on release-8150-final-followup10: R-003 the StampingPipe
+    contract and the notes now state the byte guarantee only outside the listed loss
+    cases, and list a hung log write as a loss case recorded in execution.event_capture_incomplete;
+    code behavior unchanged'
+  packet_identity: 9bdfa870efe1e8ea8639ca1aec56b4bc2e5bc649f292d846ff644c77f4b0d8af
+  reviewed_input_identity: 453d671b99573ee6257facc9654b534ff5950177b7747b2e1796f01786098a47
+  parent_receipt_identity: parent-e589e49d6a86c94d3e24dcb054fbb058e0b710eaeb05a661
+  expected_targets_sha256: null
+  attempt_id: release-8150-final-followup11
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: a5987a98e4ba2bbde89c3cda6628ec2db3e08bf9e97821e7b12475e65e6e11a2
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

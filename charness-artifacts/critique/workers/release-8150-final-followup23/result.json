@@ -1,0 +1,27 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in final pass",
+  "verdict": "pass",
+  "target_observations": null,
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "R-003 and R-004: timing claims could imply a hard wall-clock bound",
+      "bin": "resolved",
+      "disposition": "The spec says windows are nominal, gives no hard wall-clock bound, and qualifies the 2W/3W figures as approximate."
+    },
+    {
+      "concern": "R-006: a loop-triggered action could kill another running command",
+      "bin": "resolved",
+      "disposition": "The spec says the action does not wait for other running commands and names possible interruption and partial effects; the release notes repeat that qualification."
+    }
+  ],
+  "next_move": "Proceed with release lock-in.",
+  "non_claims": [
+    "Reviewed the 17 identity-bound inline paths only; did not inspect other workspace paths, run tests, or verify live executor behavior."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "a381d1c261744de0d0ed276ad0dcbab89065fefa3e488d80583169589fb841d5",
+  "reviewed_input_identity_sha256": "aa7ffed8edf2ad9a8774903dff9268f532eec86b295c42931b594ea555ee576c"
+}

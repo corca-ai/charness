@@ -1,0 +1,82 @@
+{
+  "attempt_id": "release-8150-final-followup12",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/release-8150-final-followup12/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-10-20T15:04:42Z",
+  "model_application_state": "unverified-by-provider",
+  "output_file": "charness-artifacts/critique/workers/release-8150-final-followup12/result.json",
+  "output_fresh": true,
+  "output_sha256": "075e3c81a3100568311e47401b902a229886c8c3ca90eda71023e2a9da70a6d6",
+  "output_size": 3173,
+  "packet_identity": "d977a7a947c9dcca84064d4cdd48f332d275157fb165ea67effd85227a5adcd1",
+  "parent_receipt_identity": "parent-924c3fdb85ad3f3e74ac7a90468675fbc6f060d4a51b5d01",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/release-8150-final-followup12/review-prompt.md",
+  "prompt_sha256": "37b17c1eb003c8f88f36d1dbb7d6edd5857cabdd31b9a59c1aca17cb01116286",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "requested_model": "gpt-6-luna",
+  "requested_reasoning_effort": "xhigh",
+  "reviewed_input_identity": "594380a5462a3f5fffa4bf243e26e1bbf4314f1f3f5ef0597e1abd60f1fedb84",
+  "reviewer_tier": "high-leverage",
+  "run_id": "run-release-8150-final-followup12",
+  "schema_file": "charness-artifacts/critique/workers/release-8150-final-followup12/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "follow-up at 669ef1d12 on release-8150-final-followup11: R-003 a failed pipe read is now a listed loss case (notes and class contract); R-005 the notes say a command started since the previous check defers the request and the stop by one window; family counts called approximate; code behavior unchanged",
+  "started_at": "2026-10-20T15:03:12Z",
+  "status": "succeeded",
+  "stderr_file": "charness-artifacts/critique/workers/release-8150-final-followup12/backend.stderr",
+  "stdout_file": "charness-artifacts/critique/workers/release-8150-final-followup12/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "unsupported_reviewer_fields": [
+    "service_tier=priority",
+    "fork_turns=none"
+  ],
+  "workspace": "/home/hwidong/codes/charness"
+}

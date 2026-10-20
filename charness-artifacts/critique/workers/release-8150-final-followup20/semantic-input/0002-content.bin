@@ -1,0 +1,144 @@
+# Agent task runs
+
+> Status: current
+> Source of truth: this page and the `charness task run/status` implementation
+> Last verified: 2026-10-17
+
+`charness task run` executes one bounded lane; `task status` reads its external
+result store. There is no scheduler lifecycle. `--executor` defaults to
+`codex` (`gpt-6-luna`, effort medium/xhigh/max); `muse` uses its default model
+and effort medium/high/xhigh/max.
+
+The receipt's canonical executor block is `payload["executor"]`. Codex keeps
+legacy aliases and log names; Muse records its trusted lane worktree as the
+workspace because its runner has one effective workspace, not Codex's
+`--add-dir` grants. Readers should branch on `executor.kind`. Executor names
+the agent runner (`codex`/`muse`); carrier names where the candidate lives
+(`carrier_kind`: `commit-only`, `commit-plus-dirty`, `worktree-only`,
+`unknown`), not who ran it.
+
+`--require-change` shapes implementation prompts and records edit/test phases. A scope mismatch retains a typed blocker rather than silently selecting a substitute owner.
+
+The [progress rule](../charness-artifacts/spec/lane-progress-rule.md) bounds a lane: a `CHARNESS_TASK_RUN_PROGRESS_WINDOW_SECONDS` window (default 1200) without commits, edits, or new command results brings a checkpoint request (held a check while a young command runs); the next empty check stops it. `--timeout-seconds` is optional.
+
+`--report-only` inspects without changing and never reports a writer conflict.
+Interrupted work with a proven empty scope is `interrupted-before-edit`; WIP is
+reserved for changed work whose completeness is unknown. A useful dirty
+candidate can be retained for review even when blockers deny approval.
+
+Terminal receipts carry `result_kind` and a stable blocker. The CLI exit-code
+mapping is owned by `charness task run --help`.
+Transient stream stalls retry in the same worktree (three attempts by default,
+30-second backoff), recording each failure kind. Finished-but-unapprovable
+work needs review, merge, or re-scope; it does not need relaunch. Scope closure
+stays warning-only (#831), a typed scope mismatch records a
+`scope_extension_request`, and refresh excludes lane-created directories.
+Secret-pattern environment names are scrubbed except
+executor auth keeps and `CHARNESS_TASK_RUN_KEEP_SECRET_ENV`; the receipt records
+names, never values.
+
+## Learning and resumed orchestration
+
+Task-run friction events use WI-1 event-schema v1 and live in
+`task-run/friction-log.jsonl` under the external task runtime root. A second
+same-kind event from a distinct task run within 30 days carries
+`repair the pattern, don't reshape the command`; nothing repairs it
+automatically. Writer
+conflicts are recorded for operator resolution.
+
+`charness task report [--window 30m]` renders the fixed-shape period report
+from lane metrics, the friction log, and the decision ledger: goals, lane
+states, friction with repairs, measured improvements with the period
+`improvements found:` line, decisions plus what needs the operator, and the
+next-action table. Every section carries measured numbers, not prose claims.
+
+Keep the active principles, DAG file, and handoff in the parent repo's
+`.charness/task-run/orchestration-pointers.md`; every newly built lane prompt
+reads it when nonempty, so a resumed orchestrator restores those pointers at
+its next launch (the builder does not detect host compaction).
+
+## Run
+
+```bash
+charness task run \
+  --repo-root . \
+  --lane feature-lane \
+  --scope src/example.py \
+  --prompt "Implement the requested slice and run its focused tests" \
+  --effort xhigh
+```
+
+A clean parent is required. Model/effort identity, scope expansion, candidate
+carrier, `changed_line_gate`, and retention live in
+[`task_run_contract.py`](../scripts/task_run/task_run_contract.py),
+[`task_run_scope.py`](../scripts/task_run/task_run_scope.py),
+[`task_run_git.py`](../scripts/task_run/task_run_git.py),
+[`task_run_changed_line.py`](../scripts/task_run/task_run_changed_line.py),
+[`task_run_completion.py`](../scripts/task_run/task_run_completion.py),
+[`task_run_retention.py`](../scripts/task_run/task_run_retention.py), and
+[`runtime_root_retention.py`](../scripts/gates_support/runtime_root_retention.py).
+Do not recopy receipt fields here; `--help` is the typed surface. `--scope`
+repeats; `--skip-prepare` and `--allow-no-change` are diagnostic opt-outs;
+`--path` and `--branch` are for exceptional host setup; `--base` also
+overrides the lane HEAD base in shorthand.
+
+The parent reads the receipt before integrating. A lane is done only when
+`changed_line_gate` is `clean` or `noop`. Useful dirty work is committed before
+proof; completion re-observes after the gate and denies approval for dirt, read
+failure, or changed identity. Retention releases a finished worktree only when
+the lane-branch commit carries the whole candidate (`commit-only`, clean tree)
+with a `clean`/`noop` changed-line proof — even when other blockers deny
+approval. Anything else (dirty tree, missing proof, persistence or observation
+failure) keeps `keep_worktree` true. That flag is a newest-N hold, not a pin:
+the sweep keeps the newest 10 kept worktrees per key with their `runtime/` dirs
+and removes older ones only after verified salvage; `result.json` and logs
+always stay. Writes block only when committed or dirty parent paths intersect actual
+candidate paths; missing candidate evidence refuses completion. Declared
+scope is advisory.
+
+## Detach and wait
+
+```bash
+charness task run --repo-root . --lane x --detach
+charness task wait --repo-root . <task-id>... [--any]
+```
+
+`--detach` returns once the carrier has started (exit 0 with the task id
+and result path) or with the launch failure's exit code; `--dry-run` reports
+the scope refusal with the launch's own code instead of launching. `task
+wait` blocks until the named lanes end and exits with the finished lane's
+code, so a host background job's notification carries the verdict.
+`--rules-file` names standing material by absolute path (never inlined,
+never scope evidence); `--grant-writable` grants a codex lane one
+host-state directory (refused for muse, the repo root, `$HOME`, and `/`).
+
+## Status
+
+```bash
+charness task status --repo-root .
+charness task status --repo-root . <task-id>
+```
+
+Status reads the external result store. Each record adds read-time `liveness`
+(`runner_pid` and advisory `alive`); a dead pid on a `running` record is stale,
+while a live pid on a terminal record is normal during retention.
+
+Each JSON line of `<executor>.events.log` gains `charness_received_at` (UTC
+pipe receive time); `task status <task-id> --commands` reports command
+durations (receive-time estimates), family starts (pattern matches), and phase times
+([owner](../scripts/task_run/task_run_event_timing.py)). Event bytes lost at
+close land in `execution.event_capture_incomplete`.
+
+### Aggregate running-task inventory
+
+`charness task status --repo-root <parent> --all-repos` returns the running count across immediate sibling keys in the caller's managed runtime tree, without task-ID prefix filtering or recursive scans. The [runtime owner](../scripts/runtime_bootstrap.py) and [retention owner](../scripts/gates_support/runtime_root_retention.py) derive that boundary. A standalone runtime root reports its narrower scope; neither claims whole-machine coverage.
+
+Only canonical `task-run/*/result.json` records count. Live running records count as running, dead running records as stale, and known terminal states as terminal even while their runner finishes retention. Unknown status, unreadable or malformed storage, and unconfirmed liveness make completeness partial. Status never repairs records. An admission caller must consume both `completeness` and `running_count`; successful query execution is not admission approval.
+
+Complete schema-bearing JSON/YAML delivery is exposed as `result_delivery.structured`;
+review-lifecycle input is also projected as `reviewer_lifecycle`. Bounded review
+JSON stays reusable as `reviewer_result`, including partial, deferred, blocked,
+timed-out, or failed runs, but is not approval until a consumer rebinds its
+packet, input identity, and task receipt. Malformed review JSON is retained as
+partial-schema for retry; prose is not applicable. Terminal records and bounded
+logs remain available in the external result store.

@@ -1,0 +1,49 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in final pass",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R-006",
+      "severity": "medium",
+      "summary": "The spec says a loop message at command completion loses only model reasoning because “no command is in flight.” The implementation does not establish that invariant: another command may still be running, and the completion-triggered action kills the executor process group. A consumer could underestimate interruption and partial-effect risk.",
+      "evidence": [
+        "Spec: “At a command completion (loop messages), no command is in flight, so only the model's in-progress reasoning is lost.”",
+        "`_Timeline.in_flight()` tracks all started, unfinished commands; `_on_complete()` schedules loop actions without checking that the other commands have finished.",
+        "`LaneProgressWatch.observe_event()` applies the action, whose kill callback stops the process group. The release notes also say a loop message does not wait for a running command."
+      ],
+      "action": "Qualify the spec to account for another command still running and possible partial effects, or establish serial command execution before claiming only reasoning is lost."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "R-003 timing claim",
+      "bin": "fixed",
+      "disposition": "The spec now calls windows nominal, disclaims a hard wall-clock bound, and gives only due-check counts; no closed-form bound is needed."
+    },
+    {
+      "concern": "R-004 request-delivery and stop sequence",
+      "bin": "fixed",
+      "disposition": "The guide describes request delivery followed by a later empty check stopping the lane, with a young-command delay."
+    },
+    {
+      "concern": "R-005 young-command exception in guide and ProgressRule docstring",
+      "bin": "fixed",
+      "disposition": "Both now state that a young command can delay either request delivery or stopping by a check."
+    },
+    {
+      "concern": "Progress rule can be disabled with a zero window",
+      "bin": "advisory",
+      "disposition": "The release notes and spec state the zero-value opt-out; the guide's short summary does not create a material consumer error in this review."
+    }
+  ],
+  "next_move": "Resolve R-006 before release lock-in; R-003 and R-004 are fixed in the reviewed input.",
+  "non_claims": [
+    "Reviewed the 17 identity-bound inline files only; did not inspect workspace paths, run tests, or verify live executor behavior."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "da15314d94891442d7035b4efe28d6dedb622088358074887d0a56eaa53d0d30",
+  "reviewed_input_identity_sha256": "d07e49295279da50a8e6c39f33bb8d3ad4c0d58be4135e576008627cfc7b3e8b"
+}

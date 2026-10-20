@@ -1,0 +1,73 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'follow-up at 521bcac02 on release-8150-final-followup8: R-002 a short sink
+  write is now recorded as lost bytes and incomplete capture (with a test); R-001
+  notes and docs call durations estimates that can err in either direction; R-003
+  notes say a hung log write can still stall the pipe'
+attempt_id: release-8150-final-followup9
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 18064a9ee8fef8919d415461755a20f8239693470017a8cc824576adf852ea77
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: charness-artifacts/critique/workers/release-8150-final-followup9/receipt.json
+ledger_path: charness-artifacts/critique/workers/release-8150-final-followup9/delivery.json
+producer_run_id: run-release-8150-final-followup9
+producer_binding:
+  output_file: charness-artifacts/critique/workers/release-8150-final-followup9/result.json
+  receipt_file: charness-artifacts/critique/workers/release-8150-final-followup9/receipt.json
+  producer_run_id: run-release-8150-final-followup9
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: 6caf8d7ace696ad8928ef9690a499342cbb5e8a528f252af83ec1e0cae27d0bf
+receipt_output_sha256: 6caf8d7ace696ad8928ef9690a499342cbb5e8a528f252af83ec1e0cae27d0bf
+packet_identity: d9db86c4915fba1f0ad3e1175c8365c328f8cc0ad82a566a9a99c21af9650e8f
+reviewed_input_identity: 02b193cd9c2469bff839c77392743e4ae0ef51c03781e7e14241e9a8c0df1086
+parent_receipt_identity: parent-f637a5ce37c9e324c98211cb1c3e42392333faaa3ab58d1c
+provenance:
+  scope: 'follow-up at 521bcac02 on release-8150-final-followup8: R-002 a short sink
+    write is now recorded as lost bytes and incomplete capture (with a test); R-001
+    notes and docs call durations estimates that can err in either direction; R-003
+    notes say a hung log write can still stall the pipe'
+  packet_identity: d9db86c4915fba1f0ad3e1175c8365c328f8cc0ad82a566a9a99c21af9650e8f
+  reviewed_input_identity: 02b193cd9c2469bff839c77392743e4ae0ef51c03781e7e14241e9a8c0df1086
+  parent_receipt_identity: parent-f637a5ce37c9e324c98211cb1c3e42392333faaa3ab58d1c
+  expected_targets_sha256: null
+  attempt_id: release-8150-final-followup9
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 18064a9ee8fef8919d415461755a20f8239693470017a8cc824576adf852ea77
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

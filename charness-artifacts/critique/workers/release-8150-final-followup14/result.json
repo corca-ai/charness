@@ -1,0 +1,60 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in follow-up",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "F-001",
+      "severity": "medium",
+      "summary": "The selected operator guide still overstates when the no-progress stop occurs.",
+      "evidence": [
+        "docs/agent-task-runs.md says a window without progress resumes the executor and “a second stops it.”",
+        "ProgressRule.on_tick defers when a command started since the previous check is still running; tests cover deferral and the later stop."
+      ],
+      "action": "Qualify the guide’s summary with the still-running young-command deferral."
+    },
+    {
+      "id": "F-002",
+      "severity": "medium",
+      "summary": "The progress-rule module docstring incorrectly says an unreadable worktree counts as progress and prevents the rule from stopping the lane.",
+      "evidence": [
+        "scripts/task_run/task_run_progress_rule.py says an unobservable worktree counts as progress, so the rule never stops a lane it cannot see.",
+        "In on_tick, an unreadable fingerprint makes tree_changed false; without another outcome, the window has no progress. The selected test test_an_unobservable_worktree_falls_back_to_the_executors_own_events confirms silence can still lead to a request and stop."
+      ],
+      "action": "Correct the docstring: an unreadable worktree prevents loop claims but does not count as progress for window checks."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "R-003: checkpoint delivery is described as using the steer path and resuming the executor session where possible.",
+      "bin": "resolved",
+      "disposition": "Accurate: execution checks pending steers and builds a steered invocation; it also records a relaunch-in-place fallback when session resume fails."
+    },
+    {
+      "concern": "R-004: a command started since the prior check and still running at a check defers the request and stop by one window.",
+      "bin": "resolved",
+      "disposition": "Accurate: the rule detects newly in-flight commands at a check and defers; the selected tests cover both the deferral and subsequent stop."
+    },
+    {
+      "concern": "N-001: the loop sequence now requires a readable worktree, while the rule can also be disabled with a zero window.",
+      "bin": "advisory",
+      "disposition": "The same paragraph states that zero turns the rule off, so this is not misleading in context."
+    },
+    {
+      "concern": "Other claims in the release notes, including the debug follow-up naming and derived claim-surface counts.",
+      "bin": "not independently established",
+      "disposition": "No overclaim found in the supplied note text during this pass, but the selected inputs do not establish those claims against their owning sources."
+    }
+  ],
+  "next_move": "Correct the two related documentation statements, then repeat the bounded lock-in review.",
+  "non_claims": [
+    "Reviewed the complete inline release notes and all selected semantic inputs; did not inspect workspace paths or run tests.",
+    "Did not independently verify unrelated release-note claims against their owners.",
+    "Goal evidence lineage (copy exactly):\n{\n  \"binding\": null,\n  \"disposition\": \"not-goal-bound\",\n  \"draft\": null,\n  \"goal_run\": null,\n  \"kind\": \"charness.goal-lineage\",\n  \"reason\": \"critique review was run without a Goal Run Work Item identity\",\n  \"schema_version\": 1,\n  \"work_item\": null\n}"
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "4ca2cade6477e30f12ccd4a71d12ca729b908476ed555817c27c0924f433caca",
+  "reviewed_input_identity_sha256": "36a545e18578734523ecd1f8da0dcbe8bafd7f881efff330b51ee4c58776a9c6"
+}

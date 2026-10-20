@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8150-final-followup17",
+      "scope": "follow-up at 7ce28354e on release-8150-final-followup16: R-003 the spec bounds now carry an explicit probe allowance (three git probes of at most 60 s each per check: 2W + one poll + 360 s, 3W + 540 s worst case); no code change",
+      "packet_identity": "85b0ec0ce113328cad6a8d4f7cc9b087e59dad9008f8716b483317dc6a34e0fa",
+      "parent_receipt_identity": "parent-93d858c3046079a5f2a84341bcb43445ac610abd6d06464d",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T15:50:41Z",
+      "history": [
+        {
+          "event_id": "92bcbabd127c410cabe443ba278f36d4",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T15:48:21Z",
+          "attempt_id": "release-8150-final-followup17",
+          "scope": "follow-up at 7ce28354e on release-8150-final-followup16: R-003 the spec bounds now carry an explicit probe allowance (three git probes of at most 60 s each per check: 2W + one poll + 360 s, 3W + 540 s worst case); no code change",
+          "packet_identity": "85b0ec0ce113328cad6a8d4f7cc9b087e59dad9008f8716b483317dc6a34e0fa",
+          "parent_receipt_identity": "parent-93d858c3046079a5f2a84341bcb43445ac610abd6d06464d",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "5677cdd851ec4e19a9d73bb57ab3c2c5",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T15:48:21Z",
+          "attempt_id": "release-8150-final-followup17",
+          "scope": "follow-up at 7ce28354e on release-8150-final-followup16: R-003 the spec bounds now carry an explicit probe allowance (three git probes of at most 60 s each per check: 2W + one poll + 360 s, 3W + 540 s worst case); no code change",
+          "packet_identity": "85b0ec0ce113328cad6a8d4f7cc9b087e59dad9008f8716b483317dc6a34e0fa",
+          "parent_receipt_identity": "parent-93d858c3046079a5f2a84341bcb43445ac610abd6d06464d",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "8e1f286827b841b181e7b7ebda456e36",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T15:50:41Z",
+          "attempt_id": "release-8150-final-followup17",
+          "scope": "follow-up at 7ce28354e on release-8150-final-followup16: R-003 the spec bounds now carry an explicit probe allowance (three git probes of at most 60 s each per check: 2W + one poll + 360 s, 3W + 540 s worst case); no code change",
+          "packet_identity": "85b0ec0ce113328cad6a8d4f7cc9b087e59dad9008f8716b483317dc6a34e0fa",
+          "parent_receipt_identity": "parent-93d858c3046079a5f2a84341bcb43445ac610abd6d06464d",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "876b3c9090026f64d567cfe024a42a042b69bd33e8c5abb425e39407b464282c"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "5942dea7e9c99c5606892f22ecffeb3b5718584493385ba14a6122b473ba33ba",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "e140a9105d87a1caac17702f529dadd44b9206a9836c214d9d15da91dc416548",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8150-final-followup17/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8150-final-followup17/receipt.json",
+      "producer_run_id": "run-release-8150-final-followup17",
+      "findings_identity": "876b3c9090026f64d567cfe024a42a042b69bd33e8c5abb425e39407b464282c"
+    }
+  ]
+}

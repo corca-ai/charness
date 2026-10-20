@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8150-final-followup12",
+      "scope": "follow-up at 669ef1d12 on release-8150-final-followup11: R-003 a failed pipe read is now a listed loss case (notes and class contract); R-005 the notes say a command started since the previous check defers the request and the stop by one window; family counts called approximate; code behavior unchanged",
+      "packet_identity": "d977a7a947c9dcca84064d4cdd48f332d275157fb165ea67effd85227a5adcd1",
+      "parent_receipt_identity": "parent-924c3fdb85ad3f3e74ac7a90468675fbc6f060d4a51b5d01",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T15:04:42Z",
+      "history": [
+        {
+          "event_id": "25bece0a06494b49888ba91828f74972",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T15:03:12Z",
+          "attempt_id": "release-8150-final-followup12",
+          "scope": "follow-up at 669ef1d12 on release-8150-final-followup11: R-003 a failed pipe read is now a listed loss case (notes and class contract); R-005 the notes say a command started since the previous check defers the request and the stop by one window; family counts called approximate; code behavior unchanged",
+          "packet_identity": "d977a7a947c9dcca84064d4cdd48f332d275157fb165ea67effd85227a5adcd1",
+          "parent_receipt_identity": "parent-924c3fdb85ad3f3e74ac7a90468675fbc6f060d4a51b5d01",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "64ea6d2139924648af813cc2c3a4d9b1",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T15:03:12Z",
+          "attempt_id": "release-8150-final-followup12",
+          "scope": "follow-up at 669ef1d12 on release-8150-final-followup11: R-003 a failed pipe read is now a listed loss case (notes and class contract); R-005 the notes say a command started since the previous check defers the request and the stop by one window; family counts called approximate; code behavior unchanged",
+          "packet_identity": "d977a7a947c9dcca84064d4cdd48f332d275157fb165ea67effd85227a5adcd1",
+          "parent_receipt_identity": "parent-924c3fdb85ad3f3e74ac7a90468675fbc6f060d4a51b5d01",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "b605a131b96b48c686d9f16b6a2b1cf4",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T15:04:42Z",
+          "attempt_id": "release-8150-final-followup12",
+          "scope": "follow-up at 669ef1d12 on release-8150-final-followup11: R-003 a failed pipe read is now a listed loss case (notes and class contract); R-005 the notes say a command started since the previous check defers the request and the stop by one window; family counts called approximate; code behavior unchanged",
+          "packet_identity": "d977a7a947c9dcca84064d4cdd48f332d275157fb165ea67effd85227a5adcd1",
+          "parent_receipt_identity": "parent-924c3fdb85ad3f3e74ac7a90468675fbc6f060d4a51b5d01",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "075e3c81a3100568311e47401b902a229886c8c3ca90eda71023e2a9da70a6d6"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "594380a5462a3f5fffa4bf243e26e1bbf4314f1f3f5ef0597e1abd60f1fedb84",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "37b17c1eb003c8f88f36d1dbb7d6edd5857cabdd31b9a59c1aca17cb01116286",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8150-final-followup12/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8150-final-followup12/receipt.json",
+      "producer_run_id": "run-release-8150-final-followup12",
+      "findings_identity": "075e3c81a3100568311e47401b902a229886c8c3ca90eda71023e2a9da70a6d6"
+    }
+  ]
+}

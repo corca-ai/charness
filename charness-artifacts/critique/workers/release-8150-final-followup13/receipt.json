@@ -1,0 +1,82 @@
+{
+  "attempt_id": "release-8150-final-followup13",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/release-8150-final-followup13/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-10-20T15:13:57Z",
+  "model_application_state": "unverified-by-provider",
+  "output_file": "charness-artifacts/critique/workers/release-8150-final-followup13/result.json",
+  "output_fresh": true,
+  "output_sha256": "f98b1d267deb18136e321fb4d284e7113a3d6cc52ca72bb28993b40d54bc713b",
+  "output_size": 3335,
+  "packet_identity": "41c7c77764b878c3cf9b6afda0025d07ef1f4da7e447710ef96556a7a7cf8ffd",
+  "parent_receipt_identity": "parent-cd5aaa3c8e4551b7c60a979eb5c0bdb772531237fc28d96f",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/release-8150-final-followup13/review-prompt.md",
+  "prompt_sha256": "70129ba26ca7425b9bcd0205a50d5ef0d2218cc4aca75f5089bdf37bd3672270",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "requested_model": "gpt-6-luna",
+  "requested_reasoning_effort": "xhigh",
+  "reviewed_input_identity": "b1602d2dc4d7d22231b5a60eece6a74c8cdf03c3f814a939a8d203bd79222f40",
+  "reviewer_tier": "high-leverage",
+  "run_id": "run-release-8150-final-followup13",
+  "schema_file": "charness-artifacts/critique/workers/release-8150-final-followup13/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "follow-up at 669ef1d12 on release-8150-final-followup12 (defer): binds the execution coordinator scripts/task_run/task_run_execution.py, whose _run_executor_invocation records any incomplete StampingPipe capture (including an error from a failed pipe read) as result.event_capture and the loop appends it to execution.event_capture_incomplete; no code change since followup12",
+  "started_at": "2026-10-20T15:11:32Z",
+  "status": "succeeded",
+  "stderr_file": "charness-artifacts/critique/workers/release-8150-final-followup13/backend.stderr",
+  "stdout_file": "charness-artifacts/critique/workers/release-8150-final-followup13/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "unsupported_reviewer_fields": [
+    "service_tier=priority",
+    "fork_turns=none"
+  ],
+  "workspace": "/home/hwidong/codes/charness"
+}

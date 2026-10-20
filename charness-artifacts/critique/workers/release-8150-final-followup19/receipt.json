@@ -1,0 +1,82 @@
+{
+  "attempt_id": "release-8150-final-followup19",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/release-8150-final-followup19/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-10-20T16:08:09Z",
+  "model_application_state": "unverified-by-provider",
+  "output_file": "charness-artifacts/critique/workers/release-8150-final-followup19/result.json",
+  "output_fresh": true,
+  "output_sha256": "0e791cefd392c0a959df3e8dbbacf4a006ca569b8233759731a5b04e079b8dd0",
+  "output_size": 2482,
+  "packet_identity": "863b4ddfa8e80a0a9ae82df8194558892c3e9a65108fe0be3eaf32811a4e4bdb",
+  "parent_receipt_identity": "parent-ca1bd4037cb04f9a56310d4e7038e34c40f68e9b3b63a71d",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/release-8150-final-followup19/review-prompt.md",
+  "prompt_sha256": "5582fdd14ff3150d7042fb5e0584002207b98eb6ad2f9c0a65329ec87e781e2e",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "requested_model": "gpt-6-luna",
+  "requested_reasoning_effort": "xhigh",
+  "reviewed_input_identity": "cae5e9eb39725266b3927c8917a68f08041a5b41d8ef1a0b0b502bd69b061162",
+  "reviewer_tier": "high-leverage",
+  "run_id": "run-release-8150-final-followup19",
+  "schema_file": "charness-artifacts/critique/workers/release-8150-final-followup19/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "follow-up at 026be86a8 on release-8150-final-followup18: R-003 the spec now states windows are nominal and gives no hard wall-clock bound, only the count of due checks (a tick, including probes and the live snapshot, delays the next); R-004 notes, docs and docstring describe the deferral as one more check; no code change",
+  "started_at": "2026-10-20T16:07:21Z",
+  "status": "succeeded",
+  "stderr_file": "charness-artifacts/critique/workers/release-8150-final-followup19/backend.stderr",
+  "stdout_file": "charness-artifacts/critique/workers/release-8150-final-followup19/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "unsupported_reviewer_fields": [
+    "service_tier=priority",
+    "fork_turns=none"
+  ],
+  "workspace": "/home/hwidong/codes/charness"
+}

@@ -1,0 +1,30 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in final pass",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R-004",
+      "severity": "low",
+      "summary": "The operator guide still says the first empty check after a young command defers the request, then the next empty check stops the lane. That next check delivers the request; stopping requires a later empty check.",
+      "evidence": [
+        "docs/agent-task-runs.md: “brings a checkpoint request (held a check while a young command runs); the next empty check stops it.”",
+        "The spec says a young command defers delivery at one check; the next empty check delivers the request and “the stop waits one more window.”"
+      ],
+      "action": "Clarify that the next empty check delivers the deferred request, and a subsequent empty check stops the lane."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "R-003: timing could imply a hard wall-clock bound",
+      "bin": "resolved",
+      "disposition": "The spec explicitly says windows are nominal and gives no hard wall-clock bound. The release notes also say checks can run late. No closed-form bound is needed."
+    }
+  ],
+  "next_move": "Correct the operator guide’s deferred-request sequence, then repeat the bounded review.",
+  "non_claims": [
+    "Reviewed the identity-bound inline payload for all 17 selected paths; did not inspect workspace paths or run tests.",
+    "Did not independently verify live runtime behavior."
+  ]
+}

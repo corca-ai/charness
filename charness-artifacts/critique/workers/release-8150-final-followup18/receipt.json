@@ -1,0 +1,82 @@
+{
+  "attempt_id": "release-8150-final-followup18",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/release-8150-final-followup18/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-10-20T16:00:06Z",
+  "model_application_state": "unverified-by-provider",
+  "output_file": "charness-artifacts/critique/workers/release-8150-final-followup18/result.json",
+  "output_fresh": true,
+  "output_sha256": "59f400f51a22ff87ea096499b90cd482bd89799762e43fd2ab26d146c5bd7e20",
+  "output_size": 3781,
+  "packet_identity": "cbf54ce41ed9440b634946ee3cabbc789a518e39369efd6c83c9ab0470c872fb",
+  "parent_receipt_identity": "parent-e54ac3293c4b77d1e1118f7437dc29c028f089d25c381e64",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/release-8150-final-followup18/review-prompt.md",
+  "prompt_sha256": "cb45013f2d16be3edd5f3f7c0eeb62ddd893a3df15be45aa9a05291d8db4c8f0",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "requested_model": "gpt-6-luna",
+  "requested_reasoning_effort": "xhigh",
+  "reviewed_input_identity": "3b20ea4dab866e1151efa0b033095bf3abbe69161ebf8dcbea62c0e10f09bed4",
+  "reviewer_tier": "high-leverage",
+  "run_id": "run-release-8150-final-followup18",
+  "schema_file": "charness-artifacts/critique/workers/release-8150-final-followup18/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "follow-up at 7c94beb53 on release-8150-final-followup17: R-003 the spec no longer gives closed-form worst-case seconds; it counts reclamation in due checks (second for a silent lane, third for a hung command) and states that each check can run up to one poll plus the previous check probe time late; no code change",
+  "started_at": "2026-10-20T15:57:44Z",
+  "status": "succeeded",
+  "stderr_file": "charness-artifacts/critique/workers/release-8150-final-followup18/backend.stderr",
+  "stdout_file": "charness-artifacts/critique/workers/release-8150-final-followup18/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "unsupported_reviewer_fields": [
+    "service_tier=priority",
+    "fork_turns=none"
+  ],
+  "workspace": "/home/hwidong/codes/charness"
+}

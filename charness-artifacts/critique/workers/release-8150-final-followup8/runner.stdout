@@ -1,0 +1,75 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'follow-up at 74ad9d209 on release-8150-final-followup7: repairs from the claims
+  review of the prepared v8.15.0 record (prepared commit withdrawn unpublished): B1
+  a zero window now turns off the loop check too; B2 the --commands reader keeps a
+  resumed Codex session''s reused item ids apart; A6 read-only reviewers drop the
+  lane network key; notes revised for A1-A6'
+attempt_id: release-8150-final-followup8
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 50a2041ffe7aa242087f74e99a9ce8a308936cbf6b7f016eb182d876f40b7cfb
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-e2e68b8a46e1c4a4c1cd41ccea14604c/receipt.json
+ledger_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-e2e68b8a46e1c4a4c1cd41ccea14604c/delivery.json
+producer_run_id: run-release-8150-final-followup8
+producer_binding:
+  output_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-e2e68b8a46e1c4a4c1cd41ccea14604c/result.json
+  receipt_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-e2e68b8a46e1c4a4c1cd41ccea14604c/receipt.json
+  producer_run_id: run-release-8150-final-followup8
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: d22c9eb5a5fe4572499a981b630e464b1834cd655abcff4f08cf6ece8bd13816
+receipt_output_sha256: d22c9eb5a5fe4572499a981b630e464b1834cd655abcff4f08cf6ece8bd13816
+packet_identity: 95f764b5f3aab0e6d181e67aea4bf9f6338688727292d0122326f99c97d889de
+reviewed_input_identity: 0b004800af56eccbafa16da5bf3dfd897f698580154d1955dcfec7819df01cd1
+parent_receipt_identity: parent-718ebd09d9532f7bfda39d9afddfab45bf027db06160c6a6
+provenance:
+  scope: 'follow-up at 74ad9d209 on release-8150-final-followup7: repairs from the
+    claims review of the prepared v8.15.0 record (prepared commit withdrawn unpublished):
+    B1 a zero window now turns off the loop check too; B2 the --commands reader keeps
+    a resumed Codex session''s reused item ids apart; A6 read-only reviewers drop
+    the lane network key; notes revised for A1-A6'
+  packet_identity: 95f764b5f3aab0e6d181e67aea4bf9f6338688727292d0122326f99c97d889de
+  reviewed_input_identity: 0b004800af56eccbafa16da5bf3dfd897f698580154d1955dcfec7819df01cd1
+  parent_receipt_identity: parent-718ebd09d9532f7bfda39d9afddfab45bf027db06160c6a6
+  expected_targets_sha256: null
+  attempt_id: release-8150-final-followup8
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 50a2041ffe7aa242087f74e99a9ce8a308936cbf6b7f016eb182d876f40b7cfb
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

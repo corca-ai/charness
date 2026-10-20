@@ -1,0 +1,82 @@
+{
+  "attempt_id": "release-8150-final-followup17",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/release-8150-final-followup17/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-10-20T15:50:41Z",
+  "model_application_state": "unverified-by-provider",
+  "output_file": "charness-artifacts/critique/workers/release-8150-final-followup17/result.json",
+  "output_fresh": true,
+  "output_sha256": "876b3c9090026f64d567cfe024a42a042b69bd33e8c5abb425e39407b464282c",
+  "output_size": 3214,
+  "packet_identity": "85b0ec0ce113328cad6a8d4f7cc9b087e59dad9008f8716b483317dc6a34e0fa",
+  "parent_receipt_identity": "parent-93d858c3046079a5f2a84341bcb43445ac610abd6d06464d",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/release-8150-final-followup17/review-prompt.md",
+  "prompt_sha256": "e140a9105d87a1caac17702f529dadd44b9206a9836c214d9d15da91dc416548",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "requested_model": "gpt-6-luna",
+  "requested_reasoning_effort": "xhigh",
+  "reviewed_input_identity": "5942dea7e9c99c5606892f22ecffeb3b5718584493385ba14a6122b473ba33ba",
+  "reviewer_tier": "high-leverage",
+  "run_id": "run-release-8150-final-followup17",
+  "schema_file": "charness-artifacts/critique/workers/release-8150-final-followup17/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "follow-up at 7ce28354e on release-8150-final-followup16: R-003 the spec bounds now carry an explicit probe allowance (three git probes of at most 60 s each per check: 2W + one poll + 360 s, 3W + 540 s worst case); no code change",
+  "started_at": "2026-10-20T15:48:21Z",
+  "status": "succeeded",
+  "stderr_file": "charness-artifacts/critique/workers/release-8150-final-followup17/backend.stderr",
+  "stdout_file": "charness-artifacts/critique/workers/release-8150-final-followup17/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "unsupported_reviewer_fields": [
+    "service_tier=priority",
+    "fork_turns=none"
+  ],
+  "workspace": "/home/hwidong/codes/charness"
+}

@@ -1,0 +1,36 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in follow-up",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R-003",
+      "severity": "medium",
+      "summary": "The hung-sink limits are described, but unconditional capture promises still contradict them in the class contract and release notes.",
+      "evidence": [
+        "The StampingPipe docstring says close drains every byte already in the pipe and that the drain reads everything written before close, then says a hung sink stops draining and close may return while a write is still in flight.",
+        "The hung-sink test shows close can return with an incomplete capture; after the blocked write is released, later lines are dropped and counted.",
+        "The notes still promise every byte written before the pipe closes reaches the lane log, while listing sink failure or short writes as loss cases and mentioning a hung write only as a possible stall."
+      ],
+      "action": "Qualify the all-bytes guarantees to exclude a hung sink, and state that a hung write can leave bytes uncopied while the incomplete-capture error records the loss."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "R-004: family counts may be read as complete counts of all matching commands.",
+      "bin": "non-blocking",
+      "disposition": "The notes say patterns can miss unusual spellings, and the docs label family starts as pattern matches. That accurately describes the reported counts; mirroring the omission caveat in the docs would be clearer but is not needed to prevent a misleading consumer claim."
+    }
+  ],
+  "next_move": "Revise the unconditional capture statements for the hung-sink case before release lock-in. R-004 is adequately qualified for this review.",
+  "non_claims": [
+    "Reviewed the complete notes payload and the other 11 identity-checked inline payloads; did not inspect workspace paths or run tests.",
+    "The derived claim-surface counts in the notes were not independently rederived against the full repository tree.",
+    "Goal evidence lineage (copy exactly):\n{\n  \"binding\": null,\n  \"disposition\": \"not-goal-bound\",\n  \"draft\": null,\n  \"goal_run\": null,\n  \"kind\": \"charness.goal-lineage\",\n  \"reason\": \"critique review was run without a Goal Run Work Item identity\",\n  \"schema_version\": 1,\n  \"work_item\": null\n}"
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "6597416685c082096137da234af6e9a6ea9c31e06db6a47f99d80cfd85068f14",
+  "reviewed_input_identity_sha256": "10e6069185666948fe5fb2346222c3e3b207bbf70a2fe027f551da277e019c5c"
+}

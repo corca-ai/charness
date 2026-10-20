@@ -1,0 +1,75 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'follow-up at 4c90b7add on release-8150-final-followup14: F-002 the progress-rule
+  module docstring now says an unreadable worktree is neither progress nor its absence;
+  F-001 the operator guide names the young-command deferral; no code change. Also
+  bound: the spec, the debug router and its test, and the progress watch, so the whole
+  consumer-facing surface is reviewable in one pass'
+attempt_id: release-8150-final-followup15
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: d1efe8d49412bcf43b32c75d951e91a251c4403686ea312b0034c0fcbc2aeaa6
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: charness-artifacts/critique/workers/release-8150-final-followup15/receipt.json
+ledger_path: charness-artifacts/critique/workers/release-8150-final-followup15/delivery.json
+producer_run_id: run-release-8150-final-followup15
+producer_binding:
+  output_file: charness-artifacts/critique/workers/release-8150-final-followup15/result.json
+  receipt_file: charness-artifacts/critique/workers/release-8150-final-followup15/receipt.json
+  producer_run_id: run-release-8150-final-followup15
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: 2d42def4386d9ed6559b10de3c70dd9137b8700c26488e2b62a3fdbec4ae4603
+receipt_output_sha256: 2d42def4386d9ed6559b10de3c70dd9137b8700c26488e2b62a3fdbec4ae4603
+packet_identity: 4357be729b6dc2c9511175b55ce3006e3a768fd721bd4b301eb70c5febaf3542
+reviewed_input_identity: fd713cd7621d6ed9671b4ccfa260185aa85e03344a00d3b562d3b66f5d589959
+parent_receipt_identity: parent-51a23f0ad413cc054964942fae747e6e1d94e6f8ffb0570e
+provenance:
+  scope: 'follow-up at 4c90b7add on release-8150-final-followup14: F-002 the progress-rule
+    module docstring now says an unreadable worktree is neither progress nor its absence;
+    F-001 the operator guide names the young-command deferral; no code change. Also
+    bound: the spec, the debug router and its test, and the progress watch, so the
+    whole consumer-facing surface is reviewable in one pass'
+  packet_identity: 4357be729b6dc2c9511175b55ce3006e3a768fd721bd4b301eb70c5febaf3542
+  reviewed_input_identity: fd713cd7621d6ed9671b4ccfa260185aa85e03344a00d3b562d3b66f5d589959
+  parent_receipt_identity: parent-51a23f0ad413cc054964942fae747e6e1d94e6f8ffb0570e
+  expected_targets_sha256: null
+  attempt_id: release-8150-final-followup15
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: d1efe8d49412bcf43b32c75d951e91a251c4403686ea312b0034c0fcbc2aeaa6
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

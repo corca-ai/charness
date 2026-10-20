@@ -1,0 +1,71 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'follow-up at 454191a8f on release-8150-final-followup22: R-006 the spec now
+  says a loop message at a command completion does not wait for any other running
+  command, which can be killed with partial effects; no code change'
+attempt_id: release-8150-final-followup23
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: d593fbc3a9439da3e82a6c43559f789d9c94d1f1806965a4d023371268785efd
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: charness-artifacts/critique/workers/release-8150-final-followup23/receipt.json
+ledger_path: charness-artifacts/critique/workers/release-8150-final-followup23/delivery.json
+producer_run_id: run-release-8150-final-followup23
+producer_binding:
+  output_file: charness-artifacts/critique/workers/release-8150-final-followup23/result.json
+  receipt_file: charness-artifacts/critique/workers/release-8150-final-followup23/receipt.json
+  producer_run_id: run-release-8150-final-followup23
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 102a385952a5d8c57ab2e22b24f71de9e85d5549187877e08484ec21be0ac582
+receipt_output_sha256: 102a385952a5d8c57ab2e22b24f71de9e85d5549187877e08484ec21be0ac582
+packet_identity: a381d1c261744de0d0ed276ad0dcbab89065fefa3e488d80583169589fb841d5
+reviewed_input_identity: aa7ffed8edf2ad9a8774903dff9268f532eec86b295c42931b594ea555ee576c
+parent_receipt_identity: parent-115021bc573a3e9f7a5c173bcf80bc023b315aaed8e2c7a6
+provenance:
+  scope: 'follow-up at 454191a8f on release-8150-final-followup22: R-006 the spec
+    now says a loop message at a command completion does not wait for any other running
+    command, which can be killed with partial effects; no code change'
+  packet_identity: a381d1c261744de0d0ed276ad0dcbab89065fefa3e488d80583169589fb841d5
+  reviewed_input_identity: aa7ffed8edf2ad9a8774903dff9268f532eec86b295c42931b594ea555ee576c
+  parent_receipt_identity: parent-115021bc573a3e9f7a5c173bcf80bc023b315aaed8e2c7a6
+  expected_targets_sha256: null
+  attempt_id: release-8150-final-followup23
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: d593fbc3a9439da3e82a6c43559f789d9c94d1f1806965a4d023371268785efd
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

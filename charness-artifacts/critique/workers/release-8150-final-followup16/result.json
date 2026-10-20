@@ -1,0 +1,55 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in final pass",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R-003",
+      "severity": "medium",
+      "summary": "The reclamation bounds still do not give consumers a dependable allowance for worktree probes.",
+      "evidence": [
+        "The spec states that a silent lane is reclaimed within `2W` plus one poll and a hung command within `3W`, then says each bound includes the worktree probes without quantifying or enforcing that time.",
+        "`worktree_fingerprint` runs three Git probes sequentially, each with a 60-second timeout. The progress rule calls it synchronously during checks, so a due check can exceed the stated bound; the text that probes are “normally short” does not bound that overrun."
+      ],
+      "action": "Add a probe-time allowance to the reclamation bounds, or enforce a total check deadline that makes the existing bounds hold."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "F-001: the operator guide names deferral while a young command runs.",
+      "bin": "fixed",
+      "disposition": "The guide describes the second no-progress check stopping the lane, with deferral for a young command."
+    },
+    {
+      "concern": "F-002: the progress-rule docstring describes unreadable worktrees as neither progress nor its absence.",
+      "bin": "fixed",
+      "disposition": "The docstring says the rule falls back to executor events and makes no loop claim without an observable tree."
+    },
+    {
+      "concern": "R-001: the spec presents the old timeout default as current behavior.",
+      "bin": "fixed",
+      "disposition": "The section is labelled “baseline before this change,” so the old 3600-second default is explicitly historical."
+    },
+    {
+      "concern": "R-002: the watch docstrings misstate which lanes get the progress rule.",
+      "bin": "fixed",
+      "disposition": "The module and class docstrings assign the rule to every lane and the first-edit budget and BLOCKED grace to require-change lanes."
+    },
+    {
+      "concern": "R-004: Muse outcome accounting includes unrelated tools.",
+      "bin": "fixed; test coverage advisory",
+      "disposition": "The code allowlists exactly `tool.edit`, `tool.edit_file`, and `tool.write_file`. The test excludes read/search/todo tools and positively exercises only `tool.edit_file`; that coverage gap does not misstate runtime behavior."
+    }
+  ],
+  "next_move": "Quantify the worktree-probe allowance or enforce a total check deadline, then repeat the bounded lock-in review.",
+  "non_claims": [
+    "Reviewed the inline semantic payload for all 17 selected paths once; did not inspect workspace paths or run tests.",
+    "Did not independently verify unrelated release-note claims against their owners.",
+    "Goal evidence lineage (copy exactly):\n{\n  \"binding\": null,\n  \"disposition\": \"not-goal-bound\",\n  \"draft\": null,\n  \"goal_run\": null,\n  \"kind\": \"charness.goal-lineage\",\n  \"reason\": \"critique review was run without a Goal Run Work Item identity\",\n  \"schema_version\": 1,\n  \"work_item\": null\n}"
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "fcc304e082377aae887a6e12a2ef07a7919bdaf8808489e0ee097c98c7eae737",
+  "reviewed_input_identity_sha256": "552047fedc09e54ce0aeadddd44071eb76da14e66197cce7e59be00a4336ef4e"
+}

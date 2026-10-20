@@ -1,0 +1,54 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in final pass",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R-003",
+      "severity": "medium",
+      "summary": "The spec fixes the omitted-wait formula, but its lateness explanation does not establish a bound for the full watch tick.",
+      "evidence": [
+        "The spec says each check spends up to 180 seconds on three fingerprint probes, each limited to 60 seconds, and can run late by one poll plus the previous check's probe time.",
+        "In task_run_progress.py, tick() can call _observe(self.snapshot(now)) after the rule check. snapshot() calls _worktree_liveliness(...); the selected input does not establish a time limit for that work.",
+        "The watch waits for the previous tick to return before polling again, so an observer snapshot that takes additional time also delays the next check."
+      ],
+      "action": "Bound or account for the snapshot work in the lateness statement, or qualify the statement to the progress-rule fingerprint probes only."
+    },
+    {
+      "id": "R-004",
+      "severity": "low",
+      "summary": "The release notes and short summaries still describe deferral as a fixed extra window, which can imply a wall-clock delay of W.",
+      "evidence": [
+        "The release notes say a command defers the request and stop “by one more window.”",
+        "docs/agent-task-runs.md says “a second, deferred while a young command runs, stops it.”",
+        "The task_run_progress_rule.py module docstring says a second empty window stops the lane and that a young command defers the request and stop “by one window.”",
+        "The spec now explains that due checks can be late because of polling and prior probe work."
+      ],
+      "action": "Describe these summaries in terms of due checks, or qualify “one more window” as a nominal interval that can run late."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Prior R-003 complaint that closed-form reclamation bounds omitted poll delays after slow checks.",
+      "bin": "fixed-in-part",
+      "disposition": "The spec removes the closed-form worst-case seconds and explains reclamation by due-check count and poll/probe lateness. The full-tick timing caveat in finding R-003 remains."
+    },
+    {
+      "concern": "The spec says reclamation is close to 2W and 3W when W is well above the poll interval and probe time.",
+      "bin": "advisory",
+      "disposition": "This is explicitly qualified as approximate and does not itself give a hard bound."
+    },
+    {
+      "concern": "Whether F-001 and F-002 are fixed.",
+      "bin": "insufficient-evidence",
+      "disposition": "The authoritative packet and supplied prior findings identify R-003 but do not define F-001 or F-002, so their status cannot be judged from this input."
+    }
+  ],
+  "next_move": "Before lock-in, bind the definitions and evidence for F-001 and F-002, account for the full watch tick in R-003's lateness description, and align the abbreviated one-window summaries with the due-check wording.",
+  "non_claims": [
+    "Reviewed the 17 identity-bound inline semantic inputs once; did not inspect workspace paths or run tests.",
+    "Did not independently verify unrelated release-note claims against their owners.",
+    "F-001 and F-002 status is not assessed because their definitions are absent from the authoritative packet."
+  ]
+}

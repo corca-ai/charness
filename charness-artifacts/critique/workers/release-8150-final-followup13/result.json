@@ -1,0 +1,56 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in follow-up",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "N-001",
+      "severity": "medium",
+      "summary": "The loop escalation sequence is stated without the fingerprint-observability condition.",
+      "evidence": [
+        "The notes say a repeated test, lint, or typecheck command is asked to switch to debug on its 3rd run, checkpoint on its 4th, and stopped on its 5th.",
+        "In task_run_progress_rule.py, _on_complete returns before the loop-family checks when the worktree fingerprint is None.",
+        "test_reruns_on_an_unreadable_tree_are_not_progress_and_never_claim_a_loop confirms those runs produce no loop actions."
+      ],
+      "action": "Qualify the 3rd/4th/5th-run sequence as applying when the progress rule is enabled and the worktree fingerprint is observable."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "R-003: a failed pipe read is a listed capture-loss case.",
+      "bin": "resolved",
+      "disposition": "Pass: StampingPipe records the read error, making capture incomplete."
+    },
+    {
+      "concern": "R-004: incomplete capture, including a failed-read error, reaches execution.event_capture_incomplete.",
+      "bin": "resolved",
+      "disposition": "Pass: _run_executor_invocation returns incomplete capture as event_capture, and the coordinator appends it to the execution result."
+    },
+    {
+      "concern": "A command started since the previous check defers a request and stop by one window.",
+      "bin": "advisory",
+      "disposition": "The implementation defers when that newly started command is still in flight at the check; the surrounding context makes this reading unlikely to mislead."
+    },
+    {
+      "concern": "Network behavior is presented as live-tested.",
+      "bin": "not a finding",
+      "disposition": "The notes explicitly say release tests verify carrier flags, not a bind or fetch inside the sandbox."
+    },
+    {
+      "concern": "Derived claim-surface counts or unrelated release claims may be inaccurate.",
+      "bin": "not assessed",
+      "disposition": "The supplied input does not include enough owner or repository-tree evidence to rederive them."
+    }
+  ],
+  "next_move": "Qualify the loop escalation claim for observable fingerprints, then re-review that wording for lock-in.",
+  "non_claims": [
+    "Reviewed the complete inline notes and all selected semantic inputs; did not inspect workspace paths or run tests.",
+    "Did not independently rederive the generated claim-surface counts or verify unrelated release-note claims against their owners.",
+    "Goal evidence lineage (copy exactly):\n{\n  \"binding\": null,\n  \"disposition\": \"not-goal-bound\",\n  \"draft\": null,\n  \"goal_run\": null,\n  \"kind\": \"charness.goal-lineage\",\n  \"reason\": \"critique review was run without a Goal Run Work Item identity\",\n  \"schema_version\": 1,\n  \"work_item\": null\n}"
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "41c7c77764b878c3cf9b6afda0025d07ef1f4da7e447710ef96556a7a7cf8ffd",
+  "reviewed_input_identity_sha256": "b1602d2dc4d7d22231b5a60eece6a74c8cdf03c3f814a939a8d203bd79222f40"
+}

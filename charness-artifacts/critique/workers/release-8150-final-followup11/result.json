@@ -1,0 +1,57 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in follow-up",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R-003",
+      "severity": "medium",
+      "summary": "The hung-write qualification is accurate, but the notes present the loss-case list as exhaustive while omitting pipe-reader failures.",
+      "evidence": [
+        "The notes say, “The loss cases are” a surviving descendant, a failed or short log write, and a hung log write.",
+        "In `StampingPipe._drain()`, an `OSError` or `ValueError` from `select` or `os.read` sets `error` and exits the read loop. Any bytes still queued in the pipe are then not drained.",
+        "`test_a_failing_pipe_read_is_recorded` exercises this error path, though with no queued bytes."
+      ],
+      "action": "Add pipe-reader failures to the listed loss cases, or describe the list as examples rather than exhaustive."
+    },
+    {
+      "id": "R-005",
+      "severity": "medium",
+      "summary": "The notes overstate how quickly the no-progress rule stops a lane when a command is still young.",
+      "evidence": [
+        "The notes say an empty window triggers a checkpoint request and that the next empty window stops the lane.",
+        "`ProgressRule.on_tick()` defers the first request when a command started since the prior check. At the next empty check it delivers the request; only a following empty check can stop the lane.",
+        "`test_a_command_in_flight_defers_the_request_instead_of_killing_it` demonstrates this sequence at 100, 200, and 300 seconds."
+      ],
+      "action": "Clarify that a young in-flight command can defer the request, shifting the checkpoint and stop by an additional window."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "R-003’s hung log-write qualification",
+      "bin": "resolved",
+      "disposition": "The class contract and notes now limit the byte guarantee to cases outside the listed losses, explicitly include a hung write, and identify an incomplete-capture error."
+    },
+    {
+      "concern": "R-004 family-start counts",
+      "bin": "advisory",
+      "disposition": "The notes and docs label these as command-pattern matches, so R-004 is accurately stated. The regex can also match mentions such as `echo pytest`; disclosing possible false positives would further help consumers interpreting counts."
+    },
+    {
+      "concern": "Receive-time stamps on every JSON-object line",
+      "bin": "advisory",
+      "disposition": "`stamp_event_line()` leaves an existing `charness_received_at` untouched, and a clock error passes the original line through. The selected tests cover both cases; no evidence shows these exceptions would mislead consumers of the supported executor events."
+    }
+  ],
+  "next_move": "Qualify the young-command stop timing and the pipe-reader loss case before release lock-in.",
+  "non_claims": [
+    "Reviewed the 12 complete inline semantic payloads; did not inspect workspace paths or run tests. Derived claim-surface counts were not independently rederived against the full repository tree.",
+    "Did not inspect the unselected execution coordinator, so end-to-end propagation of a hung-sink capture error into `execution.event_capture_incomplete` was not independently verified. The selected direct pipe test confirms an incomplete capture error; the integration test covers the surviving-writer case.",
+    "Goal evidence lineage (copy exactly):\n{\n  \"binding\": null,\n  \"disposition\": \"not-goal-bound\",\n  \"draft\": null,\n  \"goal_run\": null,\n  \"kind\": \"charness.goal-lineage\",\n  \"reason\": \"critique review was run without a Goal Run Work Item identity\",\n  \"schema_version\": 1,\n  \"work_item\": null\n}"
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "9bdfa870efe1e8ea8639ca1aec56b4bc2e5bc649f292d846ff644c77f4b0d8af",
+  "reviewed_input_identity_sha256": "453d671b99573ee6257facc9654b534ff5950177b7747b2e1796f01786098a47"
+}

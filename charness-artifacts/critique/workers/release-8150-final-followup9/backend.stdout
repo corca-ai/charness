@@ -1,0 +1,57 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in follow-up",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R-003",
+      "severity": "medium",
+      "summary": "The release note correctly says a hung log write can stall the pipe, but the StampingPipe class contract still promises that close drains all buffered bytes and prevents an outliving reader from writing to a closed sink.",
+      "evidence": [
+        "The class docstring says close drains every byte already in the pipe and that a reader outliving close can never write into a sink the caller closed.",
+        "close() uses bounded waits for both the reader thread and sink lock. If sink.write() hangs, close can return while the reader is still inside _emit and has not drained the rest of the pipe.",
+        "The hung-sink test confirms close returns with an incomplete-capture error, but does not verify that the sink can safely be closed while the original write or flush remains in flight."
+      ],
+      "action": "Qualify the class contract for a hung sink, including that close may return before draining and while a write is still in flight, or change the lifecycle so that guarantee holds."
+    },
+    {
+      "id": "R-004",
+      "severity": "medium",
+      "summary": "The notes present command-family counts as counts of commands started, without saying the classification is heuristic and can miss valid invocations.",
+      "evidence": [
+        "The release notes and docs describe how many commands were started in each family.",
+        "command_families() uses fixed regular expressions, and its source comment explicitly calls the result a heuristic.",
+        "The supplied tests cover selected spellings; for example, a valid `python -m unittest` invocation does not match the test-family patterns."
+      ],
+      "action": "Label family counts as heuristic pattern matches and state that unrecognized command forms may be omitted."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "R-001 receive-time durations described as upper bounds",
+      "bin": "repaired",
+      "disposition": "The release notes and docs call them estimates and state that they can err in either direction."
+    },
+    {
+      "concern": "R-002 short sink writes silently losing bytes",
+      "bin": "repaired",
+      "disposition": "_emit detects a short integer write, records the unwritten remainder and an error, and the added test checks that capture is incomplete."
+    },
+    {
+      "concern": "R-003 a hung log write stalls pipe draining",
+      "bin": "partly repaired",
+      "disposition": "The release note now states the limitation accurately; the selected class docstring retains conflicting guarantees."
+    },
+    {
+      "concern": "Command-family counts",
+      "bin": "remaining overclaim",
+      "disposition": "The consumer-facing notes omit the heuristic limitation present in the implementation."
+    }
+  ],
+  "next_move": "Qualify the StampingPipe close contract for hung writes and describe command-family counts as heuristic before release lock-in.",
+  "non_claims": [
+    "Reviewed the complete notes payload and the other 11 identity-checked inline payloads; did not inspect workspace paths or run tests.",
+    "Goal evidence lineage (copy exactly):\n{\n  \"binding\": null,\n  \"disposition\": \"not-goal-bound\",\n  \"draft\": null,\n  \"goal_run\": null,\n  \"kind\": \"charness.goal-lineage\",\n  \"reason\": \"critique review was run without a Goal Run Work Item identity\",\n  \"schema_version\": 1,\n  \"work_item\": null\n}"
+  ]
+}

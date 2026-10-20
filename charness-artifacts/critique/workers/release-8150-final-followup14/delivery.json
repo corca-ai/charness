@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8150-final-followup14",
+      "scope": "follow-up at e9d403210 on release-8150-final-followup13: N-001 the loop sequence is now conditioned on a readable worktree; checkpoint delivery is described as the steer path that resumes the session where it can; the young-command deferral names a command still running at a check; no code change",
+      "packet_identity": "4ca2cade6477e30f12ccd4a71d12ca729b908476ed555817c27c0924f433caca",
+      "parent_receipt_identity": "parent-1aeef30abde19122836ab38fb35f3b26e13619e5c2e5b1f0",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T15:21:57Z",
+      "history": [
+        {
+          "event_id": "d4597e8f68c4432fbe4b05ade433b7ec",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T15:20:03Z",
+          "attempt_id": "release-8150-final-followup14",
+          "scope": "follow-up at e9d403210 on release-8150-final-followup13: N-001 the loop sequence is now conditioned on a readable worktree; checkpoint delivery is described as the steer path that resumes the session where it can; the young-command deferral names a command still running at a check; no code change",
+          "packet_identity": "4ca2cade6477e30f12ccd4a71d12ca729b908476ed555817c27c0924f433caca",
+          "parent_receipt_identity": "parent-1aeef30abde19122836ab38fb35f3b26e13619e5c2e5b1f0",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "9f3de07323b149039b6bf1946d67aa0b",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T15:20:03Z",
+          "attempt_id": "release-8150-final-followup14",
+          "scope": "follow-up at e9d403210 on release-8150-final-followup13: N-001 the loop sequence is now conditioned on a readable worktree; checkpoint delivery is described as the steer path that resumes the session where it can; the young-command deferral names a command still running at a check; no code change",
+          "packet_identity": "4ca2cade6477e30f12ccd4a71d12ca729b908476ed555817c27c0924f433caca",
+          "parent_receipt_identity": "parent-1aeef30abde19122836ab38fb35f3b26e13619e5c2e5b1f0",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "23629d1d1da844a983c5a692f540173e",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T15:21:57Z",
+          "attempt_id": "release-8150-final-followup14",
+          "scope": "follow-up at e9d403210 on release-8150-final-followup13: N-001 the loop sequence is now conditioned on a readable worktree; checkpoint delivery is described as the steer path that resumes the session where it can; the young-command deferral names a command still running at a check; no code change",
+          "packet_identity": "4ca2cade6477e30f12ccd4a71d12ca729b908476ed555817c27c0924f433caca",
+          "parent_receipt_identity": "parent-1aeef30abde19122836ab38fb35f3b26e13619e5c2e5b1f0",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "74617f9dd50543e979e49587932892cb9d44c3fa933fe248cdf85b16162e90f3"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "36a545e18578734523ecd1f8da0dcbe8bafd7f881efff330b51ee4c58776a9c6",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "7afb01f501691ec089379d6db8099e51d45af41e4e52a664931769eec3442187",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8150-final-followup14/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8150-final-followup14/receipt.json",
+      "producer_run_id": "run-release-8150-final-followup14",
+      "findings_identity": "74617f9dd50543e979e49587932892cb9d44c3fa933fe248cdf85b16162e90f3"
+    }
+  ]
+}

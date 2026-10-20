@@ -1,0 +1,82 @@
+{
+  "attempt_id": "release-8150-final-followup8",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/release-8150-final-followup8/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-10-20T14:31:56Z",
+  "model_application_state": "unverified-by-provider",
+  "output_file": "charness-artifacts/critique/workers/release-8150-final-followup8/result.json",
+  "output_fresh": true,
+  "output_sha256": "d22c9eb5a5fe4572499a981b630e464b1834cd655abcff4f08cf6ece8bd13816",
+  "output_size": 4869,
+  "packet_identity": "95f764b5f3aab0e6d181e67aea4bf9f6338688727292d0122326f99c97d889de",
+  "parent_receipt_identity": "parent-718ebd09d9532f7bfda39d9afddfab45bf027db06160c6a6",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/release-8150-final-followup8/review-prompt.md",
+  "prompt_sha256": "50a2041ffe7aa242087f74e99a9ce8a308936cbf6b7f016eb182d876f40b7cfb",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "requested_model": "gpt-6-luna",
+  "requested_reasoning_effort": "xhigh",
+  "reviewed_input_identity": "0b004800af56eccbafa16da5bf3dfd897f698580154d1955dcfec7819df01cd1",
+  "reviewer_tier": "high-leverage",
+  "run_id": "run-release-8150-final-followup8",
+  "schema_file": "charness-artifacts/critique/workers/release-8150-final-followup8/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "follow-up at 74ad9d209 on release-8150-final-followup7: repairs from the claims review of the prepared v8.15.0 record (prepared commit withdrawn unpublished): B1 a zero window now turns off the loop check too; B2 the --commands reader keeps a resumed Codex session's reused item ids apart; A6 read-only reviewers drop the lane network key; notes revised for A1-A6",
+  "started_at": "2026-10-20T14:30:05Z",
+  "status": "succeeded",
+  "stderr_file": "charness-artifacts/critique/workers/release-8150-final-followup8/backend.stderr",
+  "stdout_file": "charness-artifacts/critique/workers/release-8150-final-followup8/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "unsupported_reviewer_fields": [
+    "service_tier=priority",
+    "fork_turns=none"
+  ],
+  "workspace": "/home/hwidong/codes/charness"
+}

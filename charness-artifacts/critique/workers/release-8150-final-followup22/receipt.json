@@ -1,0 +1,82 @@
+{
+  "attempt_id": "release-8150-final-followup22",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/release-8150-final-followup22/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-10-20T16:21:51Z",
+  "model_application_state": "unverified-by-provider",
+  "output_file": "charness-artifacts/critique/workers/release-8150-final-followup22/result.json",
+  "output_fresh": true,
+  "output_sha256": "e05204d2ad6f041d0ea41cd504682b16dfbf46ca6f51e128fa437d29410dc3c6",
+  "output_size": 2900,
+  "packet_identity": "da15314d94891442d7035b4efe28d6dedb622088358074887d0a56eaa53d0d30",
+  "parent_receipt_identity": "parent-717e8a967ac547a5dec3d99e6830c2cd2b87c93c049e188c",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/release-8150-final-followup22/review-prompt.md",
+  "prompt_sha256": "e88d957ca367df37855955d74e67fa105e693013225bfcaba41784c78e07af93",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "requested_model": "gpt-6-luna",
+  "requested_reasoning_effort": "xhigh",
+  "reviewed_input_identity": "d07e49295279da50a8e6c39f33bb8d3ad4c0d58be4135e576008627cfc7b3e8b",
+  "reviewer_tier": "high-leverage",
+  "run_id": "run-release-8150-final-followup22",
+  "schema_file": "charness-artifacts/critique/workers/release-8150-final-followup22/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "follow-up at 51cf7f6e5 on release-8150-final-followup21: R-005 the operator guide and the ProgressRule docstring now say a young command can delay request delivery or the stop by a check; no code change",
+  "started_at": "2026-10-20T16:20:23Z",
+  "status": "succeeded",
+  "stderr_file": "charness-artifacts/critique/workers/release-8150-final-followup22/backend.stderr",
+  "stdout_file": "charness-artifacts/critique/workers/release-8150-final-followup22/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "unsupported_reviewer_fields": [
+    "service_tier=priority",
+    "fork_turns=none"
+  ],
+  "workspace": "/home/hwidong/codes/charness"
+}

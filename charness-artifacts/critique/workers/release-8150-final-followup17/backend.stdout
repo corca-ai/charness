@@ -1,0 +1,43 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in final pass",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R-003",
+      "severity": "medium",
+      "summary": "The probe allowance is quantified, but the stated worst-case bounds still omit poll delays after slow checks for supported short windows.",
+      "evidence": [
+        "The spec gives silent-lane and hung-command bounds of `2W` plus one poll plus 360 s, and `3W` plus 540 s.",
+        "`LaneProgressWatch._run()` waits one poll interval after each `tick()` returns. `ProgressRule.on_tick()` calls the fingerprint synchronously; it can run three sequential Git probes, each with a 60-second timeout.",
+        "With W=1 s, a 15-second poll, and 180-second probes, a silent lane can take 390 s to stop: checks start at 15 s and 210 s, and the second probe finishes at 390 s. The stated bound is 377 s.",
+        "For a hung command under the same settings, the three checks can start at 15 s, 210 s, and 405 s, with the stop at 585 s. The stated bound is 543 s."
+      ],
+      "action": "Include the poll wait after each delayed check in both worst-case bounds, or constrain the supported relationship between W and the poll interval so the stated bounds hold."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "F-001: the spec's reused-owner list could be mistaken for a current-state inventory.",
+      "bin": "fixed",
+      "disposition": "The heading identifies it as a baseline before this change."
+    },
+    {
+      "concern": "F-002: watch docstrings could imply the progress rule applies only to require-change lanes.",
+      "bin": "fixed",
+      "disposition": "The watch docstring says every watched lane runs the progress rule and distinguishes the additional require-change guards."
+    },
+    {
+      "concern": "R-003: explicit probe-time allowance resolves the unquantified probe cost.",
+      "bin": "partly fixed; remaining blocker",
+      "disposition": "The 180-second per-check cost is quantified, but poll waits after slow checks can make the stated upper bounds too short."
+    }
+  ],
+  "next_move": "Account for poll waits across delayed checks or limit short-window configurations, then repeat the bounded lock-in review.",
+  "non_claims": [
+    "Reviewed the 17 selected inline semantic inputs once, including the complete release notes and bound docstrings. Did not inspect workspace paths or run tests.",
+    "Did not independently verify unrelated release-note claims against their owners.",
+    "Goal evidence lineage (copy exactly):\n{\n  \"binding\": null,\n  \"disposition\": \"not-goal-bound\",\n  \"draft\": null,\n  \"goal_run\": null,\n  \"kind\": \"charness.goal-lineage\",\n  \"reason\": \"critique review was run without a Goal Run Work Item identity\",\n  \"schema_version\": 1,\n  \"work_item\": null\n}"
+  ]
+}
