@@ -281,6 +281,20 @@ def test_reruns_on_an_unreadable_tree_are_not_progress_and_never_claim_a_loop() 
     assert rule.on_tick(200.0).kind == "message"
 
 
+def test_a_repeat_on_an_unreadable_tree_still_delivers_a_deferred_request() -> None:
+    """Delivery at a completion does not need the tree: a known repeat with
+    nothing else running delivers the deferred request (follow-up review 26)."""
+    rule, tree = _rule()
+    tree.state = None
+    rule.on_event(_completed("cat a.py", "c0"))
+    assert rule.on_tick(100.0) is None  # new outcome: progress
+    rule.on_event({"type": "item.started",
+                   "item": {"id": "c1", "type": "command_execution", "command": "cat a.py"}})
+    assert rule.on_tick(200.0) is None  # deferred
+    request = rule.on_event(_completed("cat a.py", "c1"))
+    assert request is not None and request.reason_code == "no-progress"
+
+
 def test_a_command_started_after_the_request_is_not_killed_until_it_is_a_window_old() -> None:
     rule, _tree = _rule()
     assert rule.on_tick(100.0).kind == "message"  # delivered
@@ -291,6 +305,7 @@ def test_a_command_started_after_the_request_is_not_killed_until_it_is_a_window_
     assert rule.receipt()["checks"][-1]["deferred_for_young_command"] is True
     stop = rule.on_tick(300.0)  # still running a window later, nothing moved
     assert stop is not None and stop.kind == "stop"
+    assert f"interrupted: `{TEST}`" in stop.text  # the stop names what it kills
 
 
 @pytest.mark.parametrize(

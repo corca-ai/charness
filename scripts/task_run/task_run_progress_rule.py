@@ -229,14 +229,14 @@ class ProgressRule:
         self._outcomes[key] = count
         if count == 1:
             self._new_outcomes += 1
-        if state is None:
-            return
         if count > 1 and self._request == "deferred" and not self._in_flight():
             # The deferred request waited for this boundary, and the command
             # produced nothing new: deliver it now. It arrives between checks,
             # so the next check opens its full window rather than stopping.
             self._request = "delivered-between-checks"
             self._pending = self._checkpoint_request(interrupted=[])
+            return
+        if state is None:
             return
         if count < 3 or not LOOP_FAMILIES & set(_timing.command_families(command)):
             return
@@ -330,11 +330,14 @@ class ProgressRule:
                 return self._record(self._checkpoint_request(interrupted=list(in_flight.values())))
             self._mark_answered(False, "unanswered")
             window = _duration(self.window_seconds)
+            running = [f"`{command[:200]}`" if command else "an unnamed command"
+                       for command in in_flight.values()]
+            killed = f"; interrupted: {', '.join(running)}" if running else ""
             return self._record(
                 Action(
                     "stop",
                     f"no commit, file change, or new command result in two consecutive "
-                    f"{window} windows; the checkpoint request went unanswered",
+                    f"{window} windows; the checkpoint request went unanswered{killed}",
                     "no-progress-stop",
                 )
             )
