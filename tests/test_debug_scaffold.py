@@ -310,9 +310,10 @@ def test_debug_followup_record_is_named_for_the_lane_not_a_shared_counter(
 
 def test_debug_followup_lane_names_never_collide_across_distinct_branches(tmp_path: Path) -> None:
     """A lossy slug let `task/foo_bar` and `task/foo-bar` (or `Foo` and `foo`)
-    pick the same record; a branch the slug changes carries a hash of itself."""
+    pick the same record, and a plain `foo-bar` aliased `task/foo-bar`; only
+    a task lane id that is already a slug goes unhashed."""
     names = set()
-    branches = ("task/foo-bar", "task/foo_bar", "task/Foo-bar", "task/foo.bar", "task/__")
+    branches = ("task/foo-bar", "task/foo_bar", "task/Foo-bar", "task/foo.bar", "task/__", "foo-bar")
     for index, branch in enumerate(branches):
         repo = tmp_path / f"repo{index}"
         _seed_resolved_debug_pointer(repo)
