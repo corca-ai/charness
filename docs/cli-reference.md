@@ -411,12 +411,13 @@ options:
                         Premise to check before launch and the decision a
                         BLOCKED result needs; repeatable.
   --timeout-seconds TIMEOUT_SECONDS
-                        Optional hard wall-clock cap per executor attempt;
-                        none by default. A lane is bounded by progress
-                        instead: CHARNESS_TASK_RUN_PROGRESS_WINDOW_SECONDS
-                        (default 1200) asks for a checkpoint after a window
-                        with no commit, file change, or new command result and
-                        stops the lane after a second one.
+                        Optional hard wall-clock cap per executor invocation
+                        (each preemption or resume starts a new one); none by
+                        default. A lane is bounded by progress instead:
+                        CHARNESS_TASK_RUN_PROGRESS_WINDOW_SECONDS (default
+                        1200) asks for a checkpoint after a window with no
+                        commit, file change, or new command result and stops
+                        the lane at a later empty check.
   --no-progress-seconds NO_PROGRESS_SECONDS
                         First-edit budget for require-change lanes: seconds
                         from CONTRACT-READ to the first EDITING or scoped

@@ -73,7 +73,7 @@ Exact text is deliberate: it catches the reported case (the same focused command
 
 ## Launcher contract
 
-A launcher stops passing `--timeout-seconds`. It may set `CHARNESS_TASK_RUN_PROGRESS_WINDOW_SECONDS` (per invocation or globally); otherwise the default applies. A launcher that keeps passing `--timeout-seconds 5400` keeps a 90-minute hard cap until it drops the flag. Nothing needs to watch the lane for the stop to happen.
+A launcher stops passing `--timeout-seconds`. It may set `CHARNESS_TASK_RUN_PROGRESS_WINDOW_SECONDS` (per invocation or globally); otherwise the default applies. A launcher that keeps passing `--timeout-seconds 5400` keeps a 90-minute cap per executor invocation (each preemption or resume starts a new one) until it drops the flag. Nothing needs to watch the lane for the stop to happen.
 
 ## Non-goals and deferred
 
