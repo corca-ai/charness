@@ -102,13 +102,16 @@ class StampingPipe:
     once the executor's process group is killed, everything it wrote is in
     the kernel pipe buffer, so the drain reads it all.
 
-    Two things can still lose bytes, and neither is silent: a descendant
+    Three things can still lose bytes, and none is silent: a descendant
     outside the killed group that keeps the pipe open (its later output is
-    not captured, `writer_open_at_close`), and a sink write failure (`error`;
-    the reader keeps reading and counts `dropped_bytes` so the executor never
-    blocks on a full pipe). `capture()` reports both; the sink is written
-    only under a lock that `close()` takes before it returns, so a reader
-    that outlives `close()` can never write into a sink the caller closed.
+    not captured, `writer_open_at_close`), a sink write that fails or is
+    short (`error`; the reader keeps reading and counts `dropped_bytes`, so
+    the executor does not block on a full pipe), and a sink write that hangs.
+    A hung write holds the reader, so the pipe stops draining; `close()`
+    waits for it only a bounded time, then returns with `error` set while
+    that write may still be in flight. Every later write is dropped, never
+    sent to a sink the caller closed, but the in-flight one is the sink's
+    own: a caller that closes a hung sink closes it under that write.
     """
 
     def __init__(
