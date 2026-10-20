@@ -194,6 +194,8 @@ def test_a_non_positive_window_turns_the_stop_off() -> None:
 
     assert rule.on_tick(10_000.0) is None
     assert rule.receipt()["stop_enabled"] is False
+    # `0` turns the whole rule off, loop check included (claims review B1).
+    assert [rule.on_event(_completed(TEST, f"c{n}")) for n in range(1, 6)] == [None] * 5
 
 
 def test_worktree_fingerprint_sees_edits_commits_and_untracked_but_not_ignored(

@@ -180,8 +180,8 @@ class ProgressRule:
 
     def on_event(self, event: Mapping[str, Any]) -> Action | None:
         with self._lock:
-            if self.stop_reason is not None:
-                return None  # stopped: no message can reach the lane any more
+            if self.stop_reason is not None or self.window_seconds <= 0:
+                return None  # stopped, or the rule is off: no message reaches the lane
             self._count_edit_outcome(event)
             self._timeline.feed(None, event)
             action, self._pending = self._pending, None
