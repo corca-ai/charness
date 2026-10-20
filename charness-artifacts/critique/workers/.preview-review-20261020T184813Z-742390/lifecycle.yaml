@@ -1,0 +1,111 @@
+schema_version: charness.reviewer_lifecycle.v1
+status: dry-run-ready
+execution_state: preflight-blocked
+lifecycle_state: preflight-blocked
+reviewer_started: false
+delivery_state: none
+verdict_state: not-applicable
+review_verdict: null
+classification: null
+approval_eligible: false
+output:
+  state: none
+  approval_eligible: false
+  artifacts: []
+output_state: none
+failure_identity: null
+next_move: repair the named preflight boundary and rerun; reviewer did not start
+runner_returncode: null
+runner_status: dry-run-ready
+boundary_mode: read-only-worker
+boundary_ok: true
+boundary_reason: null
+paths:
+  packet: charness-artifacts/critique/.preview-review-20261020T184813Z-742390-packet.json
+  schema: charness-artifacts/critique/workers/.preview-review-20261020T184813Z-742390/bounded-review-result.schema.json
+  capability: charness-artifacts/critique/workers/.preview-review-20261020T184813Z-742390/capability.json
+  prompt: charness-artifacts/critique/workers/.preview-review-20261020T184813Z-742390/review-prompt.md
+  plan: charness-artifacts/critique/workers/.preview-review-20261020T184813Z-742390/run-plan.json
+  summary: charness-artifacts/critique/workers/.preview-review-20261020T184813Z-742390/lifecycle.yaml
+ok: true
+carrier_ok: true
+packet_verification:
+  ok: true
+  status: current
+  reason: current
+  reason_code: current
+  expected_kind: charness.critique_prepare_packet
+  packet_path: charness-artifacts/critique/.preview-review-20261020T184813Z-742390-packet.json
+  packet_sha256: 9a8dc4362c0228dbdd3e05cf317ad39ce1b501f34bb3858edbb4dbb5d46bc73d
+  identity_sha256: 5bd0c6d7ac632081ac4a62b530e7fd0b0342bf6d154f2266a2511edbbd9d2271
+capability_envelope_sha256: 99de039ccddf5d6165e190a7014995ac126ae9fd638b9b1c110164a3323eb222
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+backend: codex_exec
+reviewer_tier: high-leverage
+timeout_seconds: 900
+scope: design premortem for replacing the task-run lane wall-clock timeout with a
+  single progress rule (charness-artifacts/spec/lane-progress-rule.md), before implementation;
+  the listed code files are the current owners it would extend
+lens: '(Premortem) assume this shipped and lanes got worse within a week: what failed?
+  Probe: (1) false stops or false loop alarms on productive lanes (fingerprint at
+  command completion, command-text keys, families, window default 1200 s, long legitimate
+  commands); (2) preemption by SIGKILL plus session resume: lost work, duplicated
+  or confusing resumed prompts, races with normal exit, the existing failed-resume
+  relaunch branch, attempts/retry classification, and Muse; (3) whether a dead or
+  silent executor is really reclaimed without any human or second timer, including
+  an unobservable worktree; (4) is this the smallest change that serves the operator''s
+  words, and does it duplicate an existing owner (first-edit budget, BLOCKED grace,
+  steer queue)? Separate real blockers from over-worry.'
+semantic_input:
+  entries:
+  - path: charness-artifacts/spec/lane-progress-rule.md
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/.preview-review-20261020T184813Z-742390/semantic-input/0000-content.bin
+    content_sha256: 56f80a7318cd078734dccc5d790dfd2b01e2fbbe371700f3c83573cc742b85ef
+    carrier_sha256: 10b3783495b88307f0a955d200e7c9021406fb0981d5e6cd597d337e63e3ebe5
+    source: working-tree:charness-artifacts/spec/lane-progress-rule.md
+    size_bytes: 7800
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_event_timing.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/.preview-review-20261020T184813Z-742390/semantic-input/0001-content.bin
+    content_sha256: 205707a3f7e30adec41ce1f8f78c7ceb7c2a25b7577e048047c1f1bdd196bf41
+    carrier_sha256: 720699675dda8ced9bea455a4cf83d3fa5f8c9bb9275854d9f192ac7801778d2
+    source: working-tree:scripts/task_run/task_run_event_timing.py
+    size_bytes: 14814
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_execution.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/.preview-review-20261020T184813Z-742390/semantic-input/0002-content.bin
+    content_sha256: 029acbb5395afc1d690237d335f3f878af5643fb29c1ec50c8457b5376dea315
+    carrier_sha256: 5e182443f6d580b68db5f81c25a84255cda7ba2f9d3f36e7ca45f343d15bf3c1
+    source: working-tree:scripts/task_run/task_run_execution.py
+    size_bytes: 20213
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_lane_runner.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/.preview-review-20261020T184813Z-742390/semantic-input/0003-content.bin
+    content_sha256: 72b2044aa0f81d97ba65a522789906e6fe6d581d3f155aba7b5830848bb21320
+    carrier_sha256: d44d196e23ca950b3ce9541b6b9ea464bdaa8730b81dc3b387358502bd4dd206
+    source: working-tree:scripts/task_run/task_run_lane_runner.py
+    size_bytes: 21091
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_progress.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/.preview-review-20261020T184813Z-742390/semantic-input/0004-content.bin
+    content_sha256: 65a4f67a7e289bd5d2f1173569fca597ba1064caf62687d50f82af2a58bfa3d5
+    carrier_sha256: 97426a2c75197de6be7c420f4d058c42b8a7138cf2246820e24321abb41743d5
+    source: working-tree:scripts/task_run/task_run_progress.py
+    size_bytes: 23235
+    prompt_encoding: utf-8
+  manifest: charness-artifacts/critique/workers/.preview-review-20261020T184813Z-742390/semantic-input/manifest.json
+  size_bytes: 87153
+goal_lineage:
+  kind: charness.goal-lineage
+  schema_version: 1
+  disposition: not-goal-bound
+  draft: null
+  binding: null
+  goal_run: null
+  work_item: null
+  reason: critique review was run without a Goal Run Work Item identity

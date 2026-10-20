@@ -1,0 +1,75 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Raskin/Minto: interface and minimality",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "preemption-state-is-not-guaranteed",
+      "severity": "blocker",
+      "summary": "The spec promises preemption leaves the worktree untouched and is not a WIP checkpoint, but preemption can kill an active command before its effects are complete. The resume fallback also relaunches in place rather than resuming the same session, so the lane may not retain the context needed to reconcile partial effects.",
+      "evidence": [
+        "The spec says a command longer than W is preempted, and a preempted invocation leaves the worktree untouched.",
+        "The spec permits relaunch-in-place when no session id is known; the Codex probe covered a running sleep command and observed a missing tool-call output."
+      ],
+      "action": "Define preemption as potentially leaving partial worktree or external-command effects. Specify how the carrier observes and preserves that state before resuming, including what happens when session resume fails; qualify the untouched-worktree claim."
+    },
+    {
+      "id": "checkpoint-response-semantics",
+      "severity": "high",
+      "summary": "The stop rule says to stop when a checkpoint request goes unanswered, but defines progress rather than an answer signal. A textual acknowledgment or final report is not among the listed progress signals; conversely, one novel command outcome clears the request even if it does not address it.",
+      "evidence": [
+        "The rule requests a commit or final report, a BLOCKED reply, or continued work, then stops after the next W with no progress.",
+        "Progress is defined as a commit, file change, or a new command outcome; the receipt proposal records delivered messages but does not define acknowledgment."
+      ],
+      "action": "Define whether an answer is a protocol acknowledgment, observable work, or simply the lane ending. Record request delivery and response separately, and state which signal clears the outstanding request."
+    },
+    {
+      "id": "preemption-accounting-collides-with-relaunch-owner",
+      "severity": "high",
+      "summary": "Routing preemption through the existing steer delivery path risks recording a preemption as a relaunch, despite the spec saying it is not an attempt. The current execution owner increments its invocation counter for steer deliveries and passes that count to execution-friction recording.",
+      "evidence": [
+        "In task_run_execution.py, steer delivery increments invocation, and the final friction record uses invocation as relaunch_count.",
+        "The spec says preemptions are not attempts and adds a separate execution.preemptions count; task_run_lane_runner.py delegates attempt ownership to task_run_attempts."
+      ],
+      "action": "Specify separate accounting for preemptions, relaunches, and attempts, including the resume-failure path, so receipts and friction metrics preserve the distinction."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Keeping --timeout-seconds as an explicit opt-in conflicts with deleting the wall-clock default.",
+      "bin": "over-worry",
+      "disposition": "These are consistent: removing the default leaves callers able to choose a hard cap. A launcher still passing --timeout-seconds 5400 remains capped until that call site removes the argument."
+    },
+    {
+      "concern": "The existing first-edit --no-progress-seconds budget and BLOCKED grace duplicate the new progress window.",
+      "bin": "over-worry",
+      "disposition": "They govern distinct states: analysis before the first scoped edit and lingering after a declared block. Retaining them is coherent if the spec keeps their precedence explicit."
+    },
+    {
+      "concern": "Reusing the steer queue duplicates its existing owner.",
+      "bin": "not a duplicate, with a new boundary",
+      "disposition": "The queue owns message delivery; it currently delivers at a turn boundary. Mid-turn preemption is new carrier behavior, so reuse avoids a second message queue but still needs the state and accounting contract above."
+    },
+    {
+      "concern": "The 3rd/4th/5th test, lint, and typecheck loop thresholds duplicate the window rule.",
+      "bin": "simplifiable, not a blocker",
+      "disposition": "The window eventually catches repeated identical commands, while these thresholds catch them sooner and address the reported repeated-test cases. Keep them only if that faster intervention is an explicit requirement."
+    },
+    {
+      "concern": "An existing launcher continues to pass --timeout-seconds 5400.",
+      "bin": "real migration obligation",
+      "disposition": "The spec directs the launcher to stop passing the flag, which makes the intended contract clear. The old invocation remains capped at 5400 seconds until the launcher is updated; identify and verify that consuming call site."
+    }
+  ],
+  "next_move": "Resolve the preemption recovery and checkpoint-response contracts, and state how preemptions remain distinct from relaunches and attempts. Then confirm the 5400-second launcher call site is removed before implementation.",
+  "non_claims": [
+    "The reported consumer-lane counts and Codex resume probe were not independently verified.",
+    "Muse resume after SIGKILL is explicitly unprobed in the spec.",
+    "No structured targets were supplied, so target observations are null."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "8020406687a2dec30afd4b2caa153288e4c1f60123ba903c26a5af941c410a98",
+  "reviewed_input_identity_sha256": "5bd0c6d7ac632081ac4a62b530e7fd0b0342bf6d154f2266a2511edbbd9d2271"
+}

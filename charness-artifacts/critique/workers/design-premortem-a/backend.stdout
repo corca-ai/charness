@@ -1,0 +1,77 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Gawande premortem, operational",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "LP-1",
+      "severity": "blocker",
+      "summary": "Exact command-text keys let recurring loops evade the family guard and can misclassify changed outcomes.",
+      "evidence": [
+        "The spec counts a new outcome by the pair (command text, worktree fingerprint at completion), and keys the 3rd/4th/5th family actions by that same pair.",
+        "task_run_event_timing.command_families uses regexes to identify families, but does not normalize commands into equivalent keys.",
+        "A loop that varies flags, wrappers, or command text can produce a fresh key each time, count as progress, and avoid the repeat thresholds. Conversely, the same command and tree with a changed external test result is still the same key."
+      ],
+      "action": "Define command equivalence and outcome semantics before implementation. Specify how syntactic variations, exit status, and output affect the loop budget, while bounding false alarms across distinct commands in the same family."
+    },
+    {
+      "id": "LP-2",
+      "severity": "blocker",
+      "summary": "The 1200-second window still SIGKILLs productive long commands and can turn one interruption into a stop.",
+      "evidence": [
+        "The spec counts completed command outcomes, not an active command, as progress; after W without a qualifying signal, checkpoint delivery preempts by killing the executor process group.",
+        "A command longer than W is interrupted, and if the resumed lane has no qualifying progress in the next W, the outstanding request causes a stop.",
+        "The cited Codex probe covered `sleep 40` and observed a missing tool-call output. It does not establish safe recovery for arbitrary commands or their side effects; Muse resume was not probed."
+      ],
+      "action": "Set the interruption contract for long commands, including side effects, lost output, reruns, and the second-W stop. Demonstrate that the supported executors can recover safely, or revise the rule so productive long work is not indistinguishable from a hung command."
+    },
+    {
+      "id": "LP-3",
+      "severity": "blocker",
+      "summary": "Expected preemption is not distinguished from failed execution or failed session resume.",
+      "evidence": [
+        "task_run_execution._run_executor_invocation initializes `timed_out` and `interrupted`; a child killed by SIGKILL can instead return a nonzero exit code.",
+        "In _execute_codex, a nonzero result for `resume_path == \"session-resume\"` enters the existing `relaunch-in-place` branch. A deliberate preemption during a resumed invocation can therefore take the failed-resume relaunch path.",
+        "The spec says preemption is not a failure, attempt, or WIP checkpoint, but task_run_progress._execute_watched_lane delegates attempt handling to task_run_attempts, and the supplied reviewed paths do not include that owner or the checkpoint/state owner.",
+        "Muse resume is explicitly unprobed, while the shared execution flow also has a relaunch-in-place fallback that may repeat work in the same worktree."
+      ],
+      "action": "Define an explicit preempted result and its transitions across normal exit races, resume failure, attempt/retry accounting, checkpoint creation, and terminal-state classification. Include the attempt and checkpoint/state owners in the implementation contract and establish Muse resume and fallback behavior before relying on it."
+    },
+    {
+      "id": "LP-4",
+      "severity": "high",
+      "summary": "The no-second-timer claim is not supported when the worktree or watcher is unobservable.",
+      "evidence": [
+        "The spec promises autonomous reclamation within 2W plus a poll, including for a dead or silent executor, and applies the rule to every lane.",
+        "task_run_progress._worktree_liveliness returns None when observation fails; scoped_diff_present returns None and suppresses the existing first-edit stop in that case.",
+        "LaneProgressWatch._run catches polling exceptions and continues. The existing build_progress_watch also returns None for non-require-change lanes, so the proposed all-lane coverage needs a new always-running observation path.",
+        "The spec does not say whether an unknown fingerprint pauses the window, counts as no progress, or triggers a stop. Those choices respectively risk unreclaimed silence or killing productive but unobservable work."
+      ],
+      "action": "Specify tri-state progress and watcher-failure behavior. Identify independent observable signals that allow a silent executor to be reclaimed while the worktree is unavailable, and ensure observer failure itself cannot leave an executor running indefinitely after the default timeout is removed."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Keeping the first-edit budget and BLOCKED grace conflicts with the operator's request for no second timer.",
+      "bin": "over-worry",
+      "disposition": "The spec scopes these to pre-edit analysis and a declared blocker; they are not a general hang backstop. Clarify the 'one knob' wording, but this is not the main blocker."
+    },
+    {
+      "concern": "Retaining --timeout-seconds as an explicit opt-in means the wall-clock replacement is incomplete.",
+      "bin": "over-worry",
+      "disposition": "The spec removes the default and says launchers stop forwarding it. An explicit caller-selected cap does not undermine the proposed default behavior."
+    },
+    {
+      "concern": "Durable worktree changes and first-time command/tree keys can register progress while a lane iterates.",
+      "bin": "mitigating",
+      "disposition": "These signals can prevent false stops for ordinary edits and new commands, but they do not resolve long-command interruption, key variation, or unobservable-state behavior."
+    }
+  ],
+  "next_move": "Revise the design contract before implementation: define command equivalence and outcome identity, settle safe preemption behavior for long commands, specify preempted versus failed-resume state transitions across attempt/checkpoint owners, and define fail-safe behavior when worktree or watcher observations are unavailable.",
+  "non_claims": [
+    "{\n  \"binding\": null,\n  \"disposition\": \"not-goal-bound\",\n  \"draft\": null,\n  \"goal_run\": null,\n  \"kind\": \"charness.goal-lineage\",\n  \"reason\": \"critique review was run without a Goal Run Work Item identity\",\n  \"schema_version\": 1,\n  \"work_item\": null\n}",
+    "No implementation, tests, or runtime verification were performed; this review evaluates the supplied semantic payload.",
+    "Muse resume behavior and the reported consuming-repo lane counts were not independently verified."
+  ]
+}

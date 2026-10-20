@@ -1,0 +1,55 @@
+{
+  "kind": "charness.semantic_input_carrier.v1",
+  "entries": [
+    {
+      "path": "charness-artifacts/spec/lane-progress-rule.md",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/design-premortem-a/semantic-input/0000-content.bin",
+      "content_sha256": "56f80a7318cd078734dccc5d790dfd2b01e2fbbe371700f3c83573cc742b85ef",
+      "carrier_sha256": "10b3783495b88307f0a955d200e7c9021406fb0981d5e6cd597d337e63e3ebe5",
+      "source": "working-tree:charness-artifacts/spec/lane-progress-rule.md",
+      "size_bytes": 7800,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/task_run/task_run_event_timing.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/design-premortem-a/semantic-input/0001-content.bin",
+      "content_sha256": "205707a3f7e30adec41ce1f8f78c7ceb7c2a25b7577e048047c1f1bdd196bf41",
+      "carrier_sha256": "720699675dda8ced9bea455a4cf83d3fa5f8c9bb9275854d9f192ac7801778d2",
+      "source": "working-tree:scripts/task_run/task_run_event_timing.py",
+      "size_bytes": 14814,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/task_run/task_run_execution.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/design-premortem-a/semantic-input/0002-content.bin",
+      "content_sha256": "029acbb5395afc1d690237d335f3f878af5643fb29c1ec50c8457b5376dea315",
+      "carrier_sha256": "5e182443f6d580b68db5f81c25a84255cda7ba2f9d3f36e7ca45f343d15bf3c1",
+      "source": "working-tree:scripts/task_run/task_run_execution.py",
+      "size_bytes": 20213,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/task_run/task_run_lane_runner.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/design-premortem-a/semantic-input/0003-content.bin",
+      "content_sha256": "72b2044aa0f81d97ba65a522789906e6fe6d581d3f155aba7b5830848bb21320",
+      "carrier_sha256": "d44d196e23ca950b3ce9541b6b9ea464bdaa8730b81dc3b387358502bd4dd206",
+      "source": "working-tree:scripts/task_run/task_run_lane_runner.py",
+      "size_bytes": 21091,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/task_run/task_run_progress.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/design-premortem-a/semantic-input/0004-content.bin",
+      "content_sha256": "65a4f67a7e289bd5d2f1173569fca597ba1064caf62687d50f82af2a58bfa3d5",
+      "carrier_sha256": "97426a2c75197de6be7c420f4d058c42b8a7138cf2246820e24321abb41743d5",
+      "source": "working-tree:scripts/task_run/task_run_progress.py",
+      "size_bytes": 23235,
+      "prompt_encoding": "utf-8"
+    }
+  ]
+}

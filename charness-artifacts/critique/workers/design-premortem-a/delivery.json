@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "design-premortem-a",
+      "scope": "design premortem for replacing the task-run lane wall-clock timeout with a single progress rule (charness-artifacts/spec/lane-progress-rule.md), before implementation; the listed code files are the current owners it would extend",
+      "packet_identity": "8020406687a2dec30afd4b2caa153288e4c1f60123ba903c26a5af941c410a98",
+      "parent_receipt_identity": "parent-c09e4f70d5d46e1a2a64d71ecf5de6a33fba00ca55de507b",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T09:50:29Z",
+      "history": [
+        {
+          "event_id": "f4f353065e814379b09ff52c4b88862c",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T09:48:25Z",
+          "attempt_id": "design-premortem-a",
+          "scope": "design premortem for replacing the task-run lane wall-clock timeout with a single progress rule (charness-artifacts/spec/lane-progress-rule.md), before implementation; the listed code files are the current owners it would extend",
+          "packet_identity": "8020406687a2dec30afd4b2caa153288e4c1f60123ba903c26a5af941c410a98",
+          "parent_receipt_identity": "parent-c09e4f70d5d46e1a2a64d71ecf5de6a33fba00ca55de507b",
+          "capability_launch_envelope_sha256": "99de039ccddf5d6165e190a7014995ac126ae9fd638b9b1c110164a3323eb222"
+        },
+        {
+          "event_id": "dda85c6ed90c4481b3fd295020c645a5",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T09:48:25Z",
+          "attempt_id": "design-premortem-a",
+          "scope": "design premortem for replacing the task-run lane wall-clock timeout with a single progress rule (charness-artifacts/spec/lane-progress-rule.md), before implementation; the listed code files are the current owners it would extend",
+          "packet_identity": "8020406687a2dec30afd4b2caa153288e4c1f60123ba903c26a5af941c410a98",
+          "parent_receipt_identity": "parent-c09e4f70d5d46e1a2a64d71ecf5de6a33fba00ca55de507b",
+          "capability_launch_envelope_sha256": "99de039ccddf5d6165e190a7014995ac126ae9fd638b9b1c110164a3323eb222"
+        },
+        {
+          "event_id": "f230c6df06294e0ca7690a6cc7eb432a",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T09:50:29Z",
+          "attempt_id": "design-premortem-a",
+          "scope": "design premortem for replacing the task-run lane wall-clock timeout with a single progress rule (charness-artifacts/spec/lane-progress-rule.md), before implementation; the listed code files are the current owners it would extend",
+          "packet_identity": "8020406687a2dec30afd4b2caa153288e4c1f60123ba903c26a5af941c410a98",
+          "parent_receipt_identity": "parent-c09e4f70d5d46e1a2a64d71ecf5de6a33fba00ca55de507b",
+          "capability_launch_envelope_sha256": "99de039ccddf5d6165e190a7014995ac126ae9fd638b9b1c110164a3323eb222",
+          "findings_identity": "55158be3a1cb968e21e774536f552ca9460a0a644f6443d398c74e8501933581"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "5bd0c6d7ac632081ac4a62b530e7fd0b0342bf6d154f2266a2511edbbd9d2271",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "3751b4fc19991869a35b79a07c456154b3c1ce27deb97dda1d10df6b5ad43f1e",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "99de039ccddf5d6165e190a7014995ac126ae9fd638b9b1c110164a3323eb222",
+      "output_file": "charness-artifacts/critique/workers/design-premortem-a/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/design-premortem-a/receipt.json",
+      "producer_run_id": "run-design-premortem-a",
+      "findings_identity": "55158be3a1cb968e21e774536f552ca9460a0a644f6443d398c74e8501933581"
+    }
+  ]
+}

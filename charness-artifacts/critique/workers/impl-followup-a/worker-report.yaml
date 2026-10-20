@@ -1,0 +1,77 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 99de039ccddf5d6165e190a7014995ac126ae9fd638b9b1c110164a3323eb222
+capability_launch_envelope_sha256: 99de039ccddf5d6165e190a7014995ac126ae9fd638b9b1c110164a3323eb222
+capability_collection_envelope_sha256: 99de039ccddf5d6165e190a7014995ac126ae9fd638b9b1c110164a3323eb222
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'follow-up of the lane progress rule design premortem, now implemented (commits
+  c9ba15393 and fec6ba651 on feat/lane-progress-rule): does the implementation honor
+  the revised spec and resolve LP-2 (no kill of a command younger than the window),
+  LP-3 (preemption distinct from failed resume, attempts, relaunch friction, WIP),
+  LP-4 (three-valued observation; silent executor still reclaimed) and B-2 (request
+  answer semantics)? LP-1 is a recorded non-claim.'
+attempt_id: impl-followup-a
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 0ef5167753d0333502b76f62a935fe35245dc19079fc20c2073bf5ebf2730f20
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: charness-artifacts/critique/workers/impl-followup-a/receipt.json
+ledger_path: charness-artifacts/critique/workers/impl-followup-a/delivery.json
+producer_run_id: run-impl-followup-a
+producer_binding:
+  output_file: charness-artifacts/critique/workers/impl-followup-a/result.json
+  receipt_file: charness-artifacts/critique/workers/impl-followup-a/receipt.json
+  producer_run_id: run-impl-followup-a
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: 2f296bcf543d11f997dde7936665312b1e92ea4f3e7887273ee741fada43ff50
+receipt_output_sha256: 2f296bcf543d11f997dde7936665312b1e92ea4f3e7887273ee741fada43ff50
+packet_identity: 6432311496272658385e53c43932f6ec7e9d2ae96e339a29c2c1890029e844fc
+reviewed_input_identity: 4761b20162d63ec8aa4514fae1201b29c3d98515fb84e0d57b0a51c567dba7d3
+parent_receipt_identity: parent-c31c49e63a90dbd15901c607d0f981790fd5e4a489466151
+provenance:
+  scope: 'follow-up of the lane progress rule design premortem, now implemented (commits
+    c9ba15393 and fec6ba651 on feat/lane-progress-rule): does the implementation honor
+    the revised spec and resolve LP-2 (no kill of a command younger than the window),
+    LP-3 (preemption distinct from failed resume, attempts, relaunch friction, WIP),
+    LP-4 (three-valued observation; silent executor still reclaimed) and B-2 (request
+    answer semantics)? LP-1 is a recorded non-claim.'
+  packet_identity: 6432311496272658385e53c43932f6ec7e9d2ae96e339a29c2c1890029e844fc
+  reviewed_input_identity: 4761b20162d63ec8aa4514fae1201b29c3d98515fb84e0d57b0a51c567dba7d3
+  parent_receipt_identity: parent-c31c49e63a90dbd15901c607d0f981790fd5e4a489466151
+  expected_targets_sha256: null
+  attempt_id: impl-followup-a
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 0ef5167753d0333502b76f62a935fe35245dc19079fc20c2073bf5ebf2730f20
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 99de039ccddf5d6165e190a7014995ac126ae9fd638b9b1c110164a3323eb222
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

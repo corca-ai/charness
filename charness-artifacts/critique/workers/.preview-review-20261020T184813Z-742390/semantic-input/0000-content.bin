@@ -1,0 +1,73 @@
+# Lane progress rule: replace the wall-clock lane timeout
+
+Status: proposed (2026-10-20), pending critique before implementation.
+
+## Source (verbatim)
+
+Operator, 2026-10-20 18:5x KST: "한쪽은 시간이 짧아서 문제, 다른 쪽은 길어서 문제네. 이 시간 제한 자체를 없애고, 대신 시간 제한으로 이루려고 했던 걸 더 효율적/효과적으로 할 더 좋은 방법이 없나?"
+
+Operator, 2026-10-20 19:0x KST, on a proposed separate generous backstop timer: "'넉넉한 안전판'을 따로 둘 필요가 있나? 어차피 계속 볼텐데? 레스 벗 베터로 할 수는 없나?" The primary's restatement: drop the separate backstop; keep a single no-progress rule. "No progress" means no new commit, no file change and no new command outcome since the last check. Its terminal action is charness itself stopping the lane after a checkpoint request goes unanswered. A dead or silent executor is the extreme case of the same rule, so there is no second timer. The stop must not depend on a human or the primary watching. Delete the wall-clock default.
+
+Evidence from the consuming repo (ceal, 2026-10-20, reported by its primary, not re-verified here): lanes run with `--timeout-seconds 5400`; 24 of about 133 lanes timed out; one sweep timed out four times in a row, the last while fixing pre-commit findings just before its commit. Each timeout leaves a `task-run: WIP candidate — interrupted mid-edit — state unknown` commit that cannot be merged and must be continued. One lane ran its focused tests 39 times, another 56 times.
+
+## What the timeout was for
+
+(a) stop a lane that loops without progress; (b) free capacity; (c) give the orchestrator a judgment point. A wall clock does all three badly: it kills productive lanes mid-edit and lets a looping lane burn its whole budget.
+
+## Current owners reused
+
+- `charness task run --timeout-seconds` (default 3600) is the only wall clock; `run_monitored_phase` kills the executor at it and the carrier commits a WIP candidate.
+- `LaneProgressWatch` (`scripts/task_run/task_run_progress.py`) already polls lane logs and the worktree every 15 s beside a require-change lane, owns the kill of the executor's process group, records `NO-PROGRESS-STOP:` and `progress_stopped`, and enforces two narrower guards: the first-edit budget (CONTRACT-READ to first EDITING or scoped diff, `--no-progress-seconds`, default 300 s) and the BLOCKED linger grace (60 s).
+- The steer queue (`charness task steer <id> --message`, `steer.queue.jsonl`) delivers typed messages only at an executor turn boundary: the carrier resumes the same session (`codex exec resume <thread>` / Muse `--session-id`) with the messages appended. A Codex lane is usually one long turn, so today a message reaches it only after it finishes.
+- v8.15.0 stamps every executor event line as it arrives (`StampingPipe`), and `task_run_event_timing` already parses Codex `command_execution` and Muse `tool.bash` start/completion into commands and families (test, lint, typecheck).
+
+## What is missing, and the one new mechanism
+
+Mid-turn delivery. The carrier gains **preemption**: to deliver its own message now, it kills the executor's process group at that moment and resumes the same session with the message, through the existing steer delivery path (falling back to relaunch-in-place in the same worktree when no session id is known). Probe on this machine (codex-cli 0.163.0): a `codex exec --json` session SIGKILLed during a running `sleep 40` command resumed with `codex exec resume <thread>`, kept its context (it quoted the first instruction), and logged only a missing tool-call output. A preempted invocation is not a failure, not an attempt, and not a WIP checkpoint; the worktree is untouched and the lane continues.
+
+## The rule
+
+One knob: the progress window `W` (`--progress-window-seconds`, env `CHARNESS_TASK_RUN_PROGRESS_WINDOW_SECONDS`, default 1200 s; `0` turns the stop off). It applies to every lane run through `charness task run`, not only require-change lanes.
+
+Progress since the last check is any of:
+
+1. a new commit (worktree `HEAD` moved);
+2. a file change (worktree fingerprint changed: `HEAD`, `git status --porcelain`, and the tracked diff; ignored files do not count);
+3. a new command outcome: a completed command whose pair (command text, worktree fingerprint at completion) has not completed before in this lane. Re-running the same command on an unchanged tree is not a new outcome.
+
+Every `W` the watch checks:
+
+- progress: nothing happens; any outstanding checkpoint request is cleared.
+- no progress, no request outstanding: charness sends a **checkpoint request** by preemption: "No commit, file change, or new command result for the last W. If your work has a coherent state, commit it (hooks must pass; never --no-verify) and write your final report with what remains; if you are blocked, reply BLOCKED: <reason>. If you are still progressing, continue; charness stops this lane if the next W also shows none."
+- no progress, request outstanding (unanswered): charness **stops** the lane (`NO-PROGRESS-STOP:`, `progress_stopped`), through the existing guard kill.
+
+A hung command, a silent model, and a dead executor all show no progress, so they are reclaimed within `2W` plus one poll by the same rule; there is no second timer. A command legitimately longer than `W` is preempted once with the request (the lane is told the command was interrupted and may narrow it), not stopped.
+
+### Loops
+
+Evaluated at each command completion (the lane is between tool calls), for commands in the test, lint, or typecheck families, keyed by (command text, worktree fingerprint at completion):
+
+- 3rd completion of the same key (no file change between runs): preempt with "switch to the debug skill: read the failure, state one falsifiable hypothesis, change code, test, or approach before rerunning".
+- 4th: preempt with the checkpoint request ("commit the coherent part, write your final report naming what is unresolved, and stop; a further identical run stops this lane").
+- 5th: stop (the checkpoint request went unanswered).
+
+Because repeats are not new outcomes, a lane that loops on any command without changing files also falls to the window rule.
+
+## Wall-clock default
+
+`--timeout-seconds` loses its default (none: the executor runs until it ends, preempted or stopped only by the rule). The flag stays as an explicit hard cap for callers that want one; it is no longer recommended for lanes, and its stop still produces the WIP candidate. `task run --detach` stops forwarding a default. Internal reviewer and self-review carriers keep their own explicit bounds.
+
+## Receipt and live view
+
+`progress_guard` gains the window, its source, every check (progress or not), each checkpoint or loop message delivered, and the preemption count; `execution.preemptions` counts carrier preemptions. The `live` snapshot shows the window state (seconds since last progress, request outstanding) so `task status` readers see it without tailing logs.
+
+## Launcher contract
+
+A launcher stops passing `--timeout-seconds`. It may pass `--progress-window-seconds N` or set `CHARNESS_TASK_RUN_PROGRESS_WINDOW_SECONDS`; otherwise the default applies. Nothing needs to watch the lane for the stop to happen.
+
+## Non-goals and deferred
+
+- The first-edit budget and BLOCKED grace stay as they are (they bound analysis-before-edit and a declared block, not progress).
+- No periodic checkpoint request for a lane that is progressing; it continues until it ends.
+- Relabeling the WIP commit a progress stop leaves (the tree has been static for at least W, so "interrupted mid-edit" overstates it) is deferred.
+- Muse resume after a SIGKILL is not probed on this machine; Muse falls back to relaunch-in-place if its resume fails.

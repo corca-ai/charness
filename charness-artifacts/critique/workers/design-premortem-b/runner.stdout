@@ -1,0 +1,71 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 99de039ccddf5d6165e190a7014995ac126ae9fd638b9b1c110164a3323eb222
+capability_launch_envelope_sha256: 99de039ccddf5d6165e190a7014995ac126ae9fd638b9b1c110164a3323eb222
+capability_collection_envelope_sha256: 99de039ccddf5d6165e190a7014995ac126ae9fd638b9b1c110164a3323eb222
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: design premortem for replacing the task-run lane wall-clock timeout with a
+  single progress rule (charness-artifacts/spec/lane-progress-rule.md), before implementation;
+  the listed code files are the current owners it would extend
+attempt_id: design-premortem-b
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 1858847e49d3d47b5c7a147341465904cb0b341f287c18de5abfda3c638a3665
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/.cache/tmp/charness/runtime/c6780acf9fbc9e28/scratch/critique-review/review-2b5f62f50ea8db49485dc9a702c611db/receipt.json
+ledger_path: /home/hwidong/.cache/tmp/charness/runtime/c6780acf9fbc9e28/scratch/critique-review/review-2b5f62f50ea8db49485dc9a702c611db/delivery.json
+producer_run_id: run-design-premortem-b
+producer_binding:
+  output_file: /home/hwidong/.cache/tmp/charness/runtime/c6780acf9fbc9e28/scratch/critique-review/review-2b5f62f50ea8db49485dc9a702c611db/result.json
+  receipt_file: /home/hwidong/.cache/tmp/charness/runtime/c6780acf9fbc9e28/scratch/critique-review/review-2b5f62f50ea8db49485dc9a702c611db/receipt.json
+  producer_run_id: run-design-premortem-b
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: 413b746fb45030fd03a1b995e666b123a0320a68f905a87935aab6e5fe67166c
+receipt_output_sha256: 413b746fb45030fd03a1b995e666b123a0320a68f905a87935aab6e5fe67166c
+packet_identity: 8020406687a2dec30afd4b2caa153288e4c1f60123ba903c26a5af941c410a98
+reviewed_input_identity: 5bd0c6d7ac632081ac4a62b530e7fd0b0342bf6d154f2266a2511edbbd9d2271
+parent_receipt_identity: parent-e02388bc9eec7bf89390e247637b6b0d314365f8ae91546d
+provenance:
+  scope: design premortem for replacing the task-run lane wall-clock timeout with
+    a single progress rule (charness-artifacts/spec/lane-progress-rule.md), before
+    implementation; the listed code files are the current owners it would extend
+  packet_identity: 8020406687a2dec30afd4b2caa153288e4c1f60123ba903c26a5af941c410a98
+  reviewed_input_identity: 5bd0c6d7ac632081ac4a62b530e7fd0b0342bf6d154f2266a2511edbbd9d2271
+  parent_receipt_identity: parent-e02388bc9eec7bf89390e247637b6b0d314365f8ae91546d
+  expected_targets_sha256: null
+  attempt_id: design-premortem-b
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 1858847e49d3d47b5c7a147341465904cb0b341f287c18de5abfda3c638a3665
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 99de039ccddf5d6165e190a7014995ac126ae9fd638b9b1c110164a3323eb222
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

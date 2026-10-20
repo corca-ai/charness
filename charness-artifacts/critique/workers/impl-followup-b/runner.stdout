@@ -1,0 +1,71 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 99de039ccddf5d6165e190a7014995ac126ae9fd638b9b1c110164a3323eb222
+capability_launch_envelope_sha256: 99de039ccddf5d6165e190a7014995ac126ae9fd638b9b1c110164a3323eb222
+capability_collection_envelope_sha256: 99de039ccddf5d6165e190a7014995ac126ae9fd638b9b1c110164a3323eb222
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: repair of the five impl-followup-a findings (LP-2 young-command kill, LP-4a
+  unreadable-tree reruns, LP-4b watcher failure, LP-3 preempt/stop serialization,
+  B-2 lane-end answer) in commit c27d8ca4c
+attempt_id: impl-followup-b
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 74ed63ab76dadb80f1599535a1129729c2d93aea2c517c49561773198c996495
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/.cache/tmp/charness/runtime/c6780acf9fbc9e28/scratch/critique-review/review-7fb58d16e16eebb22b2878d8298336be/receipt.json
+ledger_path: /home/hwidong/.cache/tmp/charness/runtime/c6780acf9fbc9e28/scratch/critique-review/review-7fb58d16e16eebb22b2878d8298336be/delivery.json
+producer_run_id: run-impl-followup-b
+producer_binding:
+  output_file: /home/hwidong/.cache/tmp/charness/runtime/c6780acf9fbc9e28/scratch/critique-review/review-7fb58d16e16eebb22b2878d8298336be/result.json
+  receipt_file: /home/hwidong/.cache/tmp/charness/runtime/c6780acf9fbc9e28/scratch/critique-review/review-7fb58d16e16eebb22b2878d8298336be/receipt.json
+  producer_run_id: run-impl-followup-b
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: 726f878e3731cf37a8fe72702447c5d40277d4597c46b86221c3dbba8567c8f8
+receipt_output_sha256: 726f878e3731cf37a8fe72702447c5d40277d4597c46b86221c3dbba8567c8f8
+packet_identity: 0ea72132529274d5893af4aee06fce76cf7f569b9f9867b7bac549822e834307
+reviewed_input_identity: c20ab185cdb5ec15fbb2128ac85ee0bed8aa9a6a4b681175ff28f14d743cb52b
+parent_receipt_identity: parent-75f3a4c7d090c51b97891651ad78e89bc9bc52314d49eba9
+provenance:
+  scope: repair of the five impl-followup-a findings (LP-2 young-command kill, LP-4a
+    unreadable-tree reruns, LP-4b watcher failure, LP-3 preempt/stop serialization,
+    B-2 lane-end answer) in commit c27d8ca4c
+  packet_identity: 0ea72132529274d5893af4aee06fce76cf7f569b9f9867b7bac549822e834307
+  reviewed_input_identity: c20ab185cdb5ec15fbb2128ac85ee0bed8aa9a6a4b681175ff28f14d743cb52b
+  parent_receipt_identity: parent-75f3a4c7d090c51b97891651ad78e89bc9bc52314d49eba9
+  expected_targets_sha256: null
+  attempt_id: impl-followup-b
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 74ed63ab76dadb80f1599535a1129729c2d93aea2c517c49561773198c996495
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 99de039ccddf5d6165e190a7014995ac126ae9fd638b9b1c110164a3323eb222
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

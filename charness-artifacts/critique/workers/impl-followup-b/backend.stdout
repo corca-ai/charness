@@ -1,0 +1,78 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Gawande — recheck each prior finding against the repair and its final consumer",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "LP-4b",
+      "severity": "blocker",
+      "summary": "Repeated rule-check failures can still leave a lane unbounded.",
+      "evidence": [
+        "LaneProgressWatch._tick_rule increments _rule_failures when ProgressRule.on_tick raises, but resets it on any successful return.",
+        "ProgressRule.on_tick returns None on ordinary polls before the next window is due. If each due check fails, the next ordinary poll resets the counter, so it can remain at 1 indefinitely instead of reaching MAX_RULE_FAILURES.",
+        "test_a_watch_that_cannot_check_stops_the_lane monkeypatches on_tick to fail on every tick, so it does not cover failures only at due checks."
+      ],
+      "action": "Count failures across actual due checks without resetting on successful no-op polls. Add a test where each due check fails and intervening polls return normally, then verify the watch records a terminal stop and kills the lane."
+    },
+    {
+      "id": "LP-3",
+      "severity": "high",
+      "summary": "Stop and preemption are not fully serialized through the consumer; a queued steer can be counted but never delivered.",
+      "evidence": [
+        "A stop returned by ProgressRule.on_tick is recorded under the rule lock, but LaneProgressWatch._stop_now acquires _action_lock only later in _run. In that gap, observe_event checks only the watch's stop_reason, and _apply can enqueue a steer despite the rule already deciding to stop.",
+        "Even when _apply wins _action_lock first, _stop_now can subsequently set stop_reason. _execute_codex then exits on stop_reason before reading pending steers or calling record_steer_delivery, although preemptions was already incremented.",
+        "The race test covers _stop_now followed by _apply, but not a rule stop decision racing with an event or an action queued before stop followed through _execute_codex."
+      ],
+      "action": "Arbitrate stop and message actions through one state transition that includes consumer delivery. If stop supersedes queued messages, disposition them as suppressed and reconcile preemption counts. Add deterministic tests for both race orders through the execution consumer."
+    },
+    {
+      "id": "B-2",
+      "severity": "high",
+      "summary": "The lane-finish receipt marks failures and hard timeouts as answering a checkpoint request.",
+      "evidence": [
+        "After the execution loop, _execute_codex calls finish_lane whenever progress_stopped is absent, including after timed_out or interrupted results and after an OSError sets exec_error.",
+        "ProgressRule.finish unconditionally marks a delivered request answered_by lane-ended; it does not check for a final report or BLOCKED response."
+      ],
+      "action": "Pass terminal outcome evidence to finish_lane and only record an answer when the executor ended with the defined answer. Add receipt tests for timeout, interruption, startup error, and normal report/BLOCKED endings."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "LP-2: a command started after request delivery can be killed before running for W.",
+      "bin": "resolved",
+      "disposition": "on_tick tracks in-flight command IDs at each check and defers when a command is newly observed; the next empty check can stop it only after a full window. The unit test covers the late-start sequence. The exact consumer timing path is not separately exercised by that test."
+    },
+    {
+      "concern": "LP-4a: repeated command completions on an unreadable tree reset the progress window.",
+      "bin": "resolved",
+      "disposition": "_on_complete keys an unreadable tree as one unobservable state and counts only its first command pair as new; the rule test covers repeated completions."
+    },
+    {
+      "concern": "LP-4b: failures in phase or queue polling can prevent the progress rule from running.",
+      "bin": "resolved",
+      "disposition": "tick catches those poll failures and still calls _tick_rule. The remaining blocker is the separate failure-counter reset on successful no-op polls."
+    },
+    {
+      "concern": "Deadlock between the progress-rule lock and watch action lock.",
+      "bin": "over-worry",
+      "disposition": "Rule methods return before _apply or _stop_now acquires _action_lock; the reviewed paths do not nest the two locks. The uncovered issue is an arbitration race, not a lock cycle."
+    },
+    {
+      "concern": "LP-2 repair now stops productive work.",
+      "bin": "over-worry",
+      "disposition": "Observed command starts after a check defer the action for a window, and observed progress clears a delivered request. No source-level path shows a young command being stopped by this repair."
+    },
+    {
+      "concern": "W=0 leaves a lane without this progress stop.",
+      "bin": "over-worry",
+      "disposition": "The spec explicitly defines zero as disabling the rule."
+    }
+  ],
+  "next_move": "Fix the due-check failure counter, make stop/message arbitration include the final consumer, and restrict lane-ended answers to evidenced terminal reports; then re-review those paths.",
+  "non_claims": [
+    "Live Codex and Muse resume semantics are not established by these fake-executor tests.",
+    "Downstream attempt and WIP classification is outside the selected paths.",
+    "The LP-2 consumer-level timing test does not independently establish behavior when executor start events are delayed before reaching the pipe reader."
+  ]
+}

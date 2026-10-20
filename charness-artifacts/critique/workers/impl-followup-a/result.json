@@ -1,0 +1,93 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Gawande — operational correctness of the wired lane progress rule",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "LP-2",
+      "severity": "blocker",
+      "summary": "A stop can kill a command younger than W after a checkpoint request was delivered.",
+      "evidence": [
+        "ProgressRule.on_tick checks commands_in_flight only when the request is None or deferred; with a delivered request it falls through to stop even when a command is in flight.",
+        "After a request is delivered at W, the resumed lane can start a command just before 2W. Command start is not progress, so the next check stops the lane and kills that command after only a short run.",
+        "The deferred-command unit test starts its command before the first check; it does not cover a command started after request delivery."
+      ],
+      "action": "Apply the in-flight age rule to stop actions too. Track command start times and defer a kill until the active command has run at least W; add a real pipe/process test for a command started late in the request window."
+    },
+    {
+      "id": "LP-4a",
+      "severity": "blocker",
+      "summary": "An unobservable worktree makes every command completion count as progress.",
+      "evidence": [
+        "ProgressRule._on_complete increments _new_outcomes and returns whenever the fingerprint is None, without checking whether the command/tree pair is new.",
+        "Repeated commands on an unreadable worktree therefore reset each progress window indefinitely, although the spec says an unobservable worktree contributes neither progress nor its absence.",
+        "The unobservable-worktree test covers a file-change event and silence, but not repeated command completions."
+      ],
+      "action": "Count a command completion as progress only when its fingerprint is observable and its pair is new. Add a test with repeated identical completions while the fingerprint remains None."
+    },
+    {
+      "id": "LP-4b",
+      "severity": "blocker",
+      "summary": "Persistent watcher errors can leave a lane running forever.",
+      "evidence": [
+        "LaneProgressWatch._run catches any exception from tick and continues polling without recording a fault or stopping the executor.",
+        "An exception before ProgressRule.on_tick, such as a persistent steer-queue read or log-read failure, can prevent every check from reaching the rule. With the wall-clock default removed, no other timer reclaims the lane."
+      ],
+      "action": "Make an unrecoverable or repeated watch failure produce a recorded terminal stop and kill, or provide an independent bounded reclamation path. Test a persistent polling failure."
+    },
+    {
+      "id": "LP-3",
+      "severity": "high",
+      "summary": "Preemption and stop side effects are not serialized, so a losing preemption can still queue a steer and count as delivered work.",
+      "evidence": [
+        "observe_event obtains an action from ProgressRule and calls _apply after the rule lock is released; the watch thread can meanwhile reach _stop_now, which uses a separate lock.",
+        "_apply does not recheck stop_reason or coordinate with _stop_now. It can enqueue a steer, set _preempted, increment preemptions, and kill after the stop has already won; _execute_codex then sees stop_reason and exits before delivering the queued steer.",
+        "take_preempted returns one boolean per invocation, while LaneProgressWatch.preemptions increments per _apply call, so overlapping actions can also disagree in their receipts."
+      ],
+      "action": "Serialize action delivery and stop under one first-wins state transition. Suppress and account for actions that lose to stop; add a deterministic race test covering queue state, preemption count, and final result."
+    },
+    {
+      "id": "B-2",
+      "severity": "high",
+      "summary": "A lane ending after a checkpoint request is not recorded as answering it.",
+      "evidence": [
+        "ProgressRule._mark_answered is called only when a later progress check observes progress; there is no finish/finalization method for a normal final report or BLOCKED turn ending.",
+        "LaneProgressWatch.stop halts polling but does not resolve the delivered request, so the receipt can leave answered absent even when the executor ended as the spec defines an answer."
+      ],
+      "action": "Add a lane-finish transition that records a delivered request as answered when the lane ends with its final report or BLOCKED response, and test that receipt outcome."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "LP-1 exact command-text loop keys can be evaded by varying command text.",
+      "bin": "recorded non-claim",
+      "disposition": "Accepted as the spec's explicit non-claim; not treated as a new implementation blocker."
+    },
+    {
+      "concern": "A missing watch when the progress window is zero.",
+      "bin": "intentional opt-out",
+      "disposition": "The spec explicitly allows W=0 to disable the rule; this is not an accidental missing-watch path."
+    },
+    {
+      "concern": "Whether tests reach a pipe and process.",
+      "bin": "partially covered",
+      "disposition": "The fake Codex integration tests run a subprocess through StampingPipe and exercise process-group kill/resume. They do not cover the late-start command stop, watcher-failure path, or action races, and do not establish live Codex or Muse session behavior."
+    },
+    {
+      "concern": "Attempt and WIP classification downstream of the selected execution paths.",
+      "bin": "insufficient evidence",
+      "disposition": "The execution loop distinguishes ordinary preemption from failed session resume and subtracts preemptions from relaunch friction, but the attempt/checkpoint owners are outside the selected input; no claim is made that downstream WIP classification is proven."
+    }
+  ],
+  "next_move": "Fix the late-start kill, unknown-fingerprint command accounting, watcher failure handling, and action/stop serialization; add focused process-level and deterministic race tests, then finalize request-answer receipts and re-review the wired behavior.",
+  "non_claims": [
+    "LP-1 remains a recorded non-claim and was not re-litigated as a defect.",
+    "Live Codex and Muse resume semantics were not established by these fake-executor tests.",
+    "Downstream attempt and WIP classification was not established because its owners are outside the selected paths."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "6432311496272658385e53c43932f6ec7e9d2ae96e339a29c2c1890029e844fc",
+  "reviewed_input_identity_sha256": "4761b20162d63ec8aa4514fae1201b29c3d98515fb84e0d57b0a51c567dba7d3"
+}

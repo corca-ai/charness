@@ -1,0 +1,75 @@
+{
+  "kind": "charness.semantic_input_carrier.v1",
+  "entries": [
+    {
+      "path": "charness-artifacts/spec/lane-progress-rule.md",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/impl-followup-a/semantic-input/0000-content.bin",
+      "content_sha256": "b918ffac9f31f6f969dfbbadb6d49aa04800c751a8fab21146848b2cbaf2e388",
+      "carrier_sha256": "74d68cb9a5ae81b012d720c3cb1071c53d863dfb315b58896a87154a38d3695a",
+      "source": "working-tree:charness-artifacts/spec/lane-progress-rule.md",
+      "size_bytes": 11063,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/task_run/task_run_event_timing.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/impl-followup-a/semantic-input/0001-content.bin",
+      "content_sha256": "3cea4cc36fa29bc5a4a2fcad9f23272fc69f90815d68adc278a93cd54c440c67",
+      "carrier_sha256": "1deb9772db36fe1927d9a2747af5e61f01cf03778e859bfa703dc07733967b45",
+      "source": "working-tree:scripts/task_run/task_run_event_timing.py",
+      "size_bytes": 17526,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/task_run/task_run_execution.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/impl-followup-a/semantic-input/0002-content.bin",
+      "content_sha256": "b8fa229b4cc6f0700d020e00470d1aff1d3fe8e0ebdf96c8e3e65cd01d6bb2b9",
+      "carrier_sha256": "acf1a85bce73b170459d4a91b27574063b1955b2b4605d61e13df5b3263acd2b",
+      "source": "working-tree:scripts/task_run/task_run_execution.py",
+      "size_bytes": 20786,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/task_run/task_run_progress.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/impl-followup-a/semantic-input/0003-content.bin",
+      "content_sha256": "90bb9be90aac902e5d883f610800e8e04839471abdc33ec268d8909468e11815",
+      "carrier_sha256": "defb77ceb055aeff7fa25057a80d1b6b12dddd07a53eebbc37dfa2ce92b9182b",
+      "source": "working-tree:scripts/task_run/task_run_progress.py",
+      "size_bytes": 21548,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/task_run/task_run_progress_rule.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/impl-followup-a/semantic-input/0004-content.bin",
+      "content_sha256": "65dca9972bdc079a04764f59c9041637a6a874b0fb8b12ded9cdee62dabdf708",
+      "carrier_sha256": "7756ee95bfc1545005f3f1e2936f6daeda10660d79b623d53d10250a6ba03728",
+      "source": "working-tree:scripts/task_run/task_run_progress_rule.py",
+      "size_bytes": 13822,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "tests/charness_cli/test_task_run_progress_preemption.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/impl-followup-a/semantic-input/0005-content.bin",
+      "content_sha256": "ef20a92b1f9cd185e6a0570238c0b53b3d2d4e792f318ed271ee6326f8e55585",
+      "carrier_sha256": "bb97385ec219d9719e307b6023db98344346978e16c3fc83765da7d9623e1ae0",
+      "source": "working-tree:tests/charness_cli/test_task_run_progress_preemption.py",
+      "size_bytes": 7018,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "tests/charness_cli/test_task_run_progress_rule.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/impl-followup-a/semantic-input/0006-content.bin",
+      "content_sha256": "c2f457b4aba33043ba3093a6c8f5dd9907e3ef7da72685a141e1d24f93bbf8b0",
+      "carrier_sha256": "3c05971e23e9cce5b7be2654225eecdb0b98bfc8827dbab5a1d2b42f602f86a0",
+      "source": "working-tree:tests/charness_cli/test_task_run_progress_rule.py",
+      "size_bytes": 8516,
+      "prompt_encoding": "utf-8"
+    }
+  ]
+}

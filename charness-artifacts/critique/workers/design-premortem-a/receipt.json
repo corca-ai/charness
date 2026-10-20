@@ -1,0 +1,82 @@
+{
+  "attempt_id": "design-premortem-a",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "99de039ccddf5d6165e190a7014995ac126ae9fd638b9b1c110164a3323eb222",
+  "capability_envelope_sha256": "99de039ccddf5d6165e190a7014995ac126ae9fd638b9b1c110164a3323eb222",
+  "capability_file": "charness-artifacts/critique/workers/design-premortem-a/capability.json",
+  "capability_launch_envelope_sha256": "99de039ccddf5d6165e190a7014995ac126ae9fd638b9b1c110164a3323eb222",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-10-20T09:50:29Z",
+  "model_application_state": "unverified-by-provider",
+  "output_file": "charness-artifacts/critique/workers/design-premortem-a/result.json",
+  "output_fresh": true,
+  "output_sha256": "55158be3a1cb968e21e774536f552ca9460a0a644f6443d398c74e8501933581",
+  "output_size": 7191,
+  "packet_identity": "8020406687a2dec30afd4b2caa153288e4c1f60123ba903c26a5af941c410a98",
+  "parent_receipt_identity": "parent-c09e4f70d5d46e1a2a64d71ecf5de6a33fba00ca55de507b",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/design-premortem-a/review-prompt.md",
+  "prompt_sha256": "3751b4fc19991869a35b79a07c456154b3c1ce27deb97dda1d10df6b5ad43f1e",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/.cache/charness-wt/progress-rule"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "requested_model": "gpt-6-luna",
+  "requested_reasoning_effort": "xhigh",
+  "reviewed_input_identity": "5bd0c6d7ac632081ac4a62b530e7fd0b0342bf6d154f2266a2511edbbd9d2271",
+  "reviewer_tier": "high-leverage",
+  "run_id": "run-design-premortem-a",
+  "schema_file": "charness-artifacts/critique/workers/design-premortem-a/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "design premortem for replacing the task-run lane wall-clock timeout with a single progress rule (charness-artifacts/spec/lane-progress-rule.md), before implementation; the listed code files are the current owners it would extend",
+  "started_at": "2026-10-20T09:48:25Z",
+  "status": "succeeded",
+  "stderr_file": "charness-artifacts/critique/workers/design-premortem-a/backend.stderr",
+  "stdout_file": "charness-artifacts/critique/workers/design-premortem-a/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "unsupported_reviewer_fields": [
+    "service_tier=priority",
+    "fork_turns=none"
+  ],
+  "workspace": "/home/hwidong/.cache/charness-wt/progress-rule"
+}

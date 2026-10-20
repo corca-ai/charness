@@ -1,0 +1,204 @@
+schema_version: charness.reviewer_lifecycle.v1
+status: runner-completed
+execution_state: terminal
+lifecycle_state: terminal
+reviewer_started: true
+delivery_state: findings-received
+verdict_state: block
+review_verdict: block
+classification: unclassified
+approval_eligible: false
+output:
+  state: terminal
+  approval_eligible: false
+  schema_version: charness.reviewer_worker_report.v1
+  findings_identity: 413b746fb45030fd03a1b995e666b123a0320a68f905a87935aab6e5fe67166c
+  partial_artifacts:
+  - reason: no identity-matching bounded-review object was found in the bounded log
+      windows
+    scan_limit_bytes: 67108864
+    sources:
+    - bytes: 3970
+      key: runner.stdout
+      path: /home/hwidong/.cache/tmp/charness/runtime/c6780acf9fbc9e28/scratch/critique-review/review-2b5f62f50ea8db49485dc9a702c611db/runner.stdout
+      scanned_bytes: 3970
+      windowed: false
+    - bytes: 623
+      key: runner.stderr
+      path: /home/hwidong/.cache/tmp/charness/runtime/c6780acf9fbc9e28/scratch/critique-review/review-2b5f62f50ea8db49485dc9a702c611db/runner.stderr
+      scanned_bytes: 623
+      windowed: false
+    - bytes: 5514
+      key: backend.stdout
+      path: /home/hwidong/.cache/tmp/charness/runtime/c6780acf9fbc9e28/scratch/critique-review/review-2b5f62f50ea8db49485dc9a702c611db/backend.stdout
+      scanned_bytes: 5514
+      windowed: false
+    - bytes: 111610
+      key: backend.stderr
+      path: /home/hwidong/.cache/tmp/charness/runtime/c6780acf9fbc9e28/scratch/critique-review/review-2b5f62f50ea8db49485dc9a702c611db/backend.stderr
+      scanned_bytes: 111610
+      windowed: false
+    status: unavailable
+output_state: terminal
+failure_identity: f20453d0fc3f630569f4514736a52437b7cc4fb63cd75badefa28c2dcf77e89c
+next_move: inspect the delivered findings; this is a reviewer block, not a runner
+  failure
+runner_returncode: 1
+runner_status: runner-completed
+boundary_mode: read-only-worker
+boundary_ok: true
+boundary_reason: null
+paths:
+  packet: charness-artifacts/critique/design-premortem-b-packet.json
+  schema: charness-artifacts/critique/workers/design-premortem-b/bounded-review-result.schema.json
+  capability: charness-artifacts/critique/workers/design-premortem-b/capability.json
+  prompt: charness-artifacts/critique/workers/design-premortem-b/review-prompt.md
+  plan: charness-artifacts/critique/workers/design-premortem-b/run-plan.json
+  ledger: charness-artifacts/critique/workers/design-premortem-b/delivery.json
+  output: charness-artifacts/critique/workers/design-premortem-b/result.json
+  receipt: charness-artifacts/critique/workers/design-premortem-b/receipt.json
+  report: charness-artifacts/critique/workers/design-premortem-b/worker-report.yaml
+  runner_stdout: charness-artifacts/critique/workers/design-premortem-b/runner.stdout
+  runner_stderr: charness-artifacts/critique/workers/design-premortem-b/runner.stderr
+  backend_stdout: charness-artifacts/critique/workers/design-premortem-b/backend.stdout
+  backend_stderr: charness-artifacts/critique/workers/design-premortem-b/backend.stderr
+  summary: charness-artifacts/critique/workers/design-premortem-b/lifecycle.yaml
+  semantic-input/0000-content.bin: charness-artifacts/critique/workers/design-premortem-b/semantic-input/0000-content.bin
+  semantic-input/0001-content.bin: charness-artifacts/critique/workers/design-premortem-b/semantic-input/0001-content.bin
+  semantic-input/0002-content.bin: charness-artifacts/critique/workers/design-premortem-b/semantic-input/0002-content.bin
+  semantic-input/0003-content.bin: charness-artifacts/critique/workers/design-premortem-b/semantic-input/0003-content.bin
+  semantic-input/0004-content.bin: charness-artifacts/critique/workers/design-premortem-b/semantic-input/0004-content.bin
+  semantic-input/manifest.json: charness-artifacts/critique/workers/design-premortem-b/semantic-input/manifest.json
+  review-prompt.md: charness-artifacts/critique/workers/design-premortem-b/review-prompt.md
+  run-plan.json: charness-artifacts/critique/workers/design-premortem-b/run-plan.json
+  bounded-review-result.schema.json: charness-artifacts/critique/workers/design-premortem-b/bounded-review-result.schema.json
+  capability.json: charness-artifacts/critique/workers/design-premortem-b/capability.json
+  receipt.json: charness-artifacts/critique/workers/design-premortem-b/receipt.json
+  delivery.json: charness-artifacts/critique/workers/design-premortem-b/delivery.json
+  result.json: charness-artifacts/critique/workers/design-premortem-b/result.json
+  runner.stdout: charness-artifacts/critique/workers/design-premortem-b/runner.stdout
+  runner.stderr: charness-artifacts/critique/workers/design-premortem-b/runner.stderr
+  backend.stdout: charness-artifacts/critique/workers/design-premortem-b/backend.stdout
+  backend.stderr: charness-artifacts/critique/workers/design-premortem-b/backend.stderr
+  worker-report.yaml: charness-artifacts/critique/workers/design-premortem-b/worker-report.yaml
+  attempt-manifest.json: charness-artifacts/critique/workers/design-premortem-b/attempt-manifest.json
+  durable_report: charness-artifacts/critique/workers/design-premortem-b/worker-report.yaml
+identities:
+  attempt_id: design-premortem-b
+  scope: design premortem for replacing the task-run lane wall-clock timeout with
+    a single progress rule (charness-artifacts/spec/lane-progress-rule.md), before
+    implementation; the listed code files are the current owners it would extend
+  packet_identity: 8020406687a2dec30afd4b2caa153288e4c1f60123ba903c26a5af941c410a98
+  reviewed_input_identity: 5bd0c6d7ac632081ac4a62b530e7fd0b0342bf6d154f2266a2511edbbd9d2271
+  parent_receipt_identity: parent-e02388bc9eec7bf89390e247637b6b0d314365f8ae91546d
+  findings_identity: 413b746fb45030fd03a1b995e666b123a0320a68f905a87935aab6e5fe67166c
+ok: true
+carrier_ok: true
+packet_verification:
+  ok: true
+  status: current
+  reason: current
+  reason_code: current
+  expected_kind: charness.critique_prepare_packet
+  packet_path: charness-artifacts/critique/design-premortem-b-packet.json
+  packet_sha256: 8020406687a2dec30afd4b2caa153288e4c1f60123ba903c26a5af941c410a98
+  identity_sha256: 5bd0c6d7ac632081ac4a62b530e7fd0b0342bf6d154f2266a2511edbbd9d2271
+capability_envelope_sha256: 99de039ccddf5d6165e190a7014995ac126ae9fd638b9b1c110164a3323eb222
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+backend: codex_exec
+timeout_seconds: 900
+scope: design premortem for replacing the task-run lane wall-clock timeout with a
+  single progress rule (charness-artifacts/spec/lane-progress-rule.md), before implementation;
+  the listed code files are the current owners it would extend
+lens: '(Raskin/Minto, interface and minimality) given the operator words quoted in
+  the spec: is this the smallest change that serves them, and does it duplicate an
+  existing owner (first-edit budget --no-progress-seconds, BLOCKED grace, steer queue,
+  retries)? Is keeping --timeout-seconds as an explicit opt-in consistent with ''delete
+  the wall-clock default''? Are the knobs, receipt fields, live view, and launcher
+  contract clear for a launcher that today passes --timeout-seconds 5400? Separate
+  real blockers from over-worry.'
+parent_receipt_identity: parent-e02388bc9eec7bf89390e247637b6b0d314365f8ae91546d
+semantic_input:
+  entries:
+  - path: charness-artifacts/spec/lane-progress-rule.md
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/design-premortem-b/semantic-input/0000-content.bin
+    content_sha256: 56f80a7318cd078734dccc5d790dfd2b01e2fbbe371700f3c83573cc742b85ef
+    carrier_sha256: 10b3783495b88307f0a955d200e7c9021406fb0981d5e6cd597d337e63e3ebe5
+    source: working-tree:charness-artifacts/spec/lane-progress-rule.md
+    size_bytes: 7800
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_event_timing.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/design-premortem-b/semantic-input/0001-content.bin
+    content_sha256: 205707a3f7e30adec41ce1f8f78c7ceb7c2a25b7577e048047c1f1bdd196bf41
+    carrier_sha256: 720699675dda8ced9bea455a4cf83d3fa5f8c9bb9275854d9f192ac7801778d2
+    source: working-tree:scripts/task_run/task_run_event_timing.py
+    size_bytes: 14814
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_execution.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/design-premortem-b/semantic-input/0002-content.bin
+    content_sha256: 029acbb5395afc1d690237d335f3f878af5643fb29c1ec50c8457b5376dea315
+    carrier_sha256: 5e182443f6d580b68db5f81c25a84255cda7ba2f9d3f36e7ca45f343d15bf3c1
+    source: working-tree:scripts/task_run/task_run_execution.py
+    size_bytes: 20213
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_lane_runner.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/design-premortem-b/semantic-input/0003-content.bin
+    content_sha256: 72b2044aa0f81d97ba65a522789906e6fe6d581d3f155aba7b5830848bb21320
+    carrier_sha256: d44d196e23ca950b3ce9541b6b9ea464bdaa8730b81dc3b387358502bd4dd206
+    source: working-tree:scripts/task_run/task_run_lane_runner.py
+    size_bytes: 21091
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_progress.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/design-premortem-b/semantic-input/0004-content.bin
+    content_sha256: 65a4f67a7e289bd5d2f1173569fca597ba1064caf62687d50f82af2a58bfa3d5
+    carrier_sha256: 97426a2c75197de6be7c420f4d058c42b8a7138cf2246820e24321abb41743d5
+    source: working-tree:scripts/task_run/task_run_progress.py
+    size_bytes: 23235
+    prompt_encoding: utf-8
+  manifest: charness-artifacts/critique/workers/design-premortem-b/semantic-input/manifest.json
+  size_bytes: 87153
+runner_output:
+  status: runner-completed
+  returncode: 1
+runner_stream:
+  consistent: true
+  reason: null
+  runner_stdout_sha256: 0e948dba3bcedc9fab732dc145d36847e317428db97039ea24fb7792b40b0c8b
+  canonical_report_sha256: 0e948dba3bcedc9fab732dc145d36847e317428db97039ea24fb7792b40b0c8b
+boundary_readback:
+  mode: read-only-worker
+  required: false
+goal_lineage:
+  kind: charness.goal-lineage
+  schema_version: 1
+  disposition: not-goal-bound
+  draft: null
+  binding: null
+  goal_run: null
+  work_item: null
+  reason: critique review was run without a Goal Run Work Item identity
+identity_check:
+  status: matched
+  matches: true
+  checks:
+    packet_identity:
+      expected: 8020406687a2dec30afd4b2caa153288e4c1f60123ba903c26a5af941c410a98
+      actual: 8020406687a2dec30afd4b2caa153288e4c1f60123ba903c26a5af941c410a98
+      matches: true
+      provenance: 8020406687a2dec30afd4b2caa153288e4c1f60123ba903c26a5af941c410a98
+    reviewed_input_identity:
+      expected: 5bd0c6d7ac632081ac4a62b530e7fd0b0342bf6d154f2266a2511edbbd9d2271
+      actual: 5bd0c6d7ac632081ac4a62b530e7fd0b0342bf6d154f2266a2511edbbd9d2271
+      matches: true
+      provenance: 5bd0c6d7ac632081ac4a62b530e7fd0b0342bf6d154f2266a2511edbbd9d2271
+    parent_receipt_identity:
+      expected: parent-e02388bc9eec7bf89390e247637b6b0d314365f8ae91546d
+      actual: parent-e02388bc9eec7bf89390e247637b6b0d314365f8ae91546d
+      matches: true
+      provenance: parent-e02388bc9eec7bf89390e247637b6b0d314365f8ae91546d
+  reason: null

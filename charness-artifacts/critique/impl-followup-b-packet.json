@@ -1,0 +1,330 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-10-20T10:25:24Z",
+  "prepared_for": "working tree",
+  "changed_ref": null,
+  "substrate_mode": "working-tree",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Bound review paths for working tree: (narrow follow-up scope)\nExact reviewed-path manifest:\n- charness-artifacts/spec/lane-progress-rule.md\n- scripts/task_run/task_run_event_timing.py\n- scripts/task_run/task_run_execution.py\n- scripts/task_run/task_run_progress.py\n- scripts/task_run/task_run_progress_rule.py\n- tests/charness_cli/test_task_run_progress_preemption.py\n- tests/charness_cli/test_task_run_progress_rule.py\n\nOwning surfaces:\n- materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/task_run/task_run_event_timing.py, scripts/task_run/task_run_execution.py, scripts/task_run/task_run_progress.py, scripts/task_run/task_run_progress_rule.py\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/spec/lane-progress-rule.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/task_run/task_run_event_timing.py, scripts/task_run/task_run_execution.py, scripts/task_run/task_run_progress.py, scripts/task_run/task_run_progress_rule.py, tests/charness_cli/test_task_run_progress_preemption.py, tests/charness_cli/test_task_run_progress_rule.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/task_run/task_run_event_timing.py, scripts/task_run/task_run_execution.py, scripts/task_run/task_run_progress.py, scripts/task_run/task_run_progress_rule.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-6-luna",
+      "reasoning_effort": "xhigh",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "substrate_mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "c27d8ca4cf9ab1c2f3a7cf45e51609417735f1f8",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "charness-artifacts/spec/lane-progress-rule.md",
+      "scripts/task_run/task_run_event_timing.py",
+      "scripts/task_run/task_run_execution.py",
+      "scripts/task_run/task_run_progress.py",
+      "scripts/task_run/task_run_progress_rule.py",
+      "tests/charness_cli/test_task_run_progress_preemption.py",
+      "tests/charness_cli/test_task_run_progress_rule.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/spec/lane-progress-rule.md",
+        "content_sha256": "5c9d1f0a231198e44422102260e03e84df959e5485be270f46d6e60bb39b926c"
+      },
+      {
+        "path": "scripts/task_run/task_run_event_timing.py",
+        "content_sha256": "fcdf3319056a66d4787487fbc486b09b180abeb30381bf8569030f811310ef6b"
+      },
+      {
+        "path": "scripts/task_run/task_run_execution.py",
+        "content_sha256": "ba51de6a90f787a773b4f0cd50fd57acd46c638f86b6e35810e9a3d872218eee"
+      },
+      {
+        "path": "scripts/task_run/task_run_progress.py",
+        "content_sha256": "1a0574db2995f69f2a231e7a6a7dd1a1018a0e533e7a4ed64e16d6488239ad68"
+      },
+      {
+        "path": "scripts/task_run/task_run_progress_rule.py",
+        "content_sha256": "ee4c0945f4aa0efeb1d33211abb570af6ea6fd6ae182666e1a6b81077591e34e"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run_progress_preemption.py",
+        "content_sha256": "2a883e2ac8e4bd238ae816a9fa44573913a2a18d4bb098ad2dc9b6209ac5c7c9"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run_progress_rule.py",
+        "content_sha256": "2226266a1d46a9ff471f6ca92420398d4f0d114ea634ece8381473496b4d8e08"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "c20ab185cdb5ec15fbb2128ac85ee0bed8aa9a6a4b681175ff28f14d743cb52b"
+  },
+  "follow_up": {
+    "kind": "charness.review_followup_context.v1",
+    "source": "charness-artifacts/critique/workers/impl-followup-a/result.json",
+    "source_sha256": "2f296bcf543d11f997dde7936665312b1e92ea4f3e7887273ee741fada43ff50",
+    "prior_attempt_id": "impl-followup-a",
+    "prior_verdict": "block",
+    "prior_scope": "follow-up of the lane progress rule design premortem, now implemented (commits c9ba15393 and fec6ba651 on feat/lane-progress-rule): does the implementation honor the revised spec and resolve LP-2 (no kill of a command younger than the window), LP-3 (preemption distinct from failed resume, attempts, relaunch friction, WIP), LP-4 (three-valued observation; silent executor still reclaimed) and B-2 (request answer semantics)? LP-1 is a recorded non-claim.",
+    "prior_lens": "Gawande — operational correctness of the wired lane progress rule",
+    "prior_packet_path": "charness-artifacts/critique/impl-followup-a-packet.json",
+    "prior_packet_sha256": "6432311496272658385e53c43932f6ec7e9d2ae96e339a29c2c1890029e844fc",
+    "prior_reviewed_input_identity_sha256": "4761b20162d63ec8aa4514fae1201b29c3d98515fb84e0d57b0a51c567dba7d3",
+    "selection": "explicit-with-selection-receipt",
+    "selected_paths": [
+      "charness-artifacts/spec/lane-progress-rule.md",
+      "scripts/task_run/task_run_event_timing.py",
+      "scripts/task_run/task_run_execution.py",
+      "scripts/task_run/task_run_progress.py",
+      "scripts/task_run/task_run_progress_rule.py",
+      "tests/charness_cli/test_task_run_progress_preemption.py",
+      "tests/charness_cli/test_task_run_progress_rule.py"
+    ],
+    "prior_reviewed_paths": 7,
+    "comparison": {
+      "prior_paths": 7,
+      "changed_prior_paths": [
+        "charness-artifacts/spec/lane-progress-rule.md",
+        "scripts/task_run/task_run_event_timing.py",
+        "scripts/task_run/task_run_execution.py",
+        "scripts/task_run/task_run_progress.py",
+        "scripts/task_run/task_run_progress_rule.py",
+        "tests/charness_cli/test_task_run_progress_preemption.py",
+        "tests/charness_cli/test_task_run_progress_rule.py"
+      ],
+      "selected_changed_prior_paths": [
+        "charness-artifacts/spec/lane-progress-rule.md",
+        "scripts/task_run/task_run_event_timing.py",
+        "scripts/task_run/task_run_execution.py",
+        "scripts/task_run/task_run_progress.py",
+        "scripts/task_run/task_run_progress_rule.py",
+        "tests/charness_cli/test_task_run_progress_preemption.py",
+        "tests/charness_cli/test_task_run_progress_rule.py"
+      ],
+      "new_paths": [],
+      "unchanged_selected_paths": [],
+      "omitted_changed_prior_paths": [],
+      "comparison_identity_sha256": "c20ab185cdb5ec15fbb2128ac85ee0bed8aa9a6a4b681175ff28f14d743cb52b",
+      "comparison_identity_paths": [
+        "charness-artifacts/spec/lane-progress-rule.md",
+        "scripts/task_run/task_run_event_timing.py",
+        "scripts/task_run/task_run_execution.py",
+        "scripts/task_run/task_run_progress.py",
+        "scripts/task_run/task_run_progress_rule.py",
+        "tests/charness_cli/test_task_run_progress_preemption.py",
+        "tests/charness_cli/test_task_run_progress_rule.py"
+      ]
+    },
+    "selection_receipt": {
+      "prior_binding": {
+        "status": "verified",
+        "attempt_id": "impl-followup-a",
+        "packet_sha256": "6432311496272658385e53c43932f6ec7e9d2ae96e339a29c2c1890029e844fc",
+        "reviewed_input_identity_sha256": "4761b20162d63ec8aa4514fae1201b29c3d98515fb84e0d57b0a51c567dba7d3",
+        "packet_verification": "canonical-integrity-only",
+        "identity_verification": "recorded-self-digest",
+        "semantic_input": {
+          "status": "verified",
+          "entries": 7
+        },
+        "result_carrier": {
+          "status": "verified",
+          "attempt_id": "impl-followup-a",
+          "partial_result_sha256": null,
+          "result_sha256": "2f296bcf543d11f997dde7936665312b1e92ea4f3e7887273ee741fada43ff50",
+          "source_path": null
+        }
+      },
+      "explicit_paths": true,
+      "prior_identity_sha256": "4761b20162d63ec8aa4514fae1201b29c3d98515fb84e0d57b0a51c567dba7d3",
+      "comparison_identity_sha256": "c20ab185cdb5ec15fbb2128ac85ee0bed8aa9a6a4b681175ff28f14d743cb52b",
+      "comparison_identity_paths": [
+        "charness-artifacts/spec/lane-progress-rule.md",
+        "scripts/task_run/task_run_event_timing.py",
+        "scripts/task_run/task_run_execution.py",
+        "scripts/task_run/task_run_progress.py",
+        "scripts/task_run/task_run_progress_rule.py",
+        "tests/charness_cli/test_task_run_progress_preemption.py",
+        "tests/charness_cli/test_task_run_progress_rule.py"
+      ],
+      "selected_changed_prior_paths": [
+        "charness-artifacts/spec/lane-progress-rule.md",
+        "scripts/task_run/task_run_event_timing.py",
+        "scripts/task_run/task_run_execution.py",
+        "scripts/task_run/task_run_progress.py",
+        "scripts/task_run/task_run_progress_rule.py",
+        "tests/charness_cli/test_task_run_progress_preemption.py",
+        "tests/charness_cli/test_task_run_progress_rule.py"
+      ],
+      "new_paths": [],
+      "unchanged_selected_paths": [],
+      "omitted_changed_prior_paths": [],
+      "rationale": "Explicit paths were supplied to include newly introduced consumers or intentionally widen the stimulus; selection is not approval."
+    },
+    "prior_findings": [
+      {
+        "id": "LP-2",
+        "severity": "blocker",
+        "summary": "A stop can kill a command younger than W after a checkpoint request was delivered.",
+        "action": "Apply the in-flight age rule to stop actions too. Track command start times and defer a kill until the active command has run at least W; add a real pipe/process test for a command started late in the request window.",
+        "evidence": [
+          "ProgressRule.on_tick checks commands_in_flight only when the request is None or deferred; with a delivered request it falls through to stop even when a command is in flight.",
+          "After a request is delivered at W, the resumed lane can start a command just before 2W. Command start is not progress, so the next check stops the lane and kills that command after only a short run.",
+          "The deferred-command unit test starts its command before the first check; it does not cover a command started after request delivery."
+        ]
+      },
+      {
+        "id": "LP-4a",
+        "severity": "blocker",
+        "summary": "An unobservable worktree makes every command completion count as progress.",
+        "action": "Count a command completion as progress only when its fingerprint is observable and its pair is new. Add a test with repeated identical completions while the fingerprint remains None.",
+        "evidence": [
+          "ProgressRule._on_complete increments _new_outcomes and returns whenever the fingerprint is None, without checking whether the command/tree pair is new.",
+          "Repeated commands on an unreadable worktree therefore reset each progress window indefinitely, although the spec says an unobservable worktree contributes neither progress nor its absence.",
+          "The unobservable-worktree test covers a file-change event and silence, but not repeated command completions."
+        ]
+      },
+      {
+        "id": "LP-4b",
+        "severity": "blocker",
+        "summary": "Persistent watcher errors can leave a lane running forever.",
+        "action": "Make an unrecoverable or repeated watch failure produce a recorded terminal stop and kill, or provide an independent bounded reclamation path. Test a persistent polling failure.",
+        "evidence": [
+          "LaneProgressWatch._run catches any exception from tick and continues polling without recording a fault or stopping the executor.",
+          "An exception before ProgressRule.on_tick, such as a persistent steer-queue read or log-read failure, can prevent every check from reaching the rule. With the wall-clock default removed, no other timer reclaims the lane."
+        ]
+      },
+      {
+        "id": "LP-3",
+        "severity": "high",
+        "summary": "Preemption and stop side effects are not serialized, so a losing preemption can still queue a steer and count as delivered work.",
+        "action": "Serialize action delivery and stop under one first-wins state transition. Suppress and account for actions that lose to stop; add a deterministic race test covering queue state, preemption count, and final result.",
+        "evidence": [
+          "observe_event obtains an action from ProgressRule and calls _apply after the rule lock is released; the watch thread can meanwhile reach _stop_now, which uses a separate lock.",
+          "_apply does not recheck stop_reason or coordinate with _stop_now. It can enqueue a steer, set _preempted, increment preemptions, and kill after the stop has already won; _execute_codex then sees stop_reason and exits before delivering the queued steer.",
+          "take_preempted returns one boolean per invocation, while LaneProgressWatch.preemptions increments per _apply call, so overlapping actions can also disagree in their receipts."
+        ]
+      },
+      {
+        "id": "B-2",
+        "severity": "high",
+        "summary": "A lane ending after a checkpoint request is not recorded as answering it.",
+        "action": "Add a lane-finish transition that records a delivered request as answered when the lane ends with its final report or BLOCKED response, and test that receipt outcome.",
+        "evidence": [
+          "ProgressRule._mark_answered is called only when a later progress check observes progress; there is no finish/finalization method for a normal final report or BLOCKED turn ending.",
+          "LaneProgressWatch.stop halts polling but does not resolve the delivered request, so the receipt can leave answered absent even when the executor ended as the spec defines an answer."
+        ]
+      }
+    ],
+    "omitted_finding_ids": [],
+    "prior_next_move": "Fix the late-start kill, unknown-fingerprint command accounting, watcher failure handling, and action/stop serialization; add focused process-level and deterministic race tests, then finalize request-answer receipts and re-review the wired behavior.",
+    "prior_non_claims": [
+      "LP-1 remains a recorded non-claim and was not re-litigated as a defect.",
+      "Live Codex and Muse resume semantics were not established by these fake-executor tests.",
+      "Downstream attempt and WIP classification was not established because its owners are outside the selected paths."
+    ],
+    "approval_rule": "This is prior evidence only. Reuse findings as hypotheses; do not treat a prior block, defer, timeout, or partial result as approval. The new reviewer must bind the new packet and current selected paths independently.",
+    "final_reviewed_input_identity_sha256": "c20ab185cdb5ec15fbb2128ac85ee0bed8aa9a6a4b681175ff28f14d743cb52b",
+    "final_selected_path_count": 7,
+    "context_size_bytes": 10692
+  },
+  "follow_up_scope": {
+    "kind": "charness.follow_up_scope_receipt.v1",
+    "status": "verified",
+    "selected_paths": [
+      "charness-artifacts/spec/lane-progress-rule.md",
+      "scripts/task_run/task_run_event_timing.py",
+      "scripts/task_run/task_run_execution.py",
+      "scripts/task_run/task_run_progress.py",
+      "scripts/task_run/task_run_progress_rule.py",
+      "tests/charness_cli/test_task_run_progress_preemption.py",
+      "tests/charness_cli/test_task_run_progress_rule.py"
+    ],
+    "sections": [
+      {
+        "section_id": "changed-files-and-owning-surfaces",
+        "mode": "selected-paths",
+        "binding": "CHARNESS_CRITIQUE_REVIEWED_PATHS",
+        "path_binding": "exact-path-manifest",
+        "selected_path_count": 7,
+        "path_set_sha256": "533338b020b7ee845d694adc0b5d1670eb75ab355f357262792ff35b9afcb136",
+        "status": "verified",
+        "path_check": "exact-manifest"
+      },
+      {
+        "section_id": "critique-prepare-non-goals",
+        "mode": "static",
+        "binding": "adapter-static-content",
+        "path_binding": null,
+        "selected_path_count": 7,
+        "path_set_sha256": null,
+        "status": "verified",
+        "path_check": "not-applicable"
+      },
+      {
+        "section_id": "reviewer-packet-semantic-question",
+        "mode": "static",
+        "binding": "adapter-static-content",
+        "path_binding": null,
+        "selected_path_count": 7,
+        "path_set_sha256": null,
+        "status": "verified",
+        "path_check": "not-applicable"
+      }
+    ],
+    "contract": "Adapter-declared follow-up scope; selected-path sections must expose every identity-bound path, and static sections must declare that they are not path-bearing."
+  }
+}
