@@ -7,7 +7,8 @@ last check is any of: a new commit, a file change, or a new command outcome
 has not completed before; rerunning a command on an unchanged tree is not
 new). Every progress window the rule checks. A window without progress earns
 a checkpoint request; a second one in a row, with the request unanswered,
-stops the lane. A hung command, a silent model and a dead executor are the
+stops the lane. A command that started since the previous check and is still
+running defers the request, and so the stop, by one window. A hung command, a silent model and a dead executor are the
 same case, so there is no second timer.
 
 Loops are judged at each command completion: the third completion of the
@@ -16,9 +17,10 @@ to switch to the debug skill, the fourth asks it to checkpoint and stop, and
 the fifth stops it.
 
 The rule is pure over its inputs: the clock is the caller's `now`, the
-worktree is read through an injected fingerprint, and an unobservable
-worktree (`None`) counts as progress, so the rule never stops a lane it
-cannot see. The watch (`task_run_progress`) applies its actions.
+worktree is read through an injected fingerprint. An unobservable worktree
+(`None`) shows neither progress nor its absence: the window check falls back
+to the executor's own events, so a silent lane is still stopped, and no loop
+is claimed without seeing the tree. The watch (`task_run_progress`) applies its actions.
 """
 
 from __future__ import annotations
