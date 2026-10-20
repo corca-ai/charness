@@ -116,6 +116,7 @@ class StampingPipe:
         self._stop = threading.Event()
         self._sink_lock = threading.Lock()
         self._released = False
+        self._sink_failed = False
         self._pending = b""
         self.received_bytes = 0
         self.dropped_bytes = 0
@@ -134,20 +135,28 @@ class StampingPipe:
             if self._released:
                 self.dropped_bytes += len(data)
                 return
-            if self.error is None:
+            if not self._sink_failed:
                 try:
                     self._sink.write(data)
                     self._sink.flush()
                     return
                 except (OSError, ValueError) as exc:
-                    self.error = f"{type(exc).__name__}: {exc}"
+                    self._sink_failed = True
+                    self.error = self.error or f"{type(exc).__name__}: {exc}"
             self.dropped_bytes += len(data)
+
+    def _stamped(self, line: bytes) -> bytes:
+        try:
+            return stamp_event_line(line, self._clock())
+        except Exception as exc:  # noqa: BLE001 - keep the bytes, record the clock fault
+            self.error = self.error or f"{type(exc).__name__}: {exc}"
+            return line
 
     def _feed(self, chunk: bytes) -> None:
         self.received_bytes += len(chunk)
         *lines, self._pending = (self._pending + chunk).split(b"\n")
         for line in lines:
-            self._emit(stamp_event_line(line + b"\n", self._clock()))
+            self._emit(self._stamped(line + b"\n"))
 
     def _drain(self) -> None:
         deadline: float | None = None
@@ -174,7 +183,7 @@ class StampingPipe:
             self.error = self.error or f"{type(exc).__name__}: {exc}"
         finally:
             if self._pending:
-                self._emit(stamp_event_line(self._pending, self._clock()))
+                self._emit(self._stamped(self._pending))
                 self._pending = b""
             os.close(self._read_fd)
 
@@ -184,12 +193,17 @@ class StampingPipe:
             self._write_fd = -1
         self._stop.set()
         self._thread.join(timeout=_CLOSE_GRACE_SECONDS + 1.0)
-        with self._sink_lock:
-            # The caller closes the sink after this; a reader still running
-            # (a hung sink write) must drop, not write into a closed file.
+        # The caller closes the sink after this; a reader still running (a
+        # hung sink write holds the lock) must drop, not write into a closed
+        # file. The lock wait is bounded so a hung sink cannot hang close.
+        locked = self._sink_lock.acquire(timeout=_CLOSE_GRACE_SECONDS)
+        try:
             self._released = True
             if self._thread.is_alive():
                 self.error = self.error or "event reader did not finish before close"
+        finally:
+            if locked:
+                self._sink_lock.release()
 
     def capture(self) -> dict[str, Any]:
         """The capture receipt: complete only if every received byte reached the sink."""

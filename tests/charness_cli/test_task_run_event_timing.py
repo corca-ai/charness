@@ -214,3 +214,44 @@ def test_naive_or_malformed_stamps_count_as_unstamped_in_a_mixed_log() -> None:
     assert report["command_starts"] == 2
     assert report["untimed_commands"] == 2
     assert report["span_seconds"] == 9.0
+
+
+def test_timing_reader_skips_lines_it_cannot_read() -> None:
+    """Agent text, broken JSON, and shapeless events are skipped, not fatal."""
+    bad_chunk = {"task_id": "t1", "event": {"chunk": "{not json"}}
+    lines = [
+        "plain agent text",
+        "{not json",
+        "[1, 2]",
+        json.dumps({FIELD: "2026-10-20T08:00:00.000Z", "type": "turn.started"}),
+        json.dumps({FIELD: "2026-10-20T08:00:01.000Z", "payload_type": "x", "payload": []}),
+        _muse("2026-10-20T08:00:02.000Z", "task.lifecycle.proposed",
+              {"task_id": "t1", "event": {"task_kind": "tool.bash"}}),
+        _muse("2026-10-20T08:00:03.000Z", "task.lifecycle.started", {"task_id": "t1"}),
+        _muse("2026-10-20T08:00:04.000Z", "task.lifecycle.output", bad_chunk),
+        _muse("2026-10-20T08:00:05.000Z", "task.lifecycle.completed", {"task_id": "t1"}),
+    ]
+
+    report = timing.command_timing("\n".join(lines))
+
+    assert report["stamped"] is True
+    assert report["command_starts"] == 1
+    assert report["longest_commands"] == [
+        {"command": None, "duration_seconds": 2.0, "families": []}
+    ]
+
+
+def test_cmd_status_commands_without_a_task_id_is_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from scripts.task_run import task_run_inventory
+
+    monkeypatch.setattr(task_payload, "_load_task_run_lib", lambda _args: task_run)
+    monkeypatch.setattr(
+        task_run_inventory, "task_status", lambda *_args, **_kwargs: {"tasks": []}
+    )
+
+    with pytest.raises(task_payload.CharnessError, match="--commands needs a task id"):
+        task_payload.cmd_task_status(
+            argparse.Namespace(repo_root=tmp_path, task_id=None, all_repos=False, commands=True)
+        )
