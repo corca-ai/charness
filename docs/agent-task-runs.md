@@ -19,7 +19,7 @@ the agent runner (`codex`/`muse`); carrier names where the candidate lives
 
 `--require-change` shapes implementation prompts and records edit/test phases. A scope mismatch retains a typed blocker rather than silently selecting a substitute owner.
 
-The [progress rule](../charness-artifacts/spec/lane-progress-rule.md) bounds a lane: a `CHARNESS_TASK_RUN_PROGRESS_WINDOW_SECONDS` window (default 1200) without commits, edits, or new command results brings a checkpoint request (held a check while a young command runs); the next empty check stops it. `--timeout-seconds` is optional.
+The [progress rule](../charness-artifacts/spec/lane-progress-rule.md) bounds a lane: a `CHARNESS_TASK_RUN_PROGRESS_WINDOW_SECONDS` window (default 1200) without commits, edits, or new command results delivers a checkpoint request (a check later if a young command runs); the next empty check after delivery stops it. `--timeout-seconds` is optional.
 
 `--report-only` inspects without changing and never reports a writer conflict.
 Interrupted work with a proven empty scope is `interrupted-before-edit`; WIP is
@@ -124,10 +124,9 @@ Status reads the external result store. Each record adds read-time `liveness`
 while a live pid on a terminal record is normal during retention.
 
 Each JSON line of `<executor>.events.log` gains `charness_received_at` (UTC
-pipe receive time); `task status <task-id> --commands` reports command
+receive time); `task status <task-id> --commands` reports command
 durations (receive-time estimates), family starts (pattern matches), and phase times
-([owner](../scripts/task_run/task_run_event_timing.py)). Event bytes lost at
-close land in `execution.event_capture_incomplete`.
+([owner](../scripts/task_run/task_run_event_timing.py)). Lost event bytes land in `execution.event_capture_incomplete`.
 
 ### Aggregate running-task inventory
 
