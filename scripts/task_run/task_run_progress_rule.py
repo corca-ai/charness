@@ -286,7 +286,11 @@ class ProgressRule:
                 return None
             if now - self._last_check_at < self.window_seconds:
                 return None
-            state = self._fingerprint()
+        # Probe the tree without the lock, so executor events keep arriving: a
+        # command that starts during a slow probe is in flight (and young) below
+        # instead of waiting on the lock while the check decides to preempt.
+        state = self._fingerprint()
+        with self._lock:
             tree_changed = state is not None and state != self._last_state
             progressed = tree_changed or self._new_outcomes > 0
             in_flight = self._in_flight()

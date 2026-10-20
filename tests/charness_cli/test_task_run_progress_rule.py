@@ -295,6 +295,31 @@ def test_a_repeat_on_an_unreadable_tree_still_delivers_a_deferred_request() -> N
     assert request is not None and request.reason_code == "no-progress"
 
 
+def test_a_command_started_during_a_slow_tree_probe_is_young_not_killed() -> None:
+    """The check probes the tree without the rule lock, so a command start that
+    arrives mid-probe is seen as young and defers the request (review 28)."""
+    import threading
+
+    rule: rule_owner.ProgressRule
+    ticking = threading.Event()
+
+    def fingerprint() -> str:
+        if ticking.is_set():
+            start = {"type": "item.started",
+                     "item": {"id": "mid", "type": "command_execution", "command": TEST}}
+            feeder = threading.Thread(target=rule.on_event, args=(start,))
+            feeder.start()
+            feeder.join(timeout=2)
+            assert not feeder.is_alive(), "on_event blocked behind the tree probe"
+        return "same"
+
+    rule = rule_owner.ProgressRule(window_seconds=100.0, fingerprint=fingerprint)
+    rule.start(0.0)
+    ticking.set()
+    assert rule.on_tick(100.0) is None  # deferred for the command started mid-probe
+    assert rule.checks[-1]["deferred_for_young_command"] is True
+
+
 def test_a_command_started_after_the_request_is_not_killed_until_it_is_a_window_old() -> None:
     rule, _tree = _rule()
     assert rule.on_tick(100.0).kind == "message"  # delivered
