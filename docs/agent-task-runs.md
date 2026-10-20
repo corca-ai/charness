@@ -125,7 +125,7 @@ while a live pid on a terminal record is normal during retention.
 
 Each JSON line of `<executor>.events.log` gains `charness_received_at` (UTC
 pipe receive time); `task status <task-id> --commands` reports command
-durations (receive-time upper bounds), family starts, and phase times
+durations (receive-time estimates), family starts, and phase times
 ([owner](../scripts/task_run/task_run_event_timing.py)). Event bytes lost at
 close land in `execution.event_capture_incomplete`.
 
