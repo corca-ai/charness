@@ -279,7 +279,13 @@ def _seed_git_head(repo: Path, head: str, *, worktree: bool) -> None:
 @pytest.mark.parametrize(
     ("head", "worktree", "suffix"),
     [
-        ("ref: refs/heads/task/testidle", True, "-debug-review-followup-testidle.md"),
+        (
+            "ref: refs/heads/task/testidle",
+            True,
+            "-debug-review-followup-testidle-"
+            + hashlib.sha256(b"task/testidle").hexdigest()[:8]
+            + ".md",
+        ),
         (
             "ref: refs/heads/fix/Speed_Scripts",
             False,
@@ -310,17 +316,22 @@ def test_debug_followup_record_is_named_for_the_lane_not_a_shared_counter(
 
 def test_debug_followup_lane_names_never_collide_across_distinct_branches(tmp_path: Path) -> None:
     """A lossy slug let `task/foo_bar` and `task/foo-bar` (or `Foo` and `foo`)
-    pick the same record, and a plain `foo-bar` aliased `task/foo-bar`; only
-    a task lane id that is already a slug goes unhashed."""
+    pick the same record, a plain `foo-bar` aliased `task/foo-bar`, and a task
+    id spelled as another branch's hashed token aliased that branch; every
+    lane token now carries a hash of its own raw branch."""
     names = set()
-    branches = ("task/foo-bar", "task/foo_bar", "task/Foo-bar", "task/foo.bar", "task/__", "foo-bar")
+    plain = "foo-bar-" + hashlib.sha256(b"foo-bar").hexdigest()[:8]
+    branches = (
+        "task/foo-bar", "task/foo_bar", "task/Foo-bar", "task/foo.bar", "task/__", "foo-bar",
+        f"task/{plain}",
+    )
     for index, branch in enumerate(branches):
         repo = tmp_path / f"repo{index}"
         _seed_resolved_debug_pointer(repo)
         _seed_git_head(repo, f"ref: refs/heads/{branch}", worktree=True)
         names.add(Path(_scaffold_debug.payload_for(repo, title=None)["write_artifact_path"]).name)
     assert len(names) == len(branches)
-    assert any(name.endswith("-debug-review-followup-foo-bar.md") for name in names)
+    assert all("-debug-review-followup-" in name for name in names)
 
 
 def test_debug_followup_unreadable_git_link_keeps_the_counter(tmp_path: Path) -> None:

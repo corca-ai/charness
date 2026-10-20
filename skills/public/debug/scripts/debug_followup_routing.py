@@ -30,20 +30,19 @@ def lane_token(repo_root: Path) -> str | None:
 
     Follow-up records were numbered by counting files in the lane's own
     worktree, so parallel lanes picked the same number and their merges
-    collided as add/add conflicts. A `task/<lane>` branch whose lane id is
-    already a lowercase slug yields `<lane>`. Any other non-default branch
-    yields its slug plus a short hash of the raw branch, so `foo_bar`, `Foo`,
-    and a plain `foo-bar` never share a record with `task/foo-bar`. On a
-    default branch or a detached HEAD there is no lane identity, and the
-    counter stays.
+    collided as add/add conflicts. Every non-default branch yields a readable
+    slug (the lane id for `task/<lane>`) plus an 8-hex hash of the raw
+    branch. The slug alone is lossy (`foo_bar`, `Foo`, and a plain `foo-bar`
+    all alias `task/foo-bar`), and any exception for "already a slug" names
+    lets a crafted name take another branch's token, so two branches share a
+    record only on a hash-prefix collision. On a default branch or a
+    detached HEAD there is no lane identity, and the counter stays.
     """
     branch = _head_branch(repo_root)
     if not branch or branch in _DEFAULT_BRANCHES:
         return None
     token = branch[len("task/"):] if branch.startswith("task/") else branch
     slug = re.sub(r"[^a-z0-9]+", "-", token.lower()).strip("-")
-    if slug == token and branch.startswith("task/"):
-        return slug
     digest = hashlib.sha256(branch.encode("utf-8")).hexdigest()[:8]
     return f"{slug}-{digest}" if slug else digest
 
