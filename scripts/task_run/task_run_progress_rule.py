@@ -131,7 +131,9 @@ class ProgressRule:
     `on_event` runs on the event reader as each executor line arrives;
     `on_tick` runs on the watch's poll. Both return an `Action` or None.
     Request states: None, `deferred` (a command was in flight at an empty
-    check; delivery waits for its completion or the next check), and
+    check; delivery waits for its completion or the next check),
+    `delivered-between-checks` (delivered at a command completion; the next
+    check starts the request's full window instead of stopping), and
     `delivered` (an empty check stops the lane, unless a command younger
     than one window is running, which defers the stop a check).
     """
@@ -231,8 +233,9 @@ class ProgressRule:
             return
         if count > 1 and self._request == "deferred" and not self._in_flight():
             # The deferred request waited for this boundary, and the command
-            # produced nothing new: deliver it now.
-            self._request = "delivered"
+            # produced nothing new: deliver it now. It arrives between checks,
+            # so the next check opens its full window rather than stopping.
+            self._request = "delivered-between-checks"
             self._pending = self._checkpoint_request(interrupted=None)
             return
         if count < 3 or not LOOP_FAMILIES & set(_timing.command_families(command)):
@@ -298,7 +301,7 @@ class ProgressRule:
             self._new_outcomes = 0
             if progressed:
                 self._last_progress_at = now
-                if self._request == "delivered":
+                if self._request in ("delivered", "delivered-between-checks"):
                     self._mark_answered(True, "progress")
                 self._request = None
                 return None
@@ -309,6 +312,11 @@ class ProgressRule:
                 check["deferred_for_young_command"] = True
                 if self._request is None:
                     self._request = "deferred"
+                return None
+            if self._request == "delivered-between-checks":
+                # Less than a window has passed since delivery: start it now.
+                self._request = "delivered"
+                check["request_window_started"] = True
                 return None
             if self._request in (None, "deferred"):
                 self._request = "delivered"
@@ -340,7 +348,7 @@ class ProgressRule:
         leaves the request unanswered.
         """
         with self._lock:
-            if self._request == "delivered":
+            if self._request in ("delivered", "delivered-between-checks"):
                 if ended_normally:
                     self._mark_answered(True, "lane-ended")
                 else:

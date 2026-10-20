@@ -142,6 +142,12 @@ def test_a_deferred_request_is_delivered_at_a_repeat_completion() -> None:
 
     assert request is not None and request.reason_code == "no-progress"
     assert "interrupted" not in request.text
+    # Delivered between checks: the next check opens the request's full
+    # window instead of stopping seconds after delivery (claims review C-B1).
+    assert rule.on_tick(300.0) is None
+    assert rule.checks[-1]["request_window_started"] is True
+    stop = rule.on_tick(400.0)
+    assert stop is not None and stop.kind == "stop"
 
 
 def test_the_third_identical_test_run_asks_for_debug_then_checkpoint_then_stops() -> None:
