@@ -47,6 +47,9 @@ _load_repo_runtime_bootstrap()
 from scripts.core.subprocess_guard import run_process  # noqa: E402
 from scripts.task_run import task_run_event_timing as _timing  # noqa: E402
 
+#: Muse task kinds that change files (seen in ceal lane logs, 2026-10-20);
+#: reads, searches, todo lists and bash input are activity, not outcomes.
+MUSE_EDIT_TOOL_KINDS = frozenset({"tool.edit", "tool.edit_file", "tool.write_file"})
 PROGRESS_WINDOW_ENV = "CHARNESS_TASK_RUN_PROGRESS_WINDOW_SECONDS"
 DEFAULT_PROGRESS_WINDOW_SECONDS = 1200.0
 LOOP_FAMILIES = frozenset({"test", "lint", "typecheck"})
@@ -207,8 +210,7 @@ class ProgressRule:
         if event.get("payload_type") == "task.lifecycle.proposed" and isinstance(inner, Mapping):
             self._muse_kinds[task_id] = str(inner.get("task_kind") or "")
         elif event.get("payload_type") == "task.lifecycle.completed":
-            kind = self._muse_kinds.get(task_id, "")
-            if kind.startswith("tool.") and kind != "tool.bash":
+            if self._muse_kinds.get(task_id, "") in MUSE_EDIT_TOOL_KINDS:
                 self._new_outcomes += 1
 
     def _on_complete(self, command: str | None, exit_code: object) -> None:

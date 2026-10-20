@@ -293,10 +293,11 @@ def test_muse_edit_tools_are_outcomes_but_model_responses_are_not() -> None:
             {"payload_type": "task.lifecycle.completed", "payload": {"task_id": task_id}},
         ]
 
-    for event in task("r1", "model.meta.response"):
-        rule.on_event(event)
-    assert rule.on_tick(100.0) is not None  # a model turn alone is not progress
-    for event in task("e1", "tool.edit"):
+    for kind in ("model.meta.response", "tool.read_file", "tool.search", "tool.write_todos"):
+        for event in task(f"r-{kind}", kind):
+            rule.on_event(event)
+    assert rule.on_tick(100.0) is not None  # reading and planning alone are not progress
+    for event in task("e1", "tool.edit_file"):
         rule.on_event(event)
     assert rule.on_tick(200.0) is None
 
