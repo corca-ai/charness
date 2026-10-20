@@ -1,4 +1,4 @@
-"""Live phase relay and no-progress guard for require-change lanes (#815)."""
+"""Live phase relay, the every-lane progress rule, and the require-change guards (#815)."""
 
 from __future__ import annotations
 
@@ -59,7 +59,10 @@ MAX_RULE_FAILURES = 8
 
 
 class LaneProgressWatch:
-    """Live phase relay and no-progress guard for one require-change lane.
+    """Live phase relay and progress guards for one lane.
+
+    Every watched lane runs the progress rule (`task_run_progress_rule`); a
+    require-change lane also gets the first-edit budget and BLOCKED grace.
 
     The carrier cannot stream the executor's own pipes (they are redirected
     into the lane logs), so the watch tails those logs on a poll cadence and
@@ -68,8 +71,8 @@ class LaneProgressWatch:
     without tailing private executor logs (#815). When the lane announced
     `CONTRACT-READ` but shows no `EDITING` and no real scoped diff once the
     budget is spent, the watch records a typed `NO-PROGRESS-STOP` marker on
-    the transcript and kills the lane instead of letting it consume its full
-    timeout in analysis.
+    the transcript and kills the lane instead of letting it spend its run in
+    analysis (first-edit budget, require-change lanes only).
 
     The clock is injectable so tests drive `tick` deterministically; only the
     thin `_run` loop touches wall-clock time.

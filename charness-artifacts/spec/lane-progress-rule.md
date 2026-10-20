@@ -14,9 +14,9 @@ Evidence from the consuming repo (ceal, 2026-10-20, reported by its primary, not
 
 (a) stop a lane that loops without progress; (b) free capacity; (c) give the orchestrator a judgment point. A wall clock does all three badly: it kills productive lanes mid-edit and lets a looping lane burn its whole budget.
 
-## Current owners reused
+## Current owners reused (baseline before this change)
 
-- `charness task run --timeout-seconds` (default 3600) is the only wall clock; `run_monitored_phase` kills the executor at it and the carrier commits a WIP candidate.
+- Before this change, `charness task run --timeout-seconds` (default 3600) was the only wall clock; `run_monitored_phase` kills the executor at it and the carrier commits a WIP candidate.
 - `LaneProgressWatch` (`scripts/task_run/task_run_progress.py`) already polls lane logs and the worktree every 15 s beside a require-change lane, owns the kill of the executor's process group, records `NO-PROGRESS-STOP:` and `progress_stopped`, and enforces two narrower guards: the first-edit budget (CONTRACT-READ to first EDITING or scoped diff, `--no-progress-seconds`, default 300 s) and the BLOCKED linger grace (60 s).
 - The steer queue (`charness task steer <id> --message`, `steer.queue.jsonl`) delivers typed messages only at an executor turn boundary: the carrier resumes the same session (`codex exec resume <thread>` / Muse `--session-id`) with the messages appended. A Codex lane is usually one long turn, so today a message reaches it only after it finishes.
 - v8.15.0 stamps every executor event line as it arrives (`StampingPipe`), and `task_run_event_timing` already parses Codex `command_execution` and Muse `tool.bash` start/completion into commands and families (test, lint, typecheck).
@@ -41,7 +41,7 @@ One knob: the progress window `W` (env `CHARNESS_TASK_RUN_PROGRESS_WINDOW_SECOND
 Progress since the last check is any of:
 
 1. a new commit or file change: the worktree fingerprint (`HEAD`, the tracked diff, untracked files by size and mtime; ignored files do not count) differs from the last check;
-2. a new outcome in the executor's own events: a completed file-change item, or a completed command whose pair (command text, worktree fingerprint at completion) has not completed before in this lane. Rerunning the same command on an unchanged tree is not a new outcome.
+2. a new outcome in the executor's own events: a completed file-change item (Codex `file_change`; Muse `tool.edit`, `tool.edit_file`, or `tool.write_file`; reads, searches, and todo lists are not outcomes), or a completed command whose pair (command text, worktree fingerprint at completion) has not completed before in this lane. Rerunning the same command on an unchanged tree is not a new outcome.
 
 Signals are three-valued. An unobservable worktree contributes nothing, neither progress nor its absence: the executor's events are always observed, so a silent executor is still reclaimed, and an editing executor still shows file-change items. With the tree unreadable, a command completion is keyed to one "unobservable" state: a new command is still new, a rerun is not, and no loop message is sent. The watch runs the rule even when its other polls fail; if the rule itself fails 8 consecutive times (no completed check in between; quiet polls do not reset the count), the watch stops the lane with that reason rather than leave it unbounded.
 
@@ -51,7 +51,7 @@ Every `W` the watch checks:
 - no progress, no request outstanding: charness sends a **checkpoint request** ("No commit, file change, or new command result in the last W. If your work has a coherent state, commit it (hooks must pass; never --no-verify) and write your final report naming what remains; if you are blocked, reply BLOCKED: <reason>. If you are still progressing, continue; charness stops this lane if the next W also shows none."), by preemption when no command is in flight, deferred as above otherwise.
 - no progress, request delivered and unanswered: charness **stops** the lane (`NO-PROGRESS-STOP:`, `progress_stopped`) through the existing guard kill. A request still deferred at this check is delivered now (preempting the long command) instead, and the stop waits one more window.
 
-A request is answered by any progress before the next check (`answered_by: progress`), or by the executor ending cleanly with exit 0 (`answered_by: lane-ended`; a timeout, interruption, or failure records `answered: false, answered_by: lane-failed`) (a final report or a `BLOCKED:` line ends the executor's turn; the existing BLOCKED grace covers a lane that lingers after one). A silent model or dead executor is reclaimed within `2W` plus one poll; a hung command within `3W` (one window of youth, one for the request, one for the stop). No human or orchestrator needs to watch. Set `W` above the longest single command a lane legitimately runs.
+A request is answered by any progress before the next check (`answered_by: progress`), or by the executor ending cleanly with exit 0 (`answered_by: lane-ended`; a timeout, interruption, or failure records `answered: false, answered_by: lane-failed`) (a final report or a `BLOCKED:` line ends the executor's turn; the existing BLOCKED grace covers a lane that lingers after one). A silent model or dead executor is reclaimed within `2W` plus one poll; a hung command within `3W` (one window of youth, one for the request, one for the stop). Each bound also includes the checks' own worktree probes, which are git commands with their own timeouts and are normally short. No human or orchestrator needs to watch. Set `W` above the longest single command a lane legitimately runs.
 
 ### Loops
 
