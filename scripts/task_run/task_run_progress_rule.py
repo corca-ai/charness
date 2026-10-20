@@ -5,7 +5,7 @@ burn its whole budget. This rule replaces it with progress. Progress since the
 last check is any of: a new commit, a file change, or a new command outcome
 (a completed command whose (command text, worktree fingerprint) pair this lane
 has not completed before; rerunning a command on an unchanged tree is not
-new). Every progress window the rule checks. A window without progress earns
+new, and a completion without command text always is). Every progress window the rule checks. A window without progress earns
 a checkpoint request; a second one in a row, with the request unanswered,
 stops the lane. A command that started since the previous check and is still
 running defers the request, and so the stop, by one check. Windows are
