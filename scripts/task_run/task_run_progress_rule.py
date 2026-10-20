@@ -7,8 +7,9 @@ last check is any of: a new commit, a file change, or a new command outcome
 has not completed before; rerunning a command on an unchanged tree is not
 new, and a completion without command text always is). Every progress window the rule checks. A window without progress earns
 a checkpoint request; a second one in a row, with the request unanswered,
-stops the lane. A command that started since the previous check and is still
-running defers the request, and so the stop, by one check. Windows are
+stops the lane. A command the rule has seen start since the previous check,
+still running, defers the request, and so the stop, by one check (a start
+the event reader has not delivered yet is unseen). Windows are
 nominal: the watch runs a due check at its next poll. A hung command, a silent model and a dead executor are the
 same case, so there is no second timer.
 
@@ -309,7 +310,8 @@ class ProgressRule:
                 return None
             # Only commands already running before this probe count as seen at
             # this check: one that starts mid-probe stays young at the next
-            # check too, so nothing is killed before it has run a full window.
+            # check too, so no seen command is killed before it has run a full
+            # window (a start not yet delivered by the event reader is unseen).
             seen_before_probe = set(self._in_flight())
         # Probe the tree without the lock, so executor events keep arriving: a
         # command that starts during a slow probe is in flight (and young) below
