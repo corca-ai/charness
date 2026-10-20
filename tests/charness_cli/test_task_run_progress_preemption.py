@@ -133,7 +133,9 @@ def test_a_silent_lane_gets_a_checkpoint_request_then_is_stopped(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """No wall clock bounds this lane: only the rule's two empty windows do."""
-    monkeypatch.setenv("CHARNESS_TASK_RUN_PROGRESS_WINDOW_SECONDS", "0.3")
+    # The stop kills the resumed fake one window after delivery; under a loaded
+    # coverage run its interpreter can take longer than 0.3 s to log the call.
+    monkeypatch.setenv("CHARNESS_TASK_RUN_PROGRESS_WINDOW_SECONDS", "1.0")
     monkeypatch.setenv("CHARNESS_TASK_RUN_PROGRESS_POLL_SECONDS", "0.05")
     fake = _fake_codex(tmp_path, [])
 
