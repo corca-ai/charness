@@ -31,6 +31,7 @@ from scripts.core.subprocess_guard import (  # noqa: E402
     render_display,
     run_monitored_phase,
 )
+from scripts.task_run import task_run_event_timing as _event_timing  # noqa: E402
 from scripts.task_run import task_run_evidence as _evidence  # noqa: E402
 from scripts.task_run import task_run_friction as _friction  # noqa: E402
 from scripts.task_run import task_run_muse_events as _muse_events  # noqa: E402
@@ -280,13 +281,18 @@ def _run_executor_invocation(
     result: dict[str, Any] = {"exit_code": None, "timed_out": False, "interrupted": False}
     try:
         with (
-            stdout_log.open("w", encoding="utf-8") as stdout_handle,
+            stdout_log.open("wb") as stdout_handle,
             stderr_log.open("a" if append_stderr else "w", encoding="utf-8") as stderr_handle,
             tempfile.TemporaryFile(mode="w+", encoding="utf-8") as prompt_handle,
         ):
             prompt_handle.write(prompt)
             prompt_handle.flush()
             prompt_handle.seek(0)
+            # Every event line is stamped with its receive time on the way
+            # into the lane log, so the events log can time commands/phases.
+            stdout_pipe = _event_timing.StampingPipe(
+                stdout_handle, clock=_event_timing.utc_receive_stamp
+            )
             terminal_stderr = os.fdopen(os.dup(2), "w", buffering=1, closefd=True)
             outcome = None
             try:
@@ -300,7 +306,7 @@ def _run_executor_invocation(
                         ),
                         kill=lambda: _kill_recorded_process_group(group_path),
                     )
-                with _redirect_stdio(prompt_handle, stdout_handle, stderr_handle):
+                with _redirect_stdio(prompt_handle, stdout_pipe, stderr_handle):
                     outcome = run_monitored_phase(
                         _command_with_normal_completion_cleanup(
                             command, configured_env, group_path
@@ -322,6 +328,7 @@ def _run_executor_invocation(
                     lane_watch.stop()
                 terminal_stderr.close()
                 _kill_recorded_process_group(group_path)
+                stdout_pipe.close()
             if outcome is not None:
                 result["timed_out"] = outcome.timed_out
                 result["exit_code"] = None if outcome.timed_out else outcome.returncode

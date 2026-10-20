@@ -40,8 +40,8 @@ names, never values. Budget wall time as `MAX_ATTEMPTS` x `--timeout-seconds`.
 Task-run friction events use WI-1 event-schema v1 and live in
 `task-run/friction-log.jsonl` under the external task runtime root. A second
 same-kind event from a distinct task run within 30 days carries
-`repair the pattern, don't reshape the command`. This asks the integrator to
-repair the recurring pattern; it does not run an automatic repair. Writer
+`repair the pattern, don't reshape the command`; nothing repairs it
+automatically. Writer
 conflicts are recorded for operator resolution.
 
 `charness task report [--window 30m]` renders the fixed-shape period report
@@ -121,6 +121,11 @@ charness task status --repo-root . <task-id>
 Status reads the external result store. Each record adds read-time `liveness`
 (`runner_pid` and advisory `alive`); a dead pid on a `running` record is stale,
 while a live pid on a terminal record is normal during retention.
+
+Each JSON line of `<executor>.events.log` gains `charness_received_at` (UTC
+receive time from the executor's pipe); `task status <task-id> --commands`
+reports command durations, family starts, and phase times
+([owner](../scripts/task_run/task_run_event_timing.py)).
 
 ### Aggregate running-task inventory
 

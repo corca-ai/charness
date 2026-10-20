@@ -257,6 +257,7 @@ options:
 
 ```text
 usage: charness task status [-h] [--repo-root REPO_ROOT] [--all-repos]
+                            [--commands]
                             [task_id]
 
 positional arguments:
@@ -268,6 +269,9 @@ options:
                         Parent repo whose external task-run runtime is read.
   --all-repos           Report the compact running-task inventory across this
                         repo's managed runtime tree.
+  --commands            With a task id, report that lane's longest commands,
+                        starts per command family, and phase times from its
+                        receive-time-stamped events log.
 ```
 
 ## `charness task report`

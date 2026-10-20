@@ -19,6 +19,7 @@ import pytest
 
 from scripts.task_run import (
     task_run,
+    task_run_event_timing,
     task_run_execution,
     task_run_plan,
     task_run_runtime,
@@ -146,6 +147,9 @@ def test_codex_events_without_current_last_message_are_not_delivered(
     execution_runtime.mkdir(parents=True)
     stale_message = execution_runtime / "codex.last-message.txt"
     stale_message.write_bytes(b"stale prior report\n")
+    monkeypatch.setattr(
+        task_run_event_timing, "utc_receive_stamp", lambda: "2026-10-20T08:00:00.000Z"
+    )
 
     raw_events = (
         b'{"type":"thread.started","thread_id":"fake-thread"}\n'
@@ -174,7 +178,13 @@ def test_codex_events_without_current_last_message_are_not_delivered(
     expected_report = last_message.encode("utf-8") if last_message is not None else b""
     assert delivery["status"] == expected_status
     assert stdout_log.read_bytes() == expected_report
-    assert events_log.read_bytes() == raw_events
+    # Each event line carries the time charness received it from the pipe.
+    assert events_log.read_bytes() == (
+        b'{"charness_received_at":"2026-10-20T08:00:00.000Z","type":"thread.started",'
+        b'"thread_id":"fake-thread"}\n'
+        b'{"charness_received_at":"2026-10-20T08:00:00.000Z","type":"item.completed",'
+        b'"item":{"type":"command_execution"}}\n'
+    )
     assert not stale_message.exists()
     full_report = Path(delivery["full_report"]["path"])
     assert full_report.read_bytes() == expected_report

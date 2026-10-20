@@ -47,8 +47,43 @@ def cmd_task_status(args: argparse.Namespace) -> int:
     payload = task_run_inventory.task_status(
         repo_root, args.task_id, all_repos=bool(getattr(args, "all_repos", False))
     )
+    if getattr(args, "commands", False) and payload.get("status") != "missing":
+        if args.task_id is None:
+            raise CharnessError("--commands needs a task id")
+        payload = _task_command_timing(repo_root, args.task_id, payload)
     emit_yaml(payload)
     return 1 if payload.get("status") == "missing" else 0
+
+
+def _task_command_timing(
+    repo_root: Path, task_id: str, record: dict[str, object]
+) -> dict[str, object]:
+    """One lane's command durations, family starts, and phase times from its events log."""
+    from scripts.task_run import task_run_event_timing, task_run_runtime
+
+    executor = record.get("executor")
+    kind = executor.get("kind") if isinstance(executor, dict) else None
+    kind = kind if kind in ("codex", "muse") else "codex"
+    logs = record.get("logs")
+    stdout_log = logs.get("stdout") if isinstance(logs, dict) else None
+    lane_log = (
+        Path(stdout_log)
+        if isinstance(stdout_log, str) and stdout_log
+        else task_run_runtime.task_result_path(
+            task_run_runtime.task_runtime_root(repo_root), task_id
+        )
+    )
+    events_log = lane_log.with_name(f"{kind}.events.log")
+    text = events_log.read_text(encoding="utf-8", errors="replace") if events_log.is_file() else ""
+    return {
+        "event": "task-command-timing",
+        "task_id": task_id,
+        "status": record.get("status"),
+        "executor": kind,
+        "events_log": str(events_log),
+        "events_log_present": events_log.is_file(),
+        **task_run_event_timing.command_timing(text),
+    }
 
 
 def cmd_task_executors(args: argparse.Namespace) -> int:

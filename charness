@@ -1512,6 +1512,12 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Report the compact running-task inventory across this repo's managed runtime tree.",
     )
+    task_status_parser.add_argument(
+        "--commands",
+        action="store_true",
+        help="With a task id, report that lane's longest commands, starts per command "
+        "family, and phase times from its receive-time-stamped events log.",
+    )
     task_status_parser.add_argument("task_id", nargs="?")
     task_status_parser.set_defaults(func=cmd_task_status)
 
