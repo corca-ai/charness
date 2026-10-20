@@ -100,6 +100,31 @@ def test_codex_command_timing_reports_durations_families_and_phases() -> None:
     ]
 
 
+def test_a_resumed_codex_session_reusing_item_ids_counts_separate_commands() -> None:
+    """A preempted Codex lane resumes the same session, which numbers items from
+    `item_1` again in the same events log (claims review B2): the reader must
+    not merge the killed command with the resumed one."""
+    killed = "/usr/bin/zsh -lc 'pnpm run test:changed'"
+    rerun = "/usr/bin/zsh -lc 'pnpm run lint'"
+    lines = [
+        _codex("2026-10-20T08:00:00.000Z", "item.started",
+               {"id": "item_1", "type": "command_execution", "command": killed}),
+        _codex("2026-10-20T08:20:00.000Z", "item.started",
+               {"id": "item_1", "type": "command_execution", "command": rerun}),
+        _codex("2026-10-20T08:20:05.000Z", "item.completed",
+               {"id": "item_1", "type": "command_execution", "command": rerun}),
+    ]
+
+    report = timing.command_timing("\n".join(lines) + "\n")
+
+    assert report["command_starts"] == 2
+    assert report["starts_by_family"]["test"] == 1 and report["starts_by_family"]["lint"] == 1
+    assert report["untimed_commands"] == 1
+    assert report["longest_commands"] == [
+        {"command": rerun, "duration_seconds": 5.0, "families": ["lint"]},
+    ]
+
+
 def test_muse_command_timing_pairs_bash_task_lifecycle() -> None:
     def task(at: str, kind: str, task_id: str, **event: object) -> str:
         return _muse(at, f"task.lifecycle.{kind}", {"task_id": task_id, "event": event})

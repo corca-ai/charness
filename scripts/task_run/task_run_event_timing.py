@@ -302,6 +302,7 @@ class _Timeline:
         self.last: datetime | None = None
         self.unstamped = 0
         self._bash_tasks: set[str] = set()
+        self._codex_keys: dict[str, str] = {}
         self._agent_text = ""
 
     def feed(self, at: datetime | None, event: Mapping[str, Any]) -> None:
@@ -331,9 +332,13 @@ class _Timeline:
             self._phase_text(at, str(item.get("text") or "") + "\n")
         if item.get("type") != "command_execution":
             return
-        key = str(item.get("id"))
+        item_id = str(item.get("id"))
         command = item.get("command") if isinstance(item.get("command"), str) else None
+        key = self._codex_keys.get(item_id, item_id)
         if event.get("type") == "item.started":
+            if key in self.commands:  # a resumed session reuses item ids: a new command
+                key = f"{item_id}#{len(self.commands)}"
+            self._codex_keys[item_id] = key
             self._start(key, at, command)
         elif event.get("type") == "item.completed":
             self._start(key, None, command, observed=False)
