@@ -28,7 +28,8 @@ Mid-turn delivery. The carrier gains **preemption**: to deliver its own message 
 Preemption is not free, so the rule limits where it happens:
 
 - At a command completion (loop messages), no command is in flight, so only the model's in-progress reasoning is lost.
-- At a window check, the carrier preempts only when no command is in flight. A command in flight at an empty check defers the request until the command completes (then the completion is a new outcome and the request is withdrawn) or until the next check, whichever is first; only then is a command that has run for at least `W` killed, and the message names it as interrupted with possibly partial effects.
+- At a window check, the carrier never kills a command younger than one window (one that started after the previous check). Such a command defers the request, or the stop, until it completes or the next check, whichever is first; only then is a command that has run for at least `W` killed, and the message names it as interrupted with possibly partial effects.
+- One preemption per invocation: a second message raised before the executor dies is queued and rides the same resume. Once a stop has won, a later message is suppressed and counted (`suppressed_actions`), never queued.
 
 Preemption leaves the worktree as it is, including any partial effect of a killed command; the carrier does not checkpoint, commit, or clean it. A preempted invocation has its own result: it is not a failure, not a retry attempt (attempts live outside the invocation loop), not a relaunch in the friction log, not a failed resume, and not a WIP candidate. `execution.preemptions` counts them; relaunch friction counts only real relaunches. If the executor exits on its own just before the kill, the queued message is delivered at that turn boundary exactly like an operator steer.
 
@@ -41,7 +42,7 @@ Progress since the last check is any of:
 1. a new commit or file change: the worktree fingerprint (`HEAD`, the tracked diff, untracked files by size and mtime; ignored files do not count) differs from the last check;
 2. a new outcome in the executor's own events: a completed file-change item, or a completed command whose pair (command text, worktree fingerprint at completion) has not completed before in this lane. Rerunning the same command on an unchanged tree is not a new outcome.
 
-Signals are three-valued. An unobservable worktree contributes nothing, neither progress nor its absence: the executor's events are always observed, so a silent executor is still reclaimed, and an editing executor still shows file-change items.
+Signals are three-valued. An unobservable worktree contributes nothing, neither progress nor its absence: the executor's events are always observed, so a silent executor is still reclaimed, and an editing executor still shows file-change items. With the tree unreadable, a command completion is keyed to one "unobservable" state: a new command is still new, a rerun is not, and no loop message is sent. The watch runs the rule even when its other polls fail; if the rule itself fails 8 consecutive checks, the watch stops the lane with that reason rather than leave it unbounded.
 
 Every `W` the watch checks:
 
@@ -49,7 +50,7 @@ Every `W` the watch checks:
 - no progress, no request outstanding: charness sends a **checkpoint request** ("No commit, file change, or new command result in the last W. If your work has a coherent state, commit it (hooks must pass; never --no-verify) and write your final report naming what remains; if you are blocked, reply BLOCKED: <reason>. If you are still progressing, continue; charness stops this lane if the next W also shows none."), by preemption when no command is in flight, deferred as above otherwise.
 - no progress, request delivered and unanswered: charness **stops** the lane (`NO-PROGRESS-STOP:`, `progress_stopped`) through the existing guard kill. A request still deferred at this check is delivered now (preempting the long command) instead, and the stop waits one more window.
 
-A request is answered by any progress before the next check, or by the lane ending (a final report or a `BLOCKED:` line ends the executor's turn; the existing BLOCKED grace covers a lane that lingers after one). A silent model or dead executor is reclaimed within `2W` plus one poll; a hung command within `3W`. No human or orchestrator needs to watch. Set `W` above the longest single command a lane legitimately runs.
+A request is answered by any progress before the next check (`answered_by: progress`), or by the lane ending (`answered_by: lane-ended`) (a final report or a `BLOCKED:` line ends the executor's turn; the existing BLOCKED grace covers a lane that lingers after one). A silent model or dead executor is reclaimed within `2W` plus one poll; a hung command within `3W` (one window of youth, one for the request, one for the stop). No human or orchestrator needs to watch. Set `W` above the longest single command a lane legitimately runs.
 
 ### Loops
 
@@ -88,3 +89,7 @@ Two file-backed read-only reviewers (`design-premortem-a`, operational; `design-
 - Valid but defer: loop keys by exact command text can be evaded by varying the text (A LP-1) — recorded as a non-claim; normalization risks false alarms across distinct commands.
 - Over-worry: keeping `--timeout-seconds` as an explicit opt-in; keeping the first-edit budget and BLOCKED grace (both reviewers dismissed these).
 - Outside this repository: the consuming launcher's `--timeout-seconds 5400` must be removed there.
+
+## Implementation review disposition (2026-10-20)
+
+A follow-up reviewer (`impl-followup-a`) over the first wiring returned `block`: a stop could kill a command started just after the request (LP-2), reruns on an unreadable tree counted as progress (LP-4a), a failing watch poll could leave a lane unbounded (LP-4b), preemption and stop were not serialized (LP-3), and a lane ending did not answer its request (B-2). All five are repaired as described above, each with a test.

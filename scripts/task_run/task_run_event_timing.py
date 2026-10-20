@@ -370,13 +370,13 @@ class _Timeline:
             if self._on_complete is not None:
                 self._on_complete(entry["command"], entry.get("exit_code"))
 
-    def in_flight(self) -> list[str]:
-        """Commands whose start was seen and whose completion was not."""
-        return [
-            str(entry["command"] or "")
-            for entry in self.commands.values()
+    def in_flight(self) -> dict[str, str]:
+        """Commands whose start was seen and whose completion was not, by item id."""
+        return {
+            key: str(entry["command"] or "")
+            for key, entry in self.commands.items()
             if entry["start_seen"] and not entry.get("done")
-        ]
+        }
 
     def _phase_text(self, at: datetime | None, text: str) -> None:
         self._agent_text += text

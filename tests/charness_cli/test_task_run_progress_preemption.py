@@ -168,16 +168,74 @@ def test_a_loop_that_ignores_both_requests_is_stopped_from_the_event_reader(
     watch.observe_event(completed[0])  # before start: nothing to preempt yet
     kills: list[str] = []
     watch.start(emit=lambda *_args: None, kill=lambda: kills.append("kill"))
+    preempted: list[bool] = []
     try:
         for event in completed[1:]:
             watch.observe_event(event)
+            preempted.append(watch.take_preempted())  # the loop's per-invocation read
     finally:
         watch.stop()
 
     # 3rd and 4th runs preempted with messages; the 5th stopped the lane.
+    assert preempted == [False, True, True, False]
     assert watch.preemptions == 2
     assert kills == ["kill", "kill", "kill"]
     assert watch.stop_reason is not None and watch.stop_reason.startswith("loop:")
     stderr = (runtime / "codex.stderr.log").read_text(encoding="utf-8")
     assert "NO-PROGRESS-STOP: loop:" in stderr
-    assert watch.take_preempted() is True and watch.take_preempted() is False
+
+
+def _started_watch(tmp_path: Path) -> tuple[task_run_progress.LaneProgressWatch, list[str], Path]:
+    repo = _repo(tmp_path)
+    runtime = tmp_path / "runtime" / "lane-1"
+    runtime.mkdir(parents=True)
+    watch = task_run_progress.build_progress_watch(
+        require_change=False,
+        stdout_log=runtime / "codex.stdout.log",
+        stderr_log=runtime / "codex.stderr.log",
+        worktree=repo,
+        base_sha=_git(repo, "rev-parse", "HEAD").stdout.strip(),
+        scope_specs=[],
+    )
+    assert watch is not None
+    kills: list[str] = []
+    watch.start(emit=lambda *_args: None, kill=lambda: kills.append("kill"))
+    watch.stop()  # drive it by hand; no poll thread
+    return watch, kills, runtime / "steer.queue.jsonl"
+
+
+def test_messages_in_one_invocation_share_one_preemption_and_lose_to_a_stop(
+    tmp_path: Path,
+) -> None:
+    from scripts.task_run.task_run_progress_rule import Action
+
+    watch, kills, queue = _started_watch(tmp_path)
+    watch._apply(Action("message", "first", "loop-debug"))
+    watch._apply(Action("message", "second", "no-progress"))
+    assert (watch.preemptions, kills) == (1, ["kill"])
+    assert len(task_run_lane_runner.read_steer_queue(queue)) == 2
+
+    watch._stop_now("stopped by the rule")
+    watch._apply(Action("message", "too late", "no-progress"))
+    assert watch.suppressed_actions == 1
+    assert len(task_run_lane_runner.read_steer_queue(queue)) == 2
+    assert watch.receipt()["suppressed_actions"] == 1
+
+
+def test_a_watch_that_cannot_check_stops_the_lane_instead_of_leaving_it_unbounded(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    watch, _kills, _queue = _started_watch(tmp_path)
+
+    def broken_poll(_now: float) -> None:
+        raise RuntimeError("log unreadable")
+
+    def broken_rule(_now: float) -> None:
+        raise RuntimeError("fingerprint exploded")
+
+    monkeypatch.setattr(watch, "_poll", broken_poll)
+    monkeypatch.setattr(watch._progress_rule, "on_tick", broken_rule)
+    reasons = [watch.tick(float(n)) for n in range(task_run_progress.MAX_RULE_FAILURES)]
+
+    assert reasons[:-1] == [None] * (task_run_progress.MAX_RULE_FAILURES - 1)
+    assert reasons[-1] is not None and "cannot be bounded" in reasons[-1]

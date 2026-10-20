@@ -149,6 +149,7 @@ class ProgressRule:
         self._last_progress_at: float | None = None
         self._new_outcomes = 0
         self._request: str | None = None
+        self._in_flight_at_check: set[str] = set()
         self.checks: list[dict[str, Any]] = []
         self.messages: list[dict[str, Any]] = []
         self.stop_reason: str | None = None
@@ -191,17 +192,20 @@ class ProgressRule:
                 self._new_outcomes += 1
 
     def _on_complete(self, command: str | None, exit_code: object) -> None:
-        state = self._fingerprint() if command else None
-        if state is None:
-            # Unobservable tree or unnamed command: it cannot be proven a repeat.
-            self._new_outcomes += 1
+        if not command:
+            self._new_outcomes += 1  # an unnamed command cannot be proven a repeat
             return
-        key = (command.strip(), state)
+        state = self._fingerprint()
+        # An unreadable tree is one unknown state: a new command is still new,
+        # a rerun is not, and no loop is claimed without seeing the tree.
+        key = (command.strip(), state or "unobservable")
         count = self._outcomes.get(key, 0) + 1
         self._outcomes[key] = count
         if count == 1:
             self._new_outcomes += 1
-        elif self._request == "deferred" and not self._timeline.in_flight():
+        if state is None:
+            return
+        if count > 1 and self._request == "deferred" and not self._timeline.in_flight():
             # The deferred request waited for this boundary, and the command
             # produced nothing new: deliver it now.
             self._request = "delivered"
@@ -251,6 +255,8 @@ class ProgressRule:
             tree_changed = state is not None and state != self._last_state
             progressed = tree_changed or self._new_outcomes > 0
             in_flight = self._timeline.in_flight()
+            young = set(in_flight) - self._in_flight_at_check
+            self._in_flight_at_check = set(in_flight)
             check = {
                 "elapsed_s": round(now - self._last_check_at, 3),
                 "progress": progressed,
@@ -258,6 +264,7 @@ class ProgressRule:
                 "tree_changed": tree_changed,
                 "tree_observable": state is not None,
                 "commands_in_flight": len(in_flight),
+                "commands_started_since_check": len(young),
                 "request_before": self._request,
             }
             self.checks.append(check)
@@ -267,18 +274,22 @@ class ProgressRule:
             if progressed:
                 self._last_progress_at = now
                 if self._request == "delivered":
-                    self._mark_answered(True)
+                    self._mark_answered(True, "progress")
                 self._request = None
                 return None
-            if self._request is None and in_flight:
-                self._request = "deferred"
+            if young:
+                # A command started after the last check has run less than one
+                # window, and preemption never kills a command that young: the
+                # request (or stop) waits for its completion or the next check.
+                check["deferred_for_young_command"] = True
+                if self._request is None:
+                    self._request = "deferred"
                 return None
             if self._request in (None, "deferred"):
                 self._request = "delivered"
-                return self._record(
-                    self._checkpoint_request(interrupted=in_flight[-1] if in_flight else None)
-                )
-            self._mark_answered(False)
+                interrupted = list(in_flight.values())[-1] if in_flight else None
+                return self._record(self._checkpoint_request(interrupted=interrupted))
+            self._mark_answered(False, "unanswered")
             window = _duration(self.window_seconds)
             return self._record(
                 Action(
@@ -289,11 +300,19 @@ class ProgressRule:
                 )
             )
 
-    def _mark_answered(self, answered: bool) -> None:
+    def _mark_answered(self, answered: bool, by: str) -> None:
         for message in reversed(self.messages):
             if message["reason_code"] == "no-progress":
-                message.setdefault("answered", answered)
+                if "answered" not in message:
+                    message.update(answered=answered, answered_by=by)
                 return
+
+    def finish(self) -> None:
+        """The lane ended on its own: a delivered request was answered by that end."""
+        with self._lock:
+            if self._request == "delivered":
+                self._mark_answered(True, "lane-ended")
+            self._request = None
 
     def _record(self, action: Action | None) -> Action | None:
         if action is None:

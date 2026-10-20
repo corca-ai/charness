@@ -216,3 +216,35 @@ def test_worktree_fingerprint_sees_edits_commits_and_untracked_but_not_ignored(
         subprocess.run(["git", *args], cwd=repo, check=True)
     assert rule_owner.worktree_fingerprint(repo) not in {first, edited, untracked}
     assert rule_owner.worktree_fingerprint(tmp_path / "missing") is None
+
+
+def test_reruns_on_an_unreadable_tree_are_not_progress_and_never_claim_a_loop() -> None:
+    rule, tree = _rule()
+    tree.state = None
+    assert rule.on_event(_completed(TEST, "c0")) is None  # new: progress
+    assert rule.on_tick(100.0) is None
+    for index in range(1, 6):
+        assert rule.on_event(_completed(TEST, f"c{index}")) is None
+    assert rule.on_tick(200.0).kind == "message"
+
+
+def test_a_command_started_after_the_request_is_not_killed_until_it_is_a_window_old() -> None:
+    rule, _tree = _rule()
+    assert rule.on_tick(100.0).kind == "message"  # delivered
+    rule.on_event({"type": "item.started",
+                   "item": {"id": "late", "type": "command_execution", "command": TEST}})
+
+    assert rule.on_tick(200.0) is None  # the command is younger than a window
+    assert rule.receipt()["checks"][-1]["deferred_for_young_command"] is True
+    stop = rule.on_tick(300.0)  # still running a window later, nothing moved
+    assert stop is not None and stop.kind == "stop"
+
+
+def test_a_lane_that_ends_answers_its_checkpoint_request() -> None:
+    rule, _tree = _rule()
+    assert rule.on_tick(100.0).kind == "message"
+    rule.finish()
+
+    message = rule.receipt()["messages"][0]
+    assert (message["answered"], message["answered_by"]) == (True, "lane-ended")
+    assert rule.snapshot(100.0)["checkpoint_request"] is None

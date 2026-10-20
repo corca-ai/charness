@@ -53,6 +53,9 @@ DEFAULT_PROGRESS_POLL_SECONDS = 15.0
 #: lingers past the grace is killed, so a block declaration cannot become a
 #: full-timeout consumption.
 DEFAULT_BLOCKED_GRACE_SECONDS = 60.0
+#: Consecutive failed progress checks before the watch stops the lane: with
+#: no wall clock, a watch that cannot check must not leave a lane unbounded.
+MAX_RULE_FAILURES = 8
 
 
 class LaneProgressWatch:
@@ -123,9 +126,11 @@ class LaneProgressWatch:
         self._steer_seen: set[str] = set()
         self._steer_messages: list[dict[str, Any]] = []
         self._progress_rule = progress_rule
-        self._fire_lock = threading.Lock()
+        self._action_lock = threading.Lock()
         self._preempted = False
         self.preemptions = 0
+        self._rule_failures = 0
+        self.suppressed_actions = 0
 
     def start(
         self,
@@ -164,6 +169,7 @@ class LaneProgressWatch:
             "poll_seconds": self._poll_seconds,
             "stop_reason": self.stop_reason,
             "preemptions": self.preemptions,
+            "suppressed_actions": self.suppressed_actions,
             "progress_rule": (
                 None if self._progress_rule is None else self._progress_rule.receipt()
             ),
@@ -179,21 +185,45 @@ class LaneProgressWatch:
 
     def tick(self, now: float) -> str | None:
         """One poll: relay new phases, publish a live snapshot, report a stop reason."""
-        self._poll_steer_queue()
-        self._track_log_growth(now)
-        reason = self._poll(now)
-        if reason is None and self._progress_rule is not None:
-            action = self._progress_rule.on_tick(now)
-            if action is not None and action.kind == "stop":
-                reason = action.text
-            else:
-                self._apply(action)
+        try:
+            self._poll_steer_queue()
+            self._track_log_growth(now)
+            reason = self._poll(now)
+        except Exception:  # noqa: BLE001 - the progress rule below must still run
+            reason = None
+        # The progress rule is the lane's only bound, so it runs even when the
+        # phase or queue poll above fails.
+        reason = reason or self._tick_rule(now)
         if self._observe is not None:
             try:
                 self._observe(self.snapshot(now))
             except Exception:  # noqa: BLE001 - a failed snapshot must not kill the watch
                 pass
         return reason
+
+    def _tick_rule(self, now: float) -> str | None:
+        if self._progress_rule is None:
+            return None
+        try:
+            action = self._progress_rule.on_tick(now)
+        except Exception as exc:  # noqa: BLE001 - counted; repeated failure stops the lane
+            self._rule_failures += 1
+            if self._rule_failures < MAX_RULE_FAILURES:
+                return None
+            return (
+                f"progress watch failed {self._rule_failures} consecutive checks "
+                f"({type(exc).__name__}: {exc}); the lane cannot be bounded"
+            )
+        self._rule_failures = 0
+        if action is not None and action.kind == "stop":
+            return action.text
+        self._apply(action)
+        return None
+
+    def finish_lane(self) -> None:
+        """The executor ended on its own; resolve an outstanding checkpoint request."""
+        if self._progress_rule is not None:
+            self._progress_rule.finish()
 
     def observe_event(self, event: Mapping[str, Any]) -> None:
         """Feed one executor event to the progress rule (runs on the event reader)."""
@@ -215,16 +245,24 @@ class LaneProgressWatch:
             return
         from scripts.task_run import task_run_lane_runner as _lane_runner
 
-        _lane_runner.enqueue_steer(
-            self._steer_queue,
-            self._stdout_log.parent.name,
-            action.text,
-            reason=action.reason_code,
-            actor="charness-progress-rule",
-        )
-        self._preempted = True
-        self.preemptions += 1
-        self._kill()
+        with self._action_lock:
+            # First wins: once the lane is stopping, a message would never be
+            # delivered, so it is suppressed and counted instead of queued.
+            if self.stop_reason is not None:
+                self.suppressed_actions += 1
+                return
+            _lane_runner.enqueue_steer(
+                self._steer_queue,
+                self._stdout_log.parent.name,
+                action.text,
+                reason=action.reason_code,
+                actor="charness-progress-rule",
+            )
+            if not self._preempted:
+                # One preemption per invocation; later messages ride along.
+                self._preempted = True
+                self.preemptions += 1
+                self._kill()
 
     def take_preempted(self) -> bool:
         """Whether the last invocation ended because the watch preempted it."""
@@ -232,7 +270,7 @@ class LaneProgressWatch:
         return preempted
 
     def _stop_now(self, reason: str) -> None:
-        with self._fire_lock:
+        with self._action_lock:
             if self.stop_reason is not None:
                 return
             self.stop_reason = reason
