@@ -184,6 +184,8 @@ def test_codex_arguments_fix_luna_sandbox_and_effort(tmp_path: Path) -> None:
         "gpt-6-luna",
         "-c",
         "model_reasoning_effort=xhigh",
+        "-c",
+        "sandbox_workspace_write.network_access=true",
     ]
 
 

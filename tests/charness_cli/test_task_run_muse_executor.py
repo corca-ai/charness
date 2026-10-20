@@ -61,6 +61,8 @@ def test_muse_arguments_pin_high_effort_and_prompt_file(tmp_path: Path) -> None:
         "--reasoning-effort",
         "high",
         "--disable-approval",
+        "--sandbox-network",
+        "enabled",
         "--trust-workspace",
         "--workspace",
         str(worktree),
