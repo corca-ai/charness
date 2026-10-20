@@ -1,7 +1,44 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any, Callable
+
+_DEFAULT_BRANCHES = frozenset({"main", "master", "trunk", "develop"})
+
+
+def _head_branch(repo_root: Path) -> str | None:
+    """The checked-out branch, read from the git files (no process spawn)."""
+    dot_git = repo_root / ".git"
+    try:
+        if dot_git.is_file():
+            text = dot_git.read_text(encoding="utf-8").strip()
+            if not text.startswith("gitdir:"):
+                return None
+            git_dir = Path(text[len("gitdir:"):].strip())
+            dot_git = git_dir if git_dir.is_absolute() else repo_root / git_dir
+        head = (dot_git / "HEAD").read_text(encoding="utf-8").strip()
+    except OSError:
+        return None
+    prefix = "ref: refs/heads/"
+    return head[len(prefix):] if head.startswith(prefix) else None
+
+
+def lane_token(repo_root: Path) -> str | None:
+    """A name part no parallel lane shares: the task-run lane id, else the branch.
+
+    Follow-up records were numbered by counting files in the lane's own
+    worktree, so parallel lanes picked the same number and their merges
+    collided as add/add conflicts. A `task/<lane>` branch yields `<lane>`;
+    another non-default branch yields its own name. On a default branch or a
+    detached HEAD there is no lane identity, and the counter stays.
+    """
+    branch = _head_branch(repo_root)
+    if not branch or branch in _DEFAULT_BRANCHES:
+        return None
+    token = branch[len("task/"):] if branch.startswith("task/") else branch
+    token = re.sub(r"[^A-Za-z0-9]+", "-", token).strip("-").lower()
+    return token or None
 
 
 def resolved_followup_record_payload(
@@ -42,7 +79,9 @@ def resolved_followup_record_payload(
     candidate = record_payload_for(resolved_title)
     if usable(str(candidate["write_artifact_path"])):
         return candidate
-    for suffix in ("followup", "followup-2", "followup-3", "followup-4"):
+    token = lane_token(repo_root)
+    base = f"followup-{token}" if token else "followup"
+    for suffix in (base, f"{base}-2", f"{base}-3", f"{base}-4"):
         candidate = record_payload_for(f"{resolved_title} {suffix}")
         if usable(str(candidate["write_artifact_path"])):
             return candidate

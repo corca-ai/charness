@@ -261,3 +261,41 @@ def test_exported_debug_scaffold_validator_command_runs_from_consumer_repo(tmp_p
         text=True,
     )
     assert validation.returncode == 0, validation.stderr
+
+
+def _seed_git_head(repo: Path, head: str, *, worktree: bool) -> None:
+    """Write only the HEAD the routing reads; a linked worktree's `.git` is a file."""
+    if worktree:
+        git_dir = repo.parent / "common" / "worktrees" / repo.name
+        git_dir.mkdir(parents=True)
+        (repo / ".git").write_text(f"gitdir: {git_dir}\n", encoding="utf-8")
+    else:
+        git_dir = repo / ".git"
+        git_dir.mkdir(parents=True)
+    (git_dir / "HEAD").write_text(head + "\n", encoding="utf-8")
+
+
+@pytest.mark.parametrize(
+    ("head", "worktree", "suffix"),
+    [
+        ("ref: refs/heads/task/testidle", True, "-debug-review-followup-testidle.md"),
+        ("ref: refs/heads/fix/Speed_Scripts", False, "-debug-review-followup-fix-speed-scripts.md"),
+        ("ref: refs/heads/main", False, "-debug-review-followup.md"),
+        ("0123456789abcdef0123456789abcdef01234567", False, "-debug-review-followup.md"),
+    ],
+)
+def test_debug_followup_record_is_named_for_the_lane_not_a_shared_counter(
+    tmp_path: Path, head: str, worktree: bool, suffix: str
+) -> None:
+    """Parallel lanes counted files in their own worktrees, picked the same
+    `followup-N`, and collided on merge (ceal int208-int210, 2026-10-20). A lane
+    branch names the record; a default branch or detached HEAD keeps the counter."""
+    repo = tmp_path / "repo"
+    _debug_dir, target = _seed_resolved_debug_pointer(repo)
+    _seed_git_head(repo, head, worktree=worktree)
+
+    payload = _scaffold_debug.payload_for(repo, title=None)
+
+    assert payload["write_artifact_path"].endswith(suffix)
+    assert payload["update_current_pointer_after_write"] is True
+    assert payload["current_pointer_symlink_target"] == target.name
