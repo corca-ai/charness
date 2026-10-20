@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import re
 from pathlib import Path
 from typing import Any, Callable
@@ -30,15 +31,21 @@ def lane_token(repo_root: Path) -> str | None:
     Follow-up records were numbered by counting files in the lane's own
     worktree, so parallel lanes picked the same number and their merges
     collided as add/add conflicts. A `task/<lane>` branch yields `<lane>`;
-    another non-default branch yields its own name. On a default branch or a
-    detached HEAD there is no lane identity, and the counter stays.
+    another non-default branch yields its own name. Record names are
+    lowercase slugs, so a name the slug would change (`foo_bar`, `Foo`) gains
+    a short hash of the raw branch; distinct branches never share a record.
+    On a default branch or a detached HEAD there is no lane identity, and the
+    counter stays.
     """
     branch = _head_branch(repo_root)
     if not branch or branch in _DEFAULT_BRANCHES:
         return None
     token = branch[len("task/"):] if branch.startswith("task/") else branch
-    token = re.sub(r"[^A-Za-z0-9]+", "-", token).strip("-").lower()
-    return token or None
+    slug = re.sub(r"[^a-z0-9]+", "-", token.lower()).strip("-")
+    if slug == token:
+        return slug
+    digest = hashlib.sha256(branch.encode("utf-8")).hexdigest()[:8]
+    return f"{slug}-{digest}" if slug else digest
 
 
 def resolved_followup_record_payload(

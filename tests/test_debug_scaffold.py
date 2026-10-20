@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
 import shlex
 import subprocess
 from pathlib import Path
@@ -279,7 +280,13 @@ def _seed_git_head(repo: Path, head: str, *, worktree: bool) -> None:
     ("head", "worktree", "suffix"),
     [
         ("ref: refs/heads/task/testidle", True, "-debug-review-followup-testidle.md"),
-        ("ref: refs/heads/fix/Speed_Scripts", False, "-debug-review-followup-fix-speed-scripts.md"),
+        (
+            "ref: refs/heads/fix/Speed_Scripts",
+            False,
+            "-debug-review-followup-fix-speed-scripts-"
+            + hashlib.sha256(b"fix/Speed_Scripts").hexdigest()[:8]
+            + ".md",
+        ),
         ("ref: refs/heads/main", False, "-debug-review-followup.md"),
         ("0123456789abcdef0123456789abcdef01234567", False, "-debug-review-followup.md"),
     ],
@@ -299,3 +306,28 @@ def test_debug_followup_record_is_named_for_the_lane_not_a_shared_counter(
     assert payload["write_artifact_path"].endswith(suffix)
     assert payload["update_current_pointer_after_write"] is True
     assert payload["current_pointer_symlink_target"] == target.name
+
+
+def test_debug_followup_lane_names_never_collide_across_distinct_branches(tmp_path: Path) -> None:
+    """A lossy slug let `task/foo_bar` and `task/foo-bar` (or `Foo` and `foo`)
+    pick the same record; a branch the slug changes carries a hash of itself."""
+    names = set()
+    branches = ("task/foo-bar", "task/foo_bar", "task/Foo-bar", "task/foo.bar", "task/__")
+    for index, branch in enumerate(branches):
+        repo = tmp_path / f"repo{index}"
+        _seed_resolved_debug_pointer(repo)
+        _seed_git_head(repo, f"ref: refs/heads/{branch}", worktree=True)
+        names.add(Path(_scaffold_debug.payload_for(repo, title=None)["write_artifact_path"]).name)
+    assert len(names) == len(branches)
+    assert any(name.endswith("-debug-review-followup-foo-bar.md") for name in names)
+
+
+def test_debug_followup_unreadable_git_link_keeps_the_counter(tmp_path: Path) -> None:
+    """A `.git` file that is not a gitdir link gives no lane identity."""
+    repo = tmp_path / "repo"
+    _seed_resolved_debug_pointer(repo)
+    (repo / ".git").write_text("not a git link\n", encoding="utf-8")
+
+    payload = _scaffold_debug.payload_for(repo, title=None)
+
+    assert payload["write_artifact_path"].endswith("-debug-review-followup.md")
