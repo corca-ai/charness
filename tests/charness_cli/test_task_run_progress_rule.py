@@ -327,9 +327,11 @@ def test_a_command_started_during_a_slow_tree_probe_is_young_not_killed() -> Non
     assert request is not None and request.kind == "message"
 
 
-def test_a_completion_probe_never_holds_up_the_next_command_start() -> None:
-    """A completion's tree probe runs before the rule lock, so the event reader
-    is never queued behind it (review 29)."""
+def test_a_completion_probe_does_not_hold_the_rule_lock() -> None:
+    """A completion's tree probe runs before the rule lock, so another caller
+    (a window check, or a feeder here) is not held behind it (review 29). The
+    production event reader is single-threaded and still reads the next line
+    only after the probe; the spec records that window."""
     import threading
 
     rule: rule_owner.ProgressRule
@@ -342,7 +344,7 @@ def test_a_completion_probe_never_holds_up_the_next_command_start() -> None:
             feeder = threading.Thread(target=rule.on_event, args=(start,))
             feeder.start()
             feeder.join(timeout=2)
-            assert not feeder.is_alive(), "a command start waited behind a completion probe"
+            assert not feeder.is_alive(), "the rule lock was held through a completion probe"
         return "same"
 
     rule = rule_owner.ProgressRule(window_seconds=100.0, fingerprint=fingerprint)
