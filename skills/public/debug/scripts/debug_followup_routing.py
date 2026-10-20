@@ -40,7 +40,9 @@ def lane_token(repo_root: Path) -> str | None:
     detached HEAD there is no lane identity, and the counter stays.
     """
     branch = _head_branch(repo_root)
-    if not branch or branch in _DEFAULT_BRANCHES:
+    # A reftable repository's HEAD names the placeholder `.invalid` for every
+    # branch, so it carries no lane identity either.
+    if not branch or branch in _DEFAULT_BRANCHES or branch == ".invalid":
         return None
     token = branch[len("task/"):] if branch.startswith("task/") else branch
     slug = re.sub(r"[^a-z0-9]+", "-", token.lower()).strip("-")
@@ -83,10 +85,12 @@ def resolved_followup_record_payload(
             return True
         return not (repo_root / candidate_path).exists()
 
-    candidate = record_payload_for(resolved_title)
-    if usable(str(candidate["write_artifact_path"])):
-        return candidate
     token = lane_token(repo_root)
+    # On a lane branch even the first name carries the lane token: parallel
+    # lanes would otherwise both take the plain dated name and collide.
+    candidate = record_payload_for(resolved_title)
+    if token is None and usable(str(candidate["write_artifact_path"])):
+        return candidate
     base = f"followup-{token}" if token else "followup"
     for suffix in (base, f"{base}-2", f"{base}-3", f"{base}-4"):
         candidate = record_payload_for(f"{resolved_title} {suffix}")

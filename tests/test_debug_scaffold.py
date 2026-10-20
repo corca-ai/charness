@@ -336,6 +336,37 @@ def test_debug_followup_lane_names_are_distinct_across_aliasing_branches(tmp_pat
     assert any("-debug-review-followup-branch-" in name for name in names)  # task/__
 
 
+def test_a_lane_branch_never_takes_the_plain_dated_name(tmp_path: Path) -> None:
+    """Two lanes routed off a resolved pointer whose target is not today's
+    default name both took `<date>-debug-review.md` (claims review C-A3)."""
+    repo = tmp_path / "repo"
+    _seed_debug_adapter(repo)
+    debug_dir = repo / "charness-artifacts" / "debug"
+    debug_dir.mkdir(parents=True)
+    target = debug_dir / "debug-2026-05-06-demo.md"
+    target.write_text(
+        "# Demo Debug\n\n## Interrupt Decision\n\n- Resolution: resolved\n\n## Problem\n\nTODO\n",
+        encoding="utf-8",
+    )
+    (debug_dir / "latest.md").symlink_to(target.name)
+    _seed_git_head(repo, "ref: refs/heads/task/lane-a", worktree=True)
+
+    name = Path(_scaffold_debug.payload_for(repo, title=None)["write_artifact_path"]).name
+
+    digest = hashlib.sha256(b"task/lane-a").hexdigest()[:8]
+    assert name.endswith(f"-debug-review-followup-lane-a-{digest}.md")
+
+
+def test_a_reftable_placeholder_head_is_no_lane_identity(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _seed_resolved_debug_pointer(repo)
+    _seed_git_head(repo, "ref: refs/heads/.invalid", worktree=False)
+
+    payload = _scaffold_debug.payload_for(repo, title=None)
+
+    assert payload["write_artifact_path"].endswith("-debug-review-followup.md")
+
+
 def test_debug_followup_unreadable_git_link_keeps_the_counter(tmp_path: Path) -> None:
     """A `.git` file that is not a gitdir link gives no lane identity."""
     repo = tmp_path / "repo"
