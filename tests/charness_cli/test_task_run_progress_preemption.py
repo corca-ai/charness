@@ -204,6 +204,27 @@ def _started_watch(tmp_path: Path) -> tuple[task_run_progress.LaneProgressWatch,
     return watch, kills, runtime / "steer.queue.jsonl"
 
 
+@pytest.mark.parametrize(("raw", "window", "source"), [("-5", 1200.0, "default"), ("0", 0.0, "env")])
+def test_a_negative_window_never_silently_disables_the_lane_bound(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, raw: str, window: float, source: str
+) -> None:
+    """With no wall-clock default, the progress window is a lane's one general
+    bound: a negative value falls back to the default; only `0` turns it off."""
+    monkeypatch.setenv("CHARNESS_TASK_RUN_PROGRESS_WINDOW_SECONDS", raw)
+    repo = _repo(tmp_path)
+    watch = task_run_progress.build_progress_watch(
+        require_change=True,
+        stdout_log=tmp_path / "codex.stdout.log",
+        stderr_log=tmp_path / "codex.stderr.log",
+        worktree=repo,
+        base_sha=_git(repo, "rev-parse", "HEAD").stdout.strip(),
+        scope_specs=[],
+    )
+    assert watch is not None and watch._progress_rule is not None
+    assert watch._progress_rule.window_seconds == window
+    assert watch._progress_rule.window_source == source
+
+
 def test_messages_in_one_invocation_share_one_preemption_and_lose_to_a_stop(
     tmp_path: Path,
 ) -> None:

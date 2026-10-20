@@ -36,7 +36,7 @@ Preemption leaves the worktree as it is, including any partial effect of a kille
 
 ## The rule
 
-One knob: the progress window `W` (env `CHARNESS_TASK_RUN_PROGRESS_WINDOW_SECONDS`, default 1200 s; `0` turns the rule off). It applies to every lane run through `charness task run`, not only require-change lanes.
+One knob: the progress window `W` (env `CHARNESS_TASK_RUN_PROGRESS_WINDOW_SECONDS`, default 1200 s; `0` turns the rule off; a negative value falls back to the default). It applies to every lane run through `charness task run`, not only require-change lanes.
 
 Progress since the last check is any of:
 

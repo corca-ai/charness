@@ -505,6 +505,8 @@ def build_progress_watch(
     window_seconds, window_parsed = _env_seconds(
         _rule.PROGRESS_WINDOW_ENV, _rule.DEFAULT_PROGRESS_WINDOW_SECONDS
     )
+    if window_seconds < 0:  # only an explicit 0 turns off a lane's one bound
+        window_seconds, window_parsed = _rule.DEFAULT_PROGRESS_WINDOW_SECONDS, False
     if not require_change and window_seconds <= 0:
         return None
     progress_rule = _rule.ProgressRule(
