@@ -314,11 +314,12 @@ def test_debug_followup_record_is_named_for_the_lane_not_a_shared_counter(
     assert payload["current_pointer_symlink_target"] == target.name
 
 
-def test_debug_followup_lane_names_never_collide_across_distinct_branches(tmp_path: Path) -> None:
+def test_debug_followup_lane_names_are_distinct_across_aliasing_branches(tmp_path: Path) -> None:
     """A lossy slug let `task/foo_bar` and `task/foo-bar` (or `Foo` and `foo`)
     pick the same record, a plain `foo-bar` aliased `task/foo-bar`, and a task
     id spelled as another branch's hashed token aliased that branch; every
-    lane token now carries a hash of its own raw branch."""
+    lane token now carries a hash of its own raw branch, so only an 8-hex
+    hash-prefix collision could still alias two branches."""
     names = set()
     plain = "foo-bar-" + hashlib.sha256(b"foo-bar").hexdigest()[:8]
     branches = (
@@ -332,6 +333,7 @@ def test_debug_followup_lane_names_never_collide_across_distinct_branches(tmp_pa
         names.add(Path(_scaffold_debug.payload_for(repo, title=None)["write_artifact_path"]).name)
     assert len(names) == len(branches)
     assert all("-debug-review-followup-" in name for name in names)
+    assert any("-debug-review-followup-branch-" in name for name in names)  # task/__
 
 
 def test_debug_followup_unreadable_git_link_keeps_the_counter(tmp_path: Path) -> None:
