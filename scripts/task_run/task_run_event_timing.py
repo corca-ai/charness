@@ -96,11 +96,12 @@ class StampingPipe:
 
     `fileno()` is the write end, so the carrier can hand it to the executor
     as stdout. An optional `observer` sees each complete JSON event after its
-    bytes reach the sink (the lane progress rule reads commands from it). `close()` releases the write end, then drains every byte that
-    is already in the pipe and returns; it never waits on a writer that is
-    still alive. Bytes are retained byte-for-byte up to the moment of close:
-    once the executor's process group is killed, everything it wrote is in
-    the kernel pipe buffer, so the drain reads it all.
+    bytes reach the sink (the lane progress rule reads commands from it).
+    `close()` releases the write end, then drains the bytes already in the
+    pipe and returns; it never waits on a writer that is still alive. Unless
+    a loss case below occurs, bytes are retained byte-for-byte up to the
+    moment of close: once the executor's process group is killed, everything
+    it wrote is in the kernel pipe buffer, so the drain reads it all.
 
     Three things can still lose bytes, and none is silent: a descendant
     outside the killed group that keeps the pipe open (its later output is
