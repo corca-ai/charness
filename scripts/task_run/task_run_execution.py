@@ -173,21 +173,25 @@ def _execute_codex(
             last_message_path = _last_message_path(current_command, executor)
             if last_message_path is not None:
                 last_message_path.unlink(missing_ok=True)
-            result.update(
-                _run_executor_invocation(
-                    current_command,
-                    current_prompt,
-                    target_path=target_path,
-                    configured_env=configured_env,
-                    stdout_log=stdout_log,
-                    stderr_log=stderr_log,
-                    timeout_seconds=timeout_seconds,
-                    lane_watch=lane_watch,
-                    executor=executor,
-                    group_path=group_path,
-                    append_stderr=bool(invocation),
-                )
+            invocation_result = _run_executor_invocation(
+                current_command,
+                current_prompt,
+                target_path=target_path,
+                configured_env=configured_env,
+                stdout_log=stdout_log,
+                stderr_log=stderr_log,
+                timeout_seconds=timeout_seconds,
+                lane_watch=lane_watch,
+                executor=executor,
+                group_path=group_path,
+                append_stderr=bool(invocation),
             )
+            capture = invocation_result.pop("event_capture", None)
+            if capture is not None:
+                result.setdefault("event_capture_incomplete", []).append(
+                    {**capture, "invocation": invocation}
+                )
+            result.update(invocation_result)
             session_id = _retain_invocation_events(
                 executor,
                 stdout_log,
@@ -329,6 +333,10 @@ def _run_executor_invocation(
                 terminal_stderr.close()
                 _kill_recorded_process_group(group_path)
                 stdout_pipe.close()
+                capture = stdout_pipe.capture()
+                if not capture["complete"]:
+                    # Lost event bytes are recorded, never silent (v8.15 R1).
+                    result["event_capture"] = capture
             if outcome is not None:
                 result["timed_out"] = outcome.timed_out
                 result["exit_code"] = None if outcome.timed_out else outcome.returncode

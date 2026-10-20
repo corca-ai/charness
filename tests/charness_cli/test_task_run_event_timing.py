@@ -195,3 +195,22 @@ def test_cmd_status_commands_reads_the_lanes_events_log(
     assert emitted[-1]["longest_commands"] == [
         {"command": "pnpm run lint", "duration_seconds": 4.0, "families": ["lint"]}
     ]
+
+
+def test_naive_or_malformed_stamps_count_as_unstamped_in_a_mixed_log() -> None:
+    """A naive stamp cannot be ordered against UTC ones; it must not crash timing."""
+    started = {"id": "c1", "type": "command_execution", "command": "pnpm run lint"}
+    lines = [
+        _codex("2026-10-20T08:00:00.000Z", "item.started", started),
+        _codex("2026-10-20T08:00:04", "item.completed", started),
+        _codex("not-a-time", "item.started", {**started, "id": "c2"}),
+        _codex("2026-10-20T08:00:09.000+00:00", "item.completed", {**started, "id": "c2"}),
+    ]
+
+    report = timing.command_timing("\n".join(lines))
+
+    assert report["stamped"] is False
+    assert report["unstamped_events"] == 2
+    assert report["command_starts"] == 2
+    assert report["untimed_commands"] == 2
+    assert report["span_seconds"] == 9.0

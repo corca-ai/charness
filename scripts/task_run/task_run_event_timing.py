@@ -20,13 +20,17 @@ from __future__ import annotations
 import json
 import os
 import re
+import select
 import threading
+import time
 from datetime import datetime, timezone
 from typing import Any, BinaryIO, Callable, Iterable, Mapping
 
 RECEIVED_AT_FIELD = "charness_received_at"
 _FIELD_BYTES = json.dumps(RECEIVED_AT_FIELD).encode("ascii")
-_JOIN_SECONDS = 10.0
+_CLOSE_GRACE_SECONDS = 2.0
+_POLL_SECONDS = 0.1
+_CHUNK_BYTES = 64 * 1024
 _LANE_PHASES = ("CONTRACT-READ", "EDITING", "TESTING")
 
 #: Runner invocations, not mentions: `gateway/test/x.ts` is not a test run.
@@ -90,16 +94,33 @@ class StampingPipe:
     """A pipe whose reader copies each line into `sink` with its receive time.
 
     `fileno()` is the write end, so the carrier can hand it to the executor
-    as stdout. `close()` releases the write end and waits for the reader to
-    drain; a descendant that still holds the pipe after the process group is
-    killed cannot hold the carrier past the bounded join.
+    as stdout. `close()` releases the write end, then drains every byte that
+    is already in the pipe and returns; it never waits on a writer that is
+    still alive. Bytes are retained byte-for-byte up to the moment of close:
+    once the executor's process group is killed, everything it wrote is in
+    the kernel pipe buffer, so the drain reads it all.
+
+    Two things can still lose bytes, and neither is silent: a descendant
+    outside the killed group that keeps the pipe open (its later output is
+    not captured, `writer_open_at_close`), and a sink write failure (`error`;
+    the reader keeps reading and counts `dropped_bytes` so the executor never
+    blocks on a full pipe). `capture()` reports both; the sink is written
+    only under a lock that `close()` takes before it returns, so a reader
+    that outlives `close()` can never write into a sink the caller closed.
     """
 
     def __init__(self, sink: BinaryIO, *, clock: Callable[[], str] = utc_receive_stamp) -> None:
         self._sink = sink
         self._clock = clock
-        read_fd, self._write_fd = os.pipe()
-        self._reader = os.fdopen(read_fd, "rb")
+        self._read_fd, self._write_fd = os.pipe()
+        self._stop = threading.Event()
+        self._sink_lock = threading.Lock()
+        self._released = False
+        self._pending = b""
+        self.received_bytes = 0
+        self.dropped_bytes = 0
+        self.error: str | None = None
+        self.writer_open_at_close = False
         self._thread = threading.Thread(
             target=self._drain, name="charness-event-stamp", daemon=True
         )
@@ -108,29 +129,89 @@ class StampingPipe:
     def fileno(self) -> int:
         return self._write_fd
 
-    def _drain(self) -> None:
-        try:
-            with self._reader:
-                for line in self._reader:
-                    self._sink.write(stamp_event_line(line, self._clock()))
+    def _emit(self, data: bytes) -> None:
+        with self._sink_lock:
+            if self._released:
+                self.dropped_bytes += len(data)
+                return
+            if self.error is None:
+                try:
+                    self._sink.write(data)
                     self._sink.flush()
-        except (OSError, ValueError):
-            return
+                    return
+                except (OSError, ValueError) as exc:
+                    self.error = f"{type(exc).__name__}: {exc}"
+            self.dropped_bytes += len(data)
+
+    def _feed(self, chunk: bytes) -> None:
+        self.received_bytes += len(chunk)
+        *lines, self._pending = (self._pending + chunk).split(b"\n")
+        for line in lines:
+            self._emit(stamp_event_line(line + b"\n", self._clock()))
+
+    def _drain(self) -> None:
+        deadline: float | None = None
+        try:
+            while True:
+                timeout = _POLL_SECONDS
+                if self._stop.is_set():
+                    # Closing: keep reading what is buffered, and give a just
+                    # killed writer a short grace to release its end; never
+                    # wait on a writer that outlives it.
+                    deadline = deadline or time.monotonic() + _CLOSE_GRACE_SECONDS
+                    timeout = deadline - time.monotonic()
+                    if timeout <= 0:
+                        self.writer_open_at_close = True
+                        break
+                readable, _, _ = select.select([self._read_fd], [], [], timeout)
+                if not readable:
+                    continue
+                chunk = os.read(self._read_fd, _CHUNK_BYTES)
+                if not chunk:
+                    break
+                self._feed(chunk)
+        except (OSError, ValueError) as exc:
+            self.error = self.error or f"{type(exc).__name__}: {exc}"
+        finally:
+            if self._pending:
+                self._emit(stamp_event_line(self._pending, self._clock()))
+                self._pending = b""
+            os.close(self._read_fd)
 
     def close(self) -> None:
         if self._write_fd >= 0:
             os.close(self._write_fd)
             self._write_fd = -1
-        self._thread.join(timeout=_JOIN_SECONDS)
+        self._stop.set()
+        self._thread.join(timeout=_CLOSE_GRACE_SECONDS + 1.0)
+        with self._sink_lock:
+            # The caller closes the sink after this; a reader still running
+            # (a hung sink write) must drop, not write into a closed file.
+            self._released = True
+            if self._thread.is_alive():
+                self.error = self.error or "event reader did not finish before close"
+
+    def capture(self) -> dict[str, Any]:
+        """The capture receipt: complete only if every received byte reached the sink."""
+        return {
+            "complete": not (self.error or self.writer_open_at_close or self.dropped_bytes),
+            "received_bytes": self.received_bytes,
+            "dropped_bytes": self.dropped_bytes,
+            "writer_open_at_close": self.writer_open_at_close,
+            "error": self.error,
+        }
 
 
 def _parse_stamp(value: object) -> datetime | None:
     if not isinstance(value, str):
         return None
     try:
-        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError:
         return None
+    # A naive value cannot be ordered against the carrier's UTC stamps, so it
+    # counts as unstamped rather than crashing the subtraction later.
+    return parsed if parsed.utcoffset() is not None else None
 
 
 def _stamped_events(text: str) -> Iterable[tuple[datetime | None, dict[str, Any]]]:
