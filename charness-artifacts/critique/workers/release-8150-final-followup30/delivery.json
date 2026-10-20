@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8150-final-followup30",
+      "scope": "follow-up at c6843bd27 on release-8150-final-followup29: only commands already running before a check probe count as seen at that check (a mid-probe start stays young at the next check too), and a command completion probes the tree before taking the rule lock so a following command start is never queued behind it; deterministic interleaving tests for both; spec aligned",
+      "packet_identity": "199b62bd37d263305ada4b30b6f5bd6e36062417cf601f7a275ae140461aff22",
+      "parent_receipt_identity": "parent-59c56dd474d963dea914256bd4e228208304743412f119c7",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T17:18:04Z",
+      "history": [
+        {
+          "event_id": "711ec64340bc40278a14a008e8d62952",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T17:14:16Z",
+          "attempt_id": "release-8150-final-followup30",
+          "scope": "follow-up at c6843bd27 on release-8150-final-followup29: only commands already running before a check probe count as seen at that check (a mid-probe start stays young at the next check too), and a command completion probes the tree before taking the rule lock so a following command start is never queued behind it; deterministic interleaving tests for both; spec aligned",
+          "packet_identity": "199b62bd37d263305ada4b30b6f5bd6e36062417cf601f7a275ae140461aff22",
+          "parent_receipt_identity": "parent-59c56dd474d963dea914256bd4e228208304743412f119c7",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "3c170ced48a9447ab054b53411c58fac",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T17:14:16Z",
+          "attempt_id": "release-8150-final-followup30",
+          "scope": "follow-up at c6843bd27 on release-8150-final-followup29: only commands already running before a check probe count as seen at that check (a mid-probe start stays young at the next check too), and a command completion probes the tree before taking the rule lock so a following command start is never queued behind it; deterministic interleaving tests for both; spec aligned",
+          "packet_identity": "199b62bd37d263305ada4b30b6f5bd6e36062417cf601f7a275ae140461aff22",
+          "parent_receipt_identity": "parent-59c56dd474d963dea914256bd4e228208304743412f119c7",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "8c783531e5cb4e5197518f9c6504ca28",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T17:18:04Z",
+          "attempt_id": "release-8150-final-followup30",
+          "scope": "follow-up at c6843bd27 on release-8150-final-followup29: only commands already running before a check probe count as seen at that check (a mid-probe start stays young at the next check too), and a command completion probes the tree before taking the rule lock so a following command start is never queued behind it; deterministic interleaving tests for both; spec aligned",
+          "packet_identity": "199b62bd37d263305ada4b30b6f5bd6e36062417cf601f7a275ae140461aff22",
+          "parent_receipt_identity": "parent-59c56dd474d963dea914256bd4e228208304743412f119c7",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "cb1a80c9cd70f56f7144fe7a60f007f4785f0b80040d31b6b794c00b96a0ac8d"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "8b744f24d47aef5cb56dccccc1bb44feb3a7718b37a3d391b8d5688ad2b5eb4a",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "f1a38fe273cd294acf05d01785e50166b3f4dec0278707a4292fe9bfe43549af",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8150-final-followup30/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8150-final-followup30/receipt.json",
+      "producer_run_id": "run-release-8150-final-followup30",
+      "findings_identity": "cb1a80c9cd70f56f7144fe7a60f007f4785f0b80040d31b6b794c00b96a0ac8d"
+    }
+  ]
+}

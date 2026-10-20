@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8150-final-followup27",
+      "scope": "follow-up at d394845c1 on release-8150-final-followup26: a known repeat on an unreadable tree delivers a deferred request at completion (test); a no-progress stop reason names the commands it interrupts (test); notes scope the debug default-branch fallback to main/master/trunk/develop and the reftable .invalid placeholder; spec aligned",
+      "packet_identity": "727917d086b7d43bb13c312bd2af3040cc5cf06b2174b1bba5e460cc82b44261",
+      "parent_receipt_identity": "parent-e88789958c8255952b6b59345831488aa1f55f04c8654df4",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T17:07:57Z",
+      "history": [
+        {
+          "event_id": "0ae5226a48c24e83bdb4dd50a5c4589c",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T17:05:42Z",
+          "attempt_id": "release-8150-final-followup27",
+          "scope": "follow-up at d394845c1 on release-8150-final-followup26: a known repeat on an unreadable tree delivers a deferred request at completion (test); a no-progress stop reason names the commands it interrupts (test); notes scope the debug default-branch fallback to main/master/trunk/develop and the reftable .invalid placeholder; spec aligned",
+          "packet_identity": "727917d086b7d43bb13c312bd2af3040cc5cf06b2174b1bba5e460cc82b44261",
+          "parent_receipt_identity": "parent-e88789958c8255952b6b59345831488aa1f55f04c8654df4",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "a0fa74ba956e48cf94ab3732baf6c80b",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T17:05:42Z",
+          "attempt_id": "release-8150-final-followup27",
+          "scope": "follow-up at d394845c1 on release-8150-final-followup26: a known repeat on an unreadable tree delivers a deferred request at completion (test); a no-progress stop reason names the commands it interrupts (test); notes scope the debug default-branch fallback to main/master/trunk/develop and the reftable .invalid placeholder; spec aligned",
+          "packet_identity": "727917d086b7d43bb13c312bd2af3040cc5cf06b2174b1bba5e460cc82b44261",
+          "parent_receipt_identity": "parent-e88789958c8255952b6b59345831488aa1f55f04c8654df4",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "deb7082ae4174b6eb791ca0ddc8587ae",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T17:07:57Z",
+          "attempt_id": "release-8150-final-followup27",
+          "scope": "follow-up at d394845c1 on release-8150-final-followup26: a known repeat on an unreadable tree delivers a deferred request at completion (test); a no-progress stop reason names the commands it interrupts (test); notes scope the debug default-branch fallback to main/master/trunk/develop and the reftable .invalid placeholder; spec aligned",
+          "packet_identity": "727917d086b7d43bb13c312bd2af3040cc5cf06b2174b1bba5e460cc82b44261",
+          "parent_receipt_identity": "parent-e88789958c8255952b6b59345831488aa1f55f04c8654df4",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "9bab6e63c1d03ba44084f5267fb11efde0b69064658af56e2e59b0d5323ca5ef"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "e31ab67741814a1d16f6d241280fbc6c6d0fa67af5414d1959aea4aba974f76c",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "ac40aaa34aee8a17f78e1cf465f930d4fbbe11ad548dcecf903b8ef90e3e7aa4",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8150-final-followup27/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8150-final-followup27/receipt.json",
+      "producer_run_id": "run-release-8150-final-followup27",
+      "findings_identity": "9bab6e63c1d03ba44084f5267fb11efde0b69064658af56e2e59b0d5323ca5ef"
+    }
+  ]
+}

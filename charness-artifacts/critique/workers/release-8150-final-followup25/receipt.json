@@ -1,0 +1,82 @@
+{
+  "attempt_id": "release-8150-final-followup25",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/release-8150-final-followup25/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-10-20T17:00:48Z",
+  "model_application_state": "unverified-by-provider",
+  "output_file": "charness-artifacts/critique/workers/release-8150-final-followup25/result.json",
+  "output_fresh": true,
+  "output_sha256": "47c81b120427481edc61090d4783e7123202624f5b2390c665cb2f394707ff62",
+  "output_size": 3224,
+  "packet_identity": "3f4063ee097e2a4ca0badab62aaad3334883acb1e2883c3aa419376a6bf22078",
+  "parent_receipt_identity": "parent-8e41e3182347db46c6e9b2b4831a0009b90a02b1c5407ebb",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/release-8150-final-followup25/review-prompt.md",
+  "prompt_sha256": "c3956b02ac14c3659a97947788c8028582fb7d9b3e0b17a050d9d515e1626bb3",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "requested_model": "gpt-6-luna",
+  "requested_reasoning_effort": "xhigh",
+  "reviewed_input_identity": "0e3a18e430abd98e7b81b27f0805631dbd6d1b8315f53958730ffdb767ffee96",
+  "reviewer_tier": "high-leverage",
+  "run_id": "run-release-8150-final-followup25",
+  "schema_file": "charness-artifacts/critique/workers/release-8150-final-followup25/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "follow-up at fdcc6d80f on release-8150-final-followup24: finding 2 the checkpoint request now names every running command the process-group kill interrupts (test; spec updated); finding 1 is answered with a regression test: in _on_complete the deferred-delivery branch returns before the loop branch, so a loop repeat that resolves a deferred request delivers the checkpoint and the between-checks state matches what the lane received",
+  "started_at": "2026-10-20T16:58:59Z",
+  "status": "succeeded",
+  "stderr_file": "charness-artifacts/critique/workers/release-8150-final-followup25/backend.stderr",
+  "stdout_file": "charness-artifacts/critique/workers/release-8150-final-followup25/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "unsupported_reviewer_fields": [
+    "service_tier=priority",
+    "fork_turns=none"
+  ],
+  "workspace": "/home/hwidong/codes/charness"
+}

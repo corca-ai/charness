@@ -1,0 +1,73 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in final pass",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "completion-probe-blocks-the-serialized-event-reader",
+      "severity": "high",
+      "summary": "The completion probe no longer holds the rule lock, but it still blocks the production event reader. A following command start can remain unseen while a due check acts on stale in-flight state, so a command younger than W can be killed.",
+      "evidence": [
+        "The runner supplies `lane_watch.observe_event` as the `StampingPipe` observer. `StampingPipe._drain` calls `_feed`, which calls `_observe` synchronously on that single reader thread.",
+        "`ProgressRule.on_event` synchronously calls `_fingerprint()` for a completion before taking the rule lock. The reader therefore cannot reach and deliver the next event line until that probe returns.",
+        "During that delay, `on_tick` can see the prior command as still in flight and the following command as absent. It can send a checkpoint or stop and kill the whole process group; its interruption description can identify the prior command instead of the command actually killed.",
+        "`test_a_completion_probe_never_holds_up_the_next_command_start` starts a separate feeder thread inside the fingerprint callback. It demonstrates that another caller can acquire the rule lock, but not that the serialized `StampingPipe` reader can deliver its next line during the probe.",
+        "This makes the release note's and spec's guarantee that a window check never kills a command younger than one window unreliable. The implementation comment that the next start is never queued behind the probe is also misleading. `docs/agent-task-runs.md` repeats the young-command deferral claim."
+      ],
+      "action": "Keep the completion probe off the pipe-drain callback while preserving event order. Add a deterministic integration regression that blocks a completion probe, sends the following start through the same `StampingPipe` reader, and proves a due check cannot kill it before it has run for W."
+    },
+    {
+      "id": "mid-probe-start-check-count-overstated",
+      "severity": "low",
+      "summary": "A command started during a check probe can defer the request at that check and remain young at the next check too. The spec's claim that a hung command is reclaimed at the third due check does not cover this case.",
+      "evidence": [
+        "`test_a_command_started_during_a_slow_tree_probe_is_young_not_killed` asserts deferral at checks 100 and 200, then a checkpoint request at 300. With no progress, the stop follows at check 400.",
+        "The spec says a hung command is reclaimed at the third due check and estimates reclamation at about 3W. The mid-probe case takes a fourth due check, before accounting for late polls or probe time, which the spec separately acknowledges."
+      ],
+      "action": "Qualify the due-check count and reclamation estimate for commands that start during a probe; retain the existing nominal-window caveat."
+    },
+    {
+      "id": "release-notes-omit-merge-command-family",
+      "severity": "low",
+      "summary": "The release notes describe the command-family report as covering test, lint, and typecheck, but the implementation also reports merge starts.",
+      "evidence": [
+        "`COMMAND_FAMILIES` defines `merge` for git merge, rebase, and cherry-pick commands; the timing tests assert that `git merge main` is counted in that family.",
+        "The v8.15.0 notes list only test, lint, and typecheck families when describing `task status --commands`, which can lead readers to overlook the merge count."
+      ],
+      "action": "Include merge in the release-note family list, or mark the listed families as examples."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "C-B1: start during a slow window probe remains young at the following check",
+      "bin": "resolved in rule logic; runtime race remains",
+      "disposition": "The saved pre-probe in-flight set and test cover the requested extra deferral when the event is promptly observed. They do not cover the serialized reader being blocked by a completion probe."
+    },
+    {
+      "concern": "C-A3: lane-branch follow-up naming when the current pointer targets an older dated record",
+      "bin": "resolved",
+      "disposition": "The route uses the lane token for non-default branches, and tests cover the older-target case, slug-alias cases, and default or detached HEAD behavior. No regression is apparent in the bounded input."
+    },
+    {
+      "concern": "C-A1, C-A2, and C-A4: consumer claims about command age and reclamation",
+      "bin": "one blocking inaccuracy and one advisory timing inaccuracy",
+      "disposition": "The no-young-command-kill guarantee is not established because the completion probe blocks the sole event reader. Separately, the third-check reclamation claim omits the extra deferral for a mid-probe start."
+    },
+    {
+      "concern": "Tests and live behavior",
+      "bin": "evidence limit",
+      "disposition": "The relevant regression tests are present in the bound input, but were not executed; test assertions alone do not prove runtime behavior."
+    }
+  ],
+  "next_move": "Keep release lock-in blocked until completion probing no longer stalls the serialized event reader, an integrated interleaving test proves the age guarantee, and the spec and release claims match the resulting due-check behavior.",
+  "non_claims": [
+    "Reviewed the identity-bound inline payload only; did not inspect workspace paths.",
+    "Did not execute tests or probe live Codex or Muse behavior.",
+    "The supplied goal lineage is not-goal-bound; this review does not close a Goal Run."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "199b62bd37d263305ada4b30b6f5bd6e36062417cf601f7a275ae140461aff22",
+  "reviewed_input_identity_sha256": "8b744f24d47aef5cb56dccccc1bb44feb3a7718b37a3d391b8d5688ad2b5eb4a"
+}

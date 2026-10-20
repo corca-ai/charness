@@ -1,0 +1,123 @@
+# Charness v8.15.0
+
+## What changed
+
+- `charness task run` no longer stops a lane on a wall clock by default. A progress rule bounds every lane instead. A window of `CHARNESS_TASK_RUN_PROGRESS_WINDOW_SECONDS` (default `1200` seconds; `0` turns the rule off, and a negative value falls back to the default) can pass with no new commit, no file change, and no new command result. When that happens, charness interrupts the executor and delivers a checkpoint request the way it delivers a steer message, by resuming the executor's session where it can: commit what is coherent and report, reply `BLOCKED:`, or keep going. If the next window also shows no progress, charness stops the lane itself (`NO-PROGRESS-STOP:`). A command that started since the previous check and is still running at a check defers the request, and so the stop, by one more check. Windows are nominal: each check runs at the watch's next poll, so it can run late. No human or orchestrator has to watch for the stop to happen. A test, lint, or typecheck command rerun with the same text on an unchanged tree is not progress. When charness can read the worktree, the lane is asked on such a command's 3rd run to switch to the debug skill, on its 4th to checkpoint, and on its 5th the lane is stopped. The window check does not kill a command younger than one window, with narrow exceptions: a command that starts while the event reader is still probing the worktree for the previous command's completion (normally well under a second) or writing the event log can be missed by a check landing in that moment and interrupted moments after it started, and after a log write hangs no later command start is seen. A loop message or stop does not wait for a running command. A command still running a window later can be killed, so set the window above the longest command a lane legitimately runs. Codex resume after this kill was probed live. Muse resume after a kill was not probed. `--timeout-seconds` still works as an explicit hard cap, but it no longer has a default. For the final attempt, `progress_guard.progress_rule` in the task result records each window check, rule message, and rule stop, and `execution.preemptions` counts preemptions when there were some. `task status` shows the live window state.
+- Executor lanes that `charness task run` launches now have network access inside their workspace-write sandbox. Codex lanes get `-c sandbox_workspace_write.network_access=true` and Muse lanes get `--sandbox-network enabled`. Before this, the lane sandbox refused tests that bind a local port or fetch through the proxy, with `listen EPERM` or a proxy `502` response. The release tests check the flags the carrier passes, not a bind or fetch inside a sandbox. The read-only reviewers (self-review and the brief critique) drop that setting, so their sandbox is unchanged.
+- `charness task run` now stamps each JSON-object line of a lane's `<executor>.events.log` with `charness_received_at`, the UTC time the carrier received that line from the executor's pipe. Before this, Codex items and Muse envelopes carried no wall time, so a lane could not say how long a command or phase took. Non-JSON lines are unchanged, and so are the rest of each event's bytes.
+- `charness task status <task-id> --commands` reads that stamped log back and reports the lane's longest commands, how many commands it started in each family (test, lint, typecheck, merge, matched by command patterns, so the counts are approximate), and its time per phase. The option is refused without a task id. Durations are receive-time estimates. Pipe buffering can delay either end of a command, so a duration can differ from the executor's own timing in either direction. A stamp without a timezone counts as unstamped. A lane run before this release has an unstamped events log, so for that lane the report counts command starts but gives no durations or phase times.
+- Stamping never loses event bytes silently between the executor's pipe and the lane log. Unless one of the loss cases below occurs, every byte the executor writes before its pipe closes reaches the lane's stdout log, on normal exit, timeout, interrupt, and preemption, and a Codex lane then appends that log unchanged to `codex.events.log`. Charness adds only the stamp field on JSON lines and a newline after an unterminated final line. The loss cases are a descendant process that keeps the pipe open past the process-group kill, an event reader held past the close grace by the progress rule's worktree probes (recorded as an open writer or a reader error), a pipe read that fails, a log write that fails or accepts only part of a line, and a log write that hangs, which stops the pipe from draining and leaves the rest uncopied. Each is recorded in the task result as `execution.event_capture_incomplete`. After a failed or short write the reader keeps draining the pipe, so the executor does not block on a full pipe. A Muse lane copies only a bounded tail of its stdout log into `muse.events.log` and skips an invocation that emitted no Muse event; that copy is outside this guarantee.
+- The debug skill names a follow-up record after the branch that writes it. Before this, every follow-up was named by counting the files in its own worktree, so parallel lanes picked the same number and their merges collided. When the skill can read the checked-out branch from the git files and it is not `main`, `master`, `trunk`, or `develop` (any other name, even a repository's own default branch, counts as a lane branch), every follow-up record's name, including the first, ends in `-followup-<slug>-<hash>.md` (with the default title, `<date>-debug-review-followup-<slug>-<hash>.md`), and a further follow-up from the same branch on the same day adds a `-2` suffix. `<slug>` is the lane id for a `task/<lane>` branch and the branch name otherwise, as a lowercase slug (`branch` when nothing survives), and `<hash>` is a short hash of the full branch name. Records from different branches of that kind differ unless their hashes share a prefix. On `main`, `master`, `trunk`, or `develop`, a detached HEAD, a reftable repository's `.invalid` HEAD placeholder, or branch metadata the skill cannot read, the old counter remains, so worktrees there can still pick the same name. The `latest.md` pointer works as before, so parallel lanes that each write a follow-up can still both change `latest.md`.
+
+## Update
+
+Run `charness update`, then run `charness version` to confirm the installed version. No migration is required. A launcher that passes `--timeout-seconds` keeps that hard cap until it drops the flag; the cap applies per executor invocation, and each preemption or resume starts a new one. To rely on the progress rule alone, drop the flag. Set `CHARNESS_TASK_RUN_PROGRESS_WINDOW_SECONDS` above the longest command your lanes legitimately run if that exceeds the default. `--no-progress-seconds` is still the separate first-edit budget for require-change lanes, not the progress window. Lanes without `--require-change` can now end with `NO-PROGRESS-STOP:` too. A window of `0` with no `--timeout-seconds` leaves a lane with no bound. Lanes now have network access, and this release has no per-lane switch to turn it off.
+
+## Derived claim surfaces
+
+<!-- charness:derived-claims:begin -->
+<!-- Generated from the shipped tree. Hand-edits are refused at publish: the gate re-derives this block and compares. -->
+
+<!-- claim-surface: json-declaring-scripts -->
+
+```yaml
+id: json-declaring-scripts
+question: which repo-owned Python sources declare their own `--json` option
+count: 0
+items: []
+scanned:
+- scripts/**/*.py
+- skills/**/scripts/**/*.py
+- charness
+unscanned:
+- the exported `plugins/charness/**` mirror and `mutants/**`, which are generated
+  copies of these same sources
+- flag names composed at runtime from a variable rather than written as a string literal
+- flags a wrapper forwards without declaring, which no parser in this tree names
+```
+
+<!-- claim-surface: charness-subcommands -->
+
+```yaml
+id: charness-subcommands
+question: which top-level subcommands the `charness` CLI declares
+count: 14
+items:
+- capability
+- catalog
+- doctor
+- goal
+- hooks
+- init
+- reset
+- task
+- tool
+- train
+- uninstall
+- update
+- version
+- worktree
+scanned:
+- charness
+unscanned:
+- nested subcommand groups such as `charness task run`, which are declared on their
+  own subparser
+- subcommands a host adapter adds outside this entrypoint
+```
+
+<!-- claim-surface: public-skills -->
+
+```yaml
+id: public-skills
+question: which public skills this repo ships
+count: 19
+items:
+- achieve
+- announcement
+- create-cli
+- create-skill
+- critique
+- debug
+- gather
+- hitl
+- hotl
+- ideation
+- impl
+- issue
+- narrative
+- prove
+- quality
+- release
+- retro
+- setup
+- spec
+scanned:
+- skills/public/*/SKILL.md
+unscanned:
+- support, profile, and integration skills, which are not part of the public surface
+- skills a consuming repo installs from elsewhere
+```
+
+<!-- claim-surface: repo-shell-gates -->
+
+```yaml
+id: repo-shell-gates
+question: which `check-*.sh` shell gates this repo ships
+count: 8
+items:
+- check-docs.sh
+- check-links-external.sh
+- check-links-internal.sh
+- check-markdown.sh
+- check-python-lint.sh
+- check-rust.sh
+- check-secrets.sh
+- check-shell.sh
+scanned:
+- scripts/**/check-*.sh
+unscanned:
+- Python gates under `scripts/`, which are far more numerous and are not this surface
+- gates a consuming repo wires from its own tree
+```
+
+<!-- charness:derived-claims:end -->

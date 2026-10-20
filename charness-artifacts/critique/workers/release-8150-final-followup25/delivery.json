@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8150-final-followup25",
+      "scope": "follow-up at fdcc6d80f on release-8150-final-followup24: finding 2 the checkpoint request now names every running command the process-group kill interrupts (test; spec updated); finding 1 is answered with a regression test: in _on_complete the deferred-delivery branch returns before the loop branch, so a loop repeat that resolves a deferred request delivers the checkpoint and the between-checks state matches what the lane received",
+      "packet_identity": "3f4063ee097e2a4ca0badab62aaad3334883acb1e2883c3aa419376a6bf22078",
+      "parent_receipt_identity": "parent-8e41e3182347db46c6e9b2b4831a0009b90a02b1c5407ebb",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T17:00:48Z",
+      "history": [
+        {
+          "event_id": "1b9da6e5719e4072bc8dd908e26073c5",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T16:58:59Z",
+          "attempt_id": "release-8150-final-followup25",
+          "scope": "follow-up at fdcc6d80f on release-8150-final-followup24: finding 2 the checkpoint request now names every running command the process-group kill interrupts (test; spec updated); finding 1 is answered with a regression test: in _on_complete the deferred-delivery branch returns before the loop branch, so a loop repeat that resolves a deferred request delivers the checkpoint and the between-checks state matches what the lane received",
+          "packet_identity": "3f4063ee097e2a4ca0badab62aaad3334883acb1e2883c3aa419376a6bf22078",
+          "parent_receipt_identity": "parent-8e41e3182347db46c6e9b2b4831a0009b90a02b1c5407ebb",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "bca25ae34eda42ff8527d604f72629c8",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T16:58:59Z",
+          "attempt_id": "release-8150-final-followup25",
+          "scope": "follow-up at fdcc6d80f on release-8150-final-followup24: finding 2 the checkpoint request now names every running command the process-group kill interrupts (test; spec updated); finding 1 is answered with a regression test: in _on_complete the deferred-delivery branch returns before the loop branch, so a loop repeat that resolves a deferred request delivers the checkpoint and the between-checks state matches what the lane received",
+          "packet_identity": "3f4063ee097e2a4ca0badab62aaad3334883acb1e2883c3aa419376a6bf22078",
+          "parent_receipt_identity": "parent-8e41e3182347db46c6e9b2b4831a0009b90a02b1c5407ebb",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "04707882fcc54d34a6a2956f8b7a0b8e",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T17:00:48Z",
+          "attempt_id": "release-8150-final-followup25",
+          "scope": "follow-up at fdcc6d80f on release-8150-final-followup24: finding 2 the checkpoint request now names every running command the process-group kill interrupts (test; spec updated); finding 1 is answered with a regression test: in _on_complete the deferred-delivery branch returns before the loop branch, so a loop repeat that resolves a deferred request delivers the checkpoint and the between-checks state matches what the lane received",
+          "packet_identity": "3f4063ee097e2a4ca0badab62aaad3334883acb1e2883c3aa419376a6bf22078",
+          "parent_receipt_identity": "parent-8e41e3182347db46c6e9b2b4831a0009b90a02b1c5407ebb",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "47c81b120427481edc61090d4783e7123202624f5b2390c665cb2f394707ff62"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "0e3a18e430abd98e7b81b27f0805631dbd6d1b8315f53958730ffdb767ffee96",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "c3956b02ac14c3659a97947788c8028582fb7d9b3e0b17a050d9d515e1626bb3",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8150-final-followup25/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8150-final-followup25/receipt.json",
+      "producer_run_id": "run-release-8150-final-followup25",
+      "findings_identity": "47c81b120427481edc61090d4783e7123202624f5b2390c665cb2f394707ff62"
+    }
+  ]
+}

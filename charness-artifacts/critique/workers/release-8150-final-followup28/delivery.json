@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8150-final-followup28",
+      "scope": "follow-up at 04071e402 on release-8150-final-followup27: the spec and the progress-rule docstring now say a completion without command text always counts as new; no code change",
+      "packet_identity": "1f1371a566fabc34df22cdf780d6c38abfad158ba1c5a613854cbdb094b146e8",
+      "parent_receipt_identity": "parent-d154282182d1476c32a9a3d673c04cf29b3bc23fe172861a",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T17:10:13Z",
+      "history": [
+        {
+          "event_id": "df3777f797c140f39e88708ff5fe6205",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T17:08:15Z",
+          "attempt_id": "release-8150-final-followup28",
+          "scope": "follow-up at 04071e402 on release-8150-final-followup27: the spec and the progress-rule docstring now say a completion without command text always counts as new; no code change",
+          "packet_identity": "1f1371a566fabc34df22cdf780d6c38abfad158ba1c5a613854cbdb094b146e8",
+          "parent_receipt_identity": "parent-d154282182d1476c32a9a3d673c04cf29b3bc23fe172861a",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "57c71cc42a084ad0a57e515359313e35",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T17:08:15Z",
+          "attempt_id": "release-8150-final-followup28",
+          "scope": "follow-up at 04071e402 on release-8150-final-followup27: the spec and the progress-rule docstring now say a completion without command text always counts as new; no code change",
+          "packet_identity": "1f1371a566fabc34df22cdf780d6c38abfad158ba1c5a613854cbdb094b146e8",
+          "parent_receipt_identity": "parent-d154282182d1476c32a9a3d673c04cf29b3bc23fe172861a",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "f7a7a2839cec41fdb9b58a1dae56c037",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T17:10:13Z",
+          "attempt_id": "release-8150-final-followup28",
+          "scope": "follow-up at 04071e402 on release-8150-final-followup27: the spec and the progress-rule docstring now say a completion without command text always counts as new; no code change",
+          "packet_identity": "1f1371a566fabc34df22cdf780d6c38abfad158ba1c5a613854cbdb094b146e8",
+          "parent_receipt_identity": "parent-d154282182d1476c32a9a3d673c04cf29b3bc23fe172861a",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "fdf42fe6b653a5ee60b68ba400a112e5d2c9979b43b75db837b06fbdba132901"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "6394814a69cc13a571878f1bbdd743ab5434d4bfe32c95b8630f4b1619fcc9a4",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "e041964b1c43118fc0ac0af9b97eb39fbee7f2449bef4ee0a92c7e0a71fe232a",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8150-final-followup28/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8150-final-followup28/receipt.json",
+      "producer_run_id": "run-release-8150-final-followup28",
+      "findings_identity": "fdf42fe6b653a5ee60b68ba400a112e5d2c9979b43b75db837b06fbdba132901"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in final pass",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "tick-probe-deferral-understated",
+      "severity": "medium",
+      "summary": "The reader-probe exception is now accurately disclosed, including that an unseen start can be interrupted without being named or counted. However, the documented deferral for a start first seen during the rule’s own tree probe understates how long the action can wait.",
+      "evidence": [
+        "`scripts/task_run/task_run_progress_rule.py` says a command seen start since the previous check defers the request or stop “by one check.”",
+        "`charness-artifacts/spec/lane-progress-rule.md` says such a command defers the action “until it completes or the next check,” while its later summary says reclamation takes a fourth check if the command started during a check’s probe.",
+        "`charness-artifacts/release/2026-10-20-v8.15.0-notes.md` also describes a one-check deferral.",
+        "The rule’s `on_tick` comment says a command starting mid-probe stays young at the next check too. `test_a_command_started_during_a_slow_tree_probe_is_young_not_killed` confirms no action at the probe check or the following check, then delivers the request on the subsequent check."
+      ],
+      "action": "Clarify in the docstring, spec, and release summary that a start first observed after the check’s pre-probe snapshot can defer the action at that check and again at the following check. Keep this distinct from the event-reader probe/write exception, where a start remains unseen and may be interrupted immediately."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "The source and spec still make an unqualified young-command guarantee.",
+      "bin": "resolved",
+      "disposition": "The source now scopes the guarantee to starts the rule has seen; the spec and release notes disclose the event-reader blind window and the possibility of an unnamed, uncounted interruption."
+    },
+    {
+      "concern": "A hung log write means later starts are never observed.",
+      "bin": "resolved",
+      "disposition": "The wording is scoped to checks while the write hangs. The spec also allows the reader to resume after close, too late for those checks."
+    },
+    {
+      "concern": "The reader-probe exception itself is inaccurate.",
+      "bin": "not-a-finding",
+      "disposition": "The event reader emits before observing and processes lines serially; a blocked completion probe or write can leave a running start unseen when a check acts. The disclosure that the command may be omitted from interruption details is accurate."
+    }
+  ],
+  "next_move": "Correct the one-check timing claims for starts first observed during the rule’s own tree probe, then re-review the bound docs.",
+  "non_claims": [
+    "Reviewed the packet’s inline semantic input only; did not inspect workspace paths.",
+    "Did not run tests or independently verify live executor behavior.",
+    "The supplied goal lineage is not-goal-bound; this review does not close a Goal Run."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "9d44016be7e0cce31fc8dc4fa1331e642b26727ffc6bac70c4e3b8bc21dc41c8",
+  "reviewed_input_identity_sha256": "741de47d00b862330e5ec9502f339f925049745c794aaeed586437d509830d1c"
+}

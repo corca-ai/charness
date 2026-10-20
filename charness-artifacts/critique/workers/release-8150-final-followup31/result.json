@@ -1,0 +1,49 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in final pass",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "completion-probe-exception-overpromises-age-protection",
+      "severity": "medium",
+      "summary": "The reader-probe exception is disclosed, but the spec then promises protection the implementation cannot provide: a check can act on stale in-flight state before the following start is observed, potentially killing a command younger than W. The task-runs summary also states the protection without the exception, and the test name suggests production-reader coverage it does not provide.",
+      "evidence": [
+        "In `task_run_progress_rule.py`, completion handling fingerprints before taking the rule lock, and its comment acknowledges that the serialized event reader cannot read the next line until that probe returns.",
+        "In `on_tick`, the check bases its age decision on events already observed. If the following start is still queued behind the completion probe, the check may see only the previous command and preempt or stop without recognizing the new command.",
+        "The spec acknowledges that a start can be missed, then says it defers the request or stop and that only commands run for at least W are killed. That assurance does not hold when the start is still unseen.",
+        "`docs/agent-task-runs.md` says without qualification that a young command delays either step by a check.",
+        "`test_a_completion_probe_never_holds_up_the_next_command_start` starts a separate feeder thread inside the fingerprint callback; it does not exercise the serialized `StampingPipe` reader. Its name and docstring overstate what it demonstrates.",
+        "`StampingPipe._emit` writes and flushes the sink before invoking the observer. The release notes disclose that a hung log write can stop pipe draining, but do not connect that reader stall to the same loss of young-command visibility."
+      ],
+      "action": "Align the spec and task-runs summary with the actual limitation: when the start is not yet observed, a due check may act on stale state and kill a younger command. Clarify the effect of a hung sink write as well, and rename the rule-lock test or add a serialized-reader regression before making a production-reader guarantee."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Completion probe can stall the serialized reader",
+      "bin": "partly disclosed; behavioral claim remains inaccurate",
+      "disposition": "The release notes and code comment disclose the stall, but the spec's subsequent defer and minimum-age guarantees are false for an unseen start; release lock-in remains blocked."
+    },
+    {
+      "concern": "Mid-probe start due-check count",
+      "bin": "resolved",
+      "disposition": "The spec now qualifies a start during a check probe as taking a fourth due check; the bound test sequence supports that count."
+    },
+    {
+      "concern": "Merge omitted from the release command-family list",
+      "bin": "resolved",
+      "disposition": "The release notes now include merge alongside test, lint, and typecheck."
+    }
+  ],
+  "next_move": "Correct the age-protection statements and narrow the test's claim, or change the event path so checks cannot act on an unseen start. Then re-review the bound consumer surfaces.",
+  "non_claims": [
+    "Reviewed the packet's inline semantic input only; did not inspect workspace paths.",
+    "Did not run tests or independently verify the stated 0.03–0.09 second probe measurements or live Codex/Muse behavior.",
+    "The supplied goal lineage is not-goal-bound; this review does not close a Goal Run."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "da0490f34f981ffc748a9c53ae2c492d9bfb27044f9a96eb7e30a6bff50a999d",
+  "reviewed_input_identity_sha256": "c25ce2595c4b27455a19ee29a4e6d4c40d2debb4c60e2e6b6aadc118ea9da7c8"
+}

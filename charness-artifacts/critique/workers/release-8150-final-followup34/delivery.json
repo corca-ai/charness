@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8150-final-followup34",
+      "scope": "follow-up at 1277baf9f on release-8150-final-followup33: the docstring, spec and notes now say a start first seen while a check is probing the tree defers that check and the next one (two checks), distinct from the event-reader exception where a start stays unseen; the silent-lane preemption test window widens from 0.3 s to 1.0 s because the stop killed the resumed fake before it logged under a loaded coverage run",
+      "packet_identity": "070bc5d4992f788d189b2ab94b96392f598693e540662f46d75b562598524481",
+      "parent_receipt_identity": "parent-f89224206aaef3c0b0302b27a4f6e27ea1811e1ecc15645e",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T17:31:27Z",
+      "history": [
+        {
+          "event_id": "3c4c3cc65ee042edaf39c832a9829d77",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T17:30:06Z",
+          "attempt_id": "release-8150-final-followup34",
+          "scope": "follow-up at 1277baf9f on release-8150-final-followup33: the docstring, spec and notes now say a start first seen while a check is probing the tree defers that check and the next one (two checks), distinct from the event-reader exception where a start stays unseen; the silent-lane preemption test window widens from 0.3 s to 1.0 s because the stop killed the resumed fake before it logged under a loaded coverage run",
+          "packet_identity": "070bc5d4992f788d189b2ab94b96392f598693e540662f46d75b562598524481",
+          "parent_receipt_identity": "parent-f89224206aaef3c0b0302b27a4f6e27ea1811e1ecc15645e",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "f244b41b15c1467497085deb6ea37ac0",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T17:30:06Z",
+          "attempt_id": "release-8150-final-followup34",
+          "scope": "follow-up at 1277baf9f on release-8150-final-followup33: the docstring, spec and notes now say a start first seen while a check is probing the tree defers that check and the next one (two checks), distinct from the event-reader exception where a start stays unseen; the silent-lane preemption test window widens from 0.3 s to 1.0 s because the stop killed the resumed fake before it logged under a loaded coverage run",
+          "packet_identity": "070bc5d4992f788d189b2ab94b96392f598693e540662f46d75b562598524481",
+          "parent_receipt_identity": "parent-f89224206aaef3c0b0302b27a4f6e27ea1811e1ecc15645e",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "d0e4355573d846f8a9ee07b7ae3390fd",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T17:31:27Z",
+          "attempt_id": "release-8150-final-followup34",
+          "scope": "follow-up at 1277baf9f on release-8150-final-followup33: the docstring, spec and notes now say a start first seen while a check is probing the tree defers that check and the next one (two checks), distinct from the event-reader exception where a start stays unseen; the silent-lane preemption test window widens from 0.3 s to 1.0 s because the stop killed the resumed fake before it logged under a loaded coverage run",
+          "packet_identity": "070bc5d4992f788d189b2ab94b96392f598693e540662f46d75b562598524481",
+          "parent_receipt_identity": "parent-f89224206aaef3c0b0302b27a4f6e27ea1811e1ecc15645e",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "4589ddd39d816d5a10f1ccbb5c8308ca8d4e8b8d84896dc927bdb79936c60252"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "34fe30dc75d0fb829f4812e52da8332d54e04f30dbb2b635c4011fb0a62cf722",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "5fd6d816e65aed277f6117c7e7d71848f9e0cf2f00897064adb2c63b9003fce5",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8150-final-followup34/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8150-final-followup34/receipt.json",
+      "producer_run_id": "run-release-8150-final-followup34",
+      "findings_identity": "4589ddd39d816d5a10f1ccbb5c8308ca8d4e8b8d84896dc927bdb79936c60252"
+    }
+  ]
+}

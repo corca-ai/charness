@@ -1,0 +1,71 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'follow-up at 04071e402 on release-8150-final-followup27: the spec and the
+  progress-rule docstring now say a completion without command text always counts
+  as new; no code change'
+attempt_id: release-8150-final-followup28
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: e041964b1c43118fc0ac0af9b97eb39fbee7f2449bef4ee0a92c7e0a71fe232a
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-bcc2ff5a492c9e5d98fc3f777420a937/receipt.json
+ledger_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-bcc2ff5a492c9e5d98fc3f777420a937/delivery.json
+producer_run_id: run-release-8150-final-followup28
+producer_binding:
+  output_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-bcc2ff5a492c9e5d98fc3f777420a937/result.json
+  receipt_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-bcc2ff5a492c9e5d98fc3f777420a937/receipt.json
+  producer_run_id: run-release-8150-final-followup28
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: fdf42fe6b653a5ee60b68ba400a112e5d2c9979b43b75db837b06fbdba132901
+receipt_output_sha256: fdf42fe6b653a5ee60b68ba400a112e5d2c9979b43b75db837b06fbdba132901
+packet_identity: 1f1371a566fabc34df22cdf780d6c38abfad158ba1c5a613854cbdb094b146e8
+reviewed_input_identity: 6394814a69cc13a571878f1bbdd743ab5434d4bfe32c95b8630f4b1619fcc9a4
+parent_receipt_identity: parent-d154282182d1476c32a9a3d673c04cf29b3bc23fe172861a
+provenance:
+  scope: 'follow-up at 04071e402 on release-8150-final-followup27: the spec and the
+    progress-rule docstring now say a completion without command text always counts
+    as new; no code change'
+  packet_identity: 1f1371a566fabc34df22cdf780d6c38abfad158ba1c5a613854cbdb094b146e8
+  reviewed_input_identity: 6394814a69cc13a571878f1bbdd743ab5434d4bfe32c95b8630f4b1619fcc9a4
+  parent_receipt_identity: parent-d154282182d1476c32a9a3d673c04cf29b3bc23fe172861a
+  expected_targets_sha256: null
+  attempt_id: release-8150-final-followup28
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: e041964b1c43118fc0ac0af9b97eb39fbee7f2449bef4ee0a92c7e0a71fe232a
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

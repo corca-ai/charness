@@ -1,0 +1,40 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in final pass",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "unnamed-command-repeat-counted-as-progress",
+      "severity": "medium",
+      "summary": "The spec and progress-rule docstring overstate repeat handling when command text is unavailable.",
+      "evidence": [
+        "In `ProgressRule._on_complete`, a missing command takes the `if not command` branch, increments `_new_outcomes`, and returns. Repeated unnamed completions therefore each count as progress, including with an unreadable worktree.",
+        "The spec says that with an unreadable tree “a rerun is not” progress, without limiting that claim to commands whose text is known; the progress-rule docstring similarly says rerunning a command on an unchanged tree is not new."
+      ],
+      "action": "Qualify the spec and docstring: repeated completions count as non-progress only when command text is available to identify the repeat. Otherwise, change the implementation and add a regression test."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "C-B1: deferred request delivered on a known repeat with an unreadable tree",
+      "bin": "resolved",
+      "disposition": "The code checks for a deferred request and no remaining in-flight commands before returning for an unreadable fingerprint. The new regression test covers delivery at that completion; the change is localized."
+    },
+    {
+      "concern": "C-A3: later no-progress stop identifies commands it interrupts",
+      "bin": "resolved",
+      "disposition": "The stop reason includes the currently in-flight command text (or an unnamed-command placeholder), and the regression test asserts the interrupted command appears."
+    },
+    {
+      "concern": "C-A1, C-A2, C-A4: debug follow-up fallback and naming claims",
+      "bin": "accurate",
+      "disposition": "The notes scope lane-token routing to names outside main/master/trunk/develop, describe the slug and branch hash behavior, and identify the reftable `.invalid` placeholder as a counter fallback. These claims match the helper and selected tests."
+    }
+  ],
+  "next_move": "Qualify the unnamed-command repeat behavior in the spec and docstring, or change the code and test it, before release lock-in.",
+  "non_claims": [
+    "Reviewed the identity-bound inline payload; did not inspect current workspace paths.",
+    "Inspected the bound test assertions but did not execute tests or probe live Codex or Muse behavior."
+  ]
+}

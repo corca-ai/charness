@@ -1,0 +1,82 @@
+{
+  "attempt_id": "release-8150-final-followup31",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/release-8150-final-followup31/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-10-20T17:20:53Z",
+  "model_application_state": "unverified-by-provider",
+  "output_file": "charness-artifacts/critique/workers/release-8150-final-followup31/result.json",
+  "output_fresh": true,
+  "output_sha256": "7f15635177e1b9379994d9eb3bdaf050ea1ae9434938ec4652bcd50599f35833",
+  "output_size": 4032,
+  "packet_identity": "da0490f34f981ffc748a9c53ae2c492d9bfb27044f9a96eb7e30a6bff50a999d",
+  "parent_receipt_identity": "parent-42ebe28b706422159641add965a4ed43a8a7e1ef907ae43d",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/release-8150-final-followup31/review-prompt.md",
+  "prompt_sha256": "36abef0811dcb951b80dfb27aadc0059288e0ac292c2185b1a993edab052a480",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "requested_model": "gpt-6-luna",
+  "requested_reasoning_effort": "xhigh",
+  "reviewed_input_identity": "c25ce2595c4b27455a19ee29a4e6d4c40d2debb4c60e2e6b6aadc118ea9da7c8",
+  "reviewer_tier": "high-leverage",
+  "run_id": "run-release-8150-final-followup31",
+  "schema_file": "charness-artifacts/critique/workers/release-8150-final-followup31/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "follow-up at d2a274056 on release-8150-final-followup30: finding 0 is dispositioned as a disclosed narrow exception (the reader probes the tree for a completion before reading the next line; measured 0.03-0.09 s on the ceal and charness trees), stated in the notes, spec and the code comment; finding 1 the spec due-check count covers a mid-probe start; finding 2 the notes already list merge among the families",
+  "started_at": "2026-10-20T17:18:54Z",
+  "status": "succeeded",
+  "stderr_file": "charness-artifacts/critique/workers/release-8150-final-followup31/backend.stderr",
+  "stdout_file": "charness-artifacts/critique/workers/release-8150-final-followup31/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "unsupported_reviewer_fields": [
+    "service_tier=priority",
+    "fork_turns=none"
+  ],
+  "workspace": "/home/hwidong/codes/charness"
+}

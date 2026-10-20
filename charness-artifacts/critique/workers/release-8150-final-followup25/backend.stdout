@@ -1,0 +1,42 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in final pass",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "parallel-command-interrupt-not-disclosed",
+      "severity": "high",
+      "summary": "The checkpoint names all tracked command texts when available, but a running Muse command may be unnamed when the request is delivered.",
+      "evidence": [
+        "In `task_run_event_timing._Timeline._feed_muse`, a `task.lifecycle.started` event starts the command with `None`; the command text is populated only by a later `task.lifecycle.output` event.",
+        "`_Timeline.in_flight()` converts a missing command to an empty string, and `_checkpoint_request()` renders that as empty backticks. The lane then receives no usable name for that interrupted command.",
+        "`test_the_checkpoint_names_every_command_the_kill_interrupts` covers two Codex events with command text; it does not cover a Muse command interrupted before its first output event.",
+        "The spec and release notes say the checkpoint message names every interrupted command."
+      ],
+      "action": "Preserve command identity from an earlier Muse lifecycle event when available; otherwise explicitly report the number of unnamed running commands as unidentified. Add a regression test for a Muse command interrupted before command text is observed, and align the claim with that behavior."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "C-B1: a loop message could overwrite a deferred checkpoint while the rule recorded it as delivered.",
+      "bin": "resolved",
+      "disposition": "`_on_complete` returns after scheduling the deferred checkpoint, before loop handling; the regression test checks the returned checkpoint action and `delivered-between-checks` state for a repeated test command."
+    },
+    {
+      "concern": "C-A3: the first follow-up on a lane branch could use the plain dated name; a reftable `.invalid` HEAD could be mistaken for lane identity.",
+      "bin": "resolved",
+      "disposition": "The routing token is applied before selecting a lane-branch name, `.invalid` returns no token, and tests cover both cases."
+    },
+    {
+      "concern": "C-A1, C-A2, and C-A4: remaining consumer-facing wording may overstate the progress-window, event-capture, or timeout behavior.",
+      "bin": "advisory",
+      "disposition": "No additional actionable misstatement was identified in the bound help, references, notes, spec, or relevant docstrings."
+    }
+  ],
+  "next_move": "Hold release lock-in until the Muse unknown-command case is disclosed and covered by a regression test; then recheck the checkpoint wording.",
+  "non_claims": [
+    "Reviewed the identity-bound inline payload only.",
+    "Inspected the bound regression tests but did not execute them or verify live Codex or Muse process-group behavior."
+  ]
+}

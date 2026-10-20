@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8150-final-followup29",
+      "scope": "follow-up at 26131a7f6 on release-8150-final-followup28: on_tick now runs the worktree fingerprint outside the rule lock, so command events arriving during a slow probe are fed first and a command started mid-probe is young (deterministic interleaving test)",
+      "packet_identity": "6857c725c592638c203cd72330ba859bb547ef6b2fe629a80060fe6ee4e9bf84",
+      "parent_receipt_identity": "parent-d72c891825feea82c09fa5718407d831ce7e0e681c16c967",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T17:12:40Z",
+      "history": [
+        {
+          "event_id": "957f441b5f0b4edbbe6cc52fda1230e2",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T17:10:58Z",
+          "attempt_id": "release-8150-final-followup29",
+          "scope": "follow-up at 26131a7f6 on release-8150-final-followup28: on_tick now runs the worktree fingerprint outside the rule lock, so command events arriving during a slow probe are fed first and a command started mid-probe is young (deterministic interleaving test)",
+          "packet_identity": "6857c725c592638c203cd72330ba859bb547ef6b2fe629a80060fe6ee4e9bf84",
+          "parent_receipt_identity": "parent-d72c891825feea82c09fa5718407d831ce7e0e681c16c967",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "f9dff0531b0e4e07915c00a85ae85701",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T17:10:58Z",
+          "attempt_id": "release-8150-final-followup29",
+          "scope": "follow-up at 26131a7f6 on release-8150-final-followup28: on_tick now runs the worktree fingerprint outside the rule lock, so command events arriving during a slow probe are fed first and a command started mid-probe is young (deterministic interleaving test)",
+          "packet_identity": "6857c725c592638c203cd72330ba859bb547ef6b2fe629a80060fe6ee4e9bf84",
+          "parent_receipt_identity": "parent-d72c891825feea82c09fa5718407d831ce7e0e681c16c967",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "5e460d9c88ac4856bae5dd46049131d4",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T17:12:40Z",
+          "attempt_id": "release-8150-final-followup29",
+          "scope": "follow-up at 26131a7f6 on release-8150-final-followup28: on_tick now runs the worktree fingerprint outside the rule lock, so command events arriving during a slow probe are fed first and a command started mid-probe is young (deterministic interleaving test)",
+          "packet_identity": "6857c725c592638c203cd72330ba859bb547ef6b2fe629a80060fe6ee4e9bf84",
+          "parent_receipt_identity": "parent-d72c891825feea82c09fa5718407d831ce7e0e681c16c967",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "4018ff4bf6f3ef61d1f288246927c49bed67d99a00cda0e4bed61153a3100b21"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "d02083e3a706b414a6e64161e39114ab883051c98820a5c41d95cbfa43937e2e",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "c9aa2d4b4863d823cb7edbcadc8668c15949956721fe9e84bd779a68c1513e3b",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8150-final-followup29/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8150-final-followup29/receipt.json",
+      "producer_run_id": "run-release-8150-final-followup29",
+      "findings_identity": "4018ff4bf6f3ef61d1f288246927c49bed67d99a00cda0e4bed61153a3100b21"
+    }
+  ]
+}

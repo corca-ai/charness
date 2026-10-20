@@ -1,0 +1,82 @@
+{
+  "attempt_id": "release-8150-final-followup29",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/release-8150-final-followup29/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-10-20T17:12:40Z",
+  "model_application_state": "unverified-by-provider",
+  "output_file": "charness-artifacts/critique/workers/release-8150-final-followup29/result.json",
+  "output_fresh": true,
+  "output_sha256": "4018ff4bf6f3ef61d1f288246927c49bed67d99a00cda0e4bed61153a3100b21",
+  "output_size": 3812,
+  "packet_identity": "6857c725c592638c203cd72330ba859bb547ef6b2fe629a80060fe6ee4e9bf84",
+  "parent_receipt_identity": "parent-d72c891825feea82c09fa5718407d831ce7e0e681c16c967",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/release-8150-final-followup29/review-prompt.md",
+  "prompt_sha256": "c9aa2d4b4863d823cb7edbcadc8668c15949956721fe9e84bd779a68c1513e3b",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "requested_model": "gpt-6-luna",
+  "requested_reasoning_effort": "xhigh",
+  "reviewed_input_identity": "d02083e3a706b414a6e64161e39114ab883051c98820a5c41d95cbfa43937e2e",
+  "reviewer_tier": "high-leverage",
+  "run_id": "run-release-8150-final-followup29",
+  "schema_file": "charness-artifacts/critique/workers/release-8150-final-followup29/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "follow-up at 26131a7f6 on release-8150-final-followup28: on_tick now runs the worktree fingerprint outside the rule lock, so command events arriving during a slow probe are fed first and a command started mid-probe is young (deterministic interleaving test)",
+  "started_at": "2026-10-20T17:10:58Z",
+  "status": "succeeded",
+  "stderr_file": "charness-artifacts/critique/workers/release-8150-final-followup29/backend.stderr",
+  "stdout_file": "charness-artifacts/critique/workers/release-8150-final-followup29/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "unsupported_reviewer_fields": [
+    "service_tier=priority",
+    "fork_turns=none"
+  ],
+  "workspace": "/home/hwidong/codes/charness"
+}

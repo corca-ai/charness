@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8150-final-followup31",
+      "scope": "follow-up at d2a274056 on release-8150-final-followup30: finding 0 is dispositioned as a disclosed narrow exception (the reader probes the tree for a completion before reading the next line; measured 0.03-0.09 s on the ceal and charness trees), stated in the notes, spec and the code comment; finding 1 the spec due-check count covers a mid-probe start; finding 2 the notes already list merge among the families",
+      "packet_identity": "da0490f34f981ffc748a9c53ae2c492d9bfb27044f9a96eb7e30a6bff50a999d",
+      "parent_receipt_identity": "parent-42ebe28b706422159641add965a4ed43a8a7e1ef907ae43d",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T17:20:53Z",
+      "history": [
+        {
+          "event_id": "948c753ff6ec4f0aad065468efc2425a",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T17:18:54Z",
+          "attempt_id": "release-8150-final-followup31",
+          "scope": "follow-up at d2a274056 on release-8150-final-followup30: finding 0 is dispositioned as a disclosed narrow exception (the reader probes the tree for a completion before reading the next line; measured 0.03-0.09 s on the ceal and charness trees), stated in the notes, spec and the code comment; finding 1 the spec due-check count covers a mid-probe start; finding 2 the notes already list merge among the families",
+          "packet_identity": "da0490f34f981ffc748a9c53ae2c492d9bfb27044f9a96eb7e30a6bff50a999d",
+          "parent_receipt_identity": "parent-42ebe28b706422159641add965a4ed43a8a7e1ef907ae43d",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "73abb830d9524c8780f02e27cc7f436a",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T17:18:54Z",
+          "attempt_id": "release-8150-final-followup31",
+          "scope": "follow-up at d2a274056 on release-8150-final-followup30: finding 0 is dispositioned as a disclosed narrow exception (the reader probes the tree for a completion before reading the next line; measured 0.03-0.09 s on the ceal and charness trees), stated in the notes, spec and the code comment; finding 1 the spec due-check count covers a mid-probe start; finding 2 the notes already list merge among the families",
+          "packet_identity": "da0490f34f981ffc748a9c53ae2c492d9bfb27044f9a96eb7e30a6bff50a999d",
+          "parent_receipt_identity": "parent-42ebe28b706422159641add965a4ed43a8a7e1ef907ae43d",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "0acbfea2a27146f1af65e0a6da2d7351",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T17:20:53Z",
+          "attempt_id": "release-8150-final-followup31",
+          "scope": "follow-up at d2a274056 on release-8150-final-followup30: finding 0 is dispositioned as a disclosed narrow exception (the reader probes the tree for a completion before reading the next line; measured 0.03-0.09 s on the ceal and charness trees), stated in the notes, spec and the code comment; finding 1 the spec due-check count covers a mid-probe start; finding 2 the notes already list merge among the families",
+          "packet_identity": "da0490f34f981ffc748a9c53ae2c492d9bfb27044f9a96eb7e30a6bff50a999d",
+          "parent_receipt_identity": "parent-42ebe28b706422159641add965a4ed43a8a7e1ef907ae43d",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "7f15635177e1b9379994d9eb3bdaf050ea1ae9434938ec4652bcd50599f35833"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "c25ce2595c4b27455a19ee29a4e6d4c40d2debb4c60e2e6b6aadc118ea9da7c8",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "36abef0811dcb951b80dfb27aadc0059288e0ac292c2185b1a993edab052a480",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8150-final-followup31/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8150-final-followup31/receipt.json",
+      "producer_run_id": "run-release-8150-final-followup31",
+      "findings_identity": "7f15635177e1b9379994d9eb3bdaf050ea1ae9434938ec4652bcd50599f35833"
+    }
+  ]
+}

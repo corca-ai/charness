@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8150-final-followup33",
+      "scope": "follow-up at 3c4beb70a on release-8150-final-followup32: the module docstring and on_tick comment scope the age guarantee to starts the rule has seen; the spec and notes say an unseen interrupted command is not named or counted, and that starts stay unseen by the checks while a log write hangs; no code change",
+      "packet_identity": "9d44016be7e0cce31fc8dc4fa1331e642b26727ffc6bac70c4e3b8bc21dc41c8",
+      "parent_receipt_identity": "parent-0b9bc6c21fec525eea12c4bbf6f629d1eb05129c044b8e99",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T17:26:10Z",
+      "history": [
+        {
+          "event_id": "e6e47c51459847a785e893df41d17cb2",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T17:24:39Z",
+          "attempt_id": "release-8150-final-followup33",
+          "scope": "follow-up at 3c4beb70a on release-8150-final-followup32: the module docstring and on_tick comment scope the age guarantee to starts the rule has seen; the spec and notes say an unseen interrupted command is not named or counted, and that starts stay unseen by the checks while a log write hangs; no code change",
+          "packet_identity": "9d44016be7e0cce31fc8dc4fa1331e642b26727ffc6bac70c4e3b8bc21dc41c8",
+          "parent_receipt_identity": "parent-0b9bc6c21fec525eea12c4bbf6f629d1eb05129c044b8e99",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "96fe431c1eb944579901bc8f3c8c8089",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T17:24:39Z",
+          "attempt_id": "release-8150-final-followup33",
+          "scope": "follow-up at 3c4beb70a on release-8150-final-followup32: the module docstring and on_tick comment scope the age guarantee to starts the rule has seen; the spec and notes say an unseen interrupted command is not named or counted, and that starts stay unseen by the checks while a log write hangs; no code change",
+          "packet_identity": "9d44016be7e0cce31fc8dc4fa1331e642b26727ffc6bac70c4e3b8bc21dc41c8",
+          "parent_receipt_identity": "parent-0b9bc6c21fec525eea12c4bbf6f629d1eb05129c044b8e99",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "8f9a6a2bbffe489bb8ab3a34665db4c1",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T17:26:10Z",
+          "attempt_id": "release-8150-final-followup33",
+          "scope": "follow-up at 3c4beb70a on release-8150-final-followup32: the module docstring and on_tick comment scope the age guarantee to starts the rule has seen; the spec and notes say an unseen interrupted command is not named or counted, and that starts stay unseen by the checks while a log write hangs; no code change",
+          "packet_identity": "9d44016be7e0cce31fc8dc4fa1331e642b26727ffc6bac70c4e3b8bc21dc41c8",
+          "parent_receipt_identity": "parent-0b9bc6c21fec525eea12c4bbf6f629d1eb05129c044b8e99",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "b3ab1bbeeff7480f41628dd20b89983ba2ce0d0e228afc26b8a7fd3cb8d2c4e1"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "741de47d00b862330e5ec9502f339f925049745c794aaeed586437d509830d1c",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "55790cd5bc1617f135bfb14bc1bcb2d11cd591404f1446cadbd7bba7f599a081",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8150-final-followup33/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8150-final-followup33/receipt.json",
+      "producer_run_id": "run-release-8150-final-followup33",
+      "findings_identity": "b3ab1bbeeff7480f41628dd20b89983ba2ce0d0e228afc26b8a7fd3cb8d2c4e1"
+    }
+  ]
+}

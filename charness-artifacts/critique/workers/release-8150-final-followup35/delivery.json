@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8150-final-followup35",
+      "scope": "follow-up at 9da6bf77e on release-8150-final-followup34: test-only; a parametrized test feeds completions to the rule timeline outside on_event so the fallback tree probe in _on_complete is covered (readable tree: loop-debug pending; unreadable tree: none); both mutants of that line fail it. No source, doc or notes change since followup34",
+      "packet_identity": "70749a5cf52d9e9ea028773c9991a6e19a1cd962b2c336aeadd08433da679098",
+      "parent_receipt_identity": "parent-7bb786297a68c0317066467485a54d94a78b290924310948",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T17:42:08Z",
+      "history": [
+        {
+          "event_id": "f022c2b33ca14c1b844c433f521d00e0",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T17:41:36Z",
+          "attempt_id": "release-8150-final-followup35",
+          "scope": "follow-up at 9da6bf77e on release-8150-final-followup34: test-only; a parametrized test feeds completions to the rule timeline outside on_event so the fallback tree probe in _on_complete is covered (readable tree: loop-debug pending; unreadable tree: none); both mutants of that line fail it. No source, doc or notes change since followup34",
+          "packet_identity": "70749a5cf52d9e9ea028773c9991a6e19a1cd962b2c336aeadd08433da679098",
+          "parent_receipt_identity": "parent-7bb786297a68c0317066467485a54d94a78b290924310948",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "56162550cf77410ebf7dfea7fd20b09c",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T17:41:36Z",
+          "attempt_id": "release-8150-final-followup35",
+          "scope": "follow-up at 9da6bf77e on release-8150-final-followup34: test-only; a parametrized test feeds completions to the rule timeline outside on_event so the fallback tree probe in _on_complete is covered (readable tree: loop-debug pending; unreadable tree: none); both mutants of that line fail it. No source, doc or notes change since followup34",
+          "packet_identity": "70749a5cf52d9e9ea028773c9991a6e19a1cd962b2c336aeadd08433da679098",
+          "parent_receipt_identity": "parent-7bb786297a68c0317066467485a54d94a78b290924310948",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "d5ac0583b49349f5b6204f060fb15340",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T17:42:08Z",
+          "attempt_id": "release-8150-final-followup35",
+          "scope": "follow-up at 9da6bf77e on release-8150-final-followup34: test-only; a parametrized test feeds completions to the rule timeline outside on_event so the fallback tree probe in _on_complete is covered (readable tree: loop-debug pending; unreadable tree: none); both mutants of that line fail it. No source, doc or notes change since followup34",
+          "packet_identity": "70749a5cf52d9e9ea028773c9991a6e19a1cd962b2c336aeadd08433da679098",
+          "parent_receipt_identity": "parent-7bb786297a68c0317066467485a54d94a78b290924310948",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "138b1057c66fd17132128ff24a5eac5420b4289d78c23cbfc7e64b0d11fd43ec"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "6d24313b87f02da4519e3c74d0d0fb58dbb54d7a4642ff496282ea75834c0633",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "92814d6e0b5352236577bf306d38a2bccf33a207cfd18d2890730158c074f724",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8150-final-followup35/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8150-final-followup35/receipt.json",
+      "producer_run_id": "run-release-8150-final-followup35",
+      "findings_identity": "138b1057c66fd17132128ff24a5eac5420b4289d78c23cbfc7e64b0d11fd43ec"
+    }
+  ]
+}

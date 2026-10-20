@@ -1,0 +1,72 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in final pass",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "deferred-checkpoint-unobservable-tree",
+      "severity": "medium",
+      "summary": "A repeated command that resolves a deferred checkpoint does not deliver it at completion when the worktree fingerprint is unavailable.",
+      "evidence": [
+        "In `ProgressRule._on_complete`, `if state is None: return` precedes the deferred-request delivery branch. A known repeated command therefore leaves the request deferred until a later window check.",
+        "The spec says a deferred request waits for command completion or the next check, whichever comes first, and says repeats in the unobservable state are not progress.",
+        "`test_a_deferred_request_is_delivered_at_a_repeat_completion` uses an observable tree; the unobservable-tree test does not cover a deferred request resolved by a repeat."
+      ],
+      "action": "Deliver the deferred request at completion for a known repeat with no other command in flight, while keeping loop detection disabled for an unobservable tree; add a regression test. Otherwise qualify the spec to say delivery may wait until the next check."
+    },
+    {
+      "id": "post-request-stop-command-undisclosed",
+      "severity": "medium",
+      "summary": "A command started after the checkpoint request can be killed by the later stop without its identity being reported in a new message or stop receipt.",
+      "evidence": [
+        "In `ProgressRule.on_tick`, a young command defers a stop; at the following empty check the rule returns a stop action without another `_checkpoint_request` call.",
+        "`LaneProgressWatch._stop_now` writes a generic `NO-PROGRESS-STOP` line and kills the process group. The check receipt records only the number of commands in flight, not their text.",
+        "`test_a_command_started_after_the_request_is_not_killed_until_it_is_a_window_old` exercises this sequence but asserts only that the final action is a stop.",
+        "The spec's window-check description says running commands are reported as interrupted, without limiting that claim to commands killed when the checkpoint request is first delivered."
+      ],
+      "action": "Record the commands killed by a deferred stop in the stop receipt, or narrow the spec and release wording to distinguish commands reported at checkpoint delivery from commands started later and killed at stop."
+    },
+    {
+      "id": "debug-followup-default-branch-fallback-claim",
+      "severity": "medium",
+      "summary": "The statement that the old counter remains on a default branch is broader than the implementation.",
+      "evidence": [
+        "`debug_followup_routing.py` recognizes only `main`, `master`, `trunk`, and `develop` in `_DEFAULT_BRANCHES`; another readable default branch such as `stable` receives a lane token.",
+        "The same code treats a readable `refs/heads/.invalid` HEAD as lacking lane identity for reftable repositories, a fallback case not stated in the spec or release notes."
+      ],
+      "action": "Limit the fallback claim to the four recognized branch names and mention the `.invalid` reftable placeholder, or change routing to identify the repository's actual default branch."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "C-B1: a loop repeat that resolves a deferred request delivers the checkpoint before applying the loop action.",
+      "bin": "resolved-with-limitation",
+      "disposition": "The branch order is correct for an observable tree; the regression test checks the no-progress action and delivered-between-checks state. The unobservable-tree case remains open in finding deferred-checkpoint-unobservable-tree."
+    },
+    {
+      "concern": "C-A3: a lane branch must not take the plain dated follow-up name.",
+      "bin": "resolved",
+      "disposition": "The router forces the lane-token suffix when a token exists. Tests cover a resolved pointer whose target is not today's default name and check distinct names across slug-aliasing branches."
+    },
+    {
+      "concern": "C-A1 and C-A2: branch-derived slugs and hashes distinguish records.",
+      "bin": "accurate",
+      "disposition": "The slug is derived from the lane id for `task/<lane>` branches or the full branch name otherwise; the eight-hex SHA-256 prefix is from the raw branch name. Distinct branch paths can still collide if their hash prefixes match, as stated."
+    },
+    {
+      "concern": "Regression-free behavior and live executor interruption.",
+      "bin": "unverified",
+      "disposition": "The bound tests were inspected but not run. The payload does not establish live Codex or Muse process-group behavior."
+    }
+  ],
+  "next_move": "Before release lock-in, close or explicitly narrow the two progress-rule disclosure/timing claims and correct the debug-routing fallback wording, then verify the focused tests.",
+  "non_claims": [
+    "Reviewed the identity-bound inline payload only.",
+    "Did not execute tests or verify live Codex or Muse process-group behavior."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "7a417812425e8fa719f7961f629c697322c72d2ed9857e6ff1c523c281b2b946",
+  "reviewed_input_identity_sha256": "4a8ea1e3407411ea20e5d10563007eafdfd2d2a0210479b02b36d6cd86846e34"
+}

@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8150-final-followup32",
+      "scope": "follow-up at fbf0c0bd9 on release-8150-final-followup31: the young-command guarantee is now scoped to commands the check has seen; spec, notes and guide disclose that a start held behind the reader completion probe or an event-log write is unseen and can be interrupted moments after it started, and that after a hung log write no later start is seen; the rule-lock test is renamed to what it proves; no code change",
+      "packet_identity": "86f4a3d539613f8e5a00a91a1b89cf2c25417a6781f9f95346ae531dc5b60a6e",
+      "parent_receipt_identity": "parent-832e94ec8fc0b9640d621981bc62fd14c1c0c24370d4ee6a",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T17:24:11Z",
+      "history": [
+        {
+          "event_id": "38359170e01c43088fe4dbaf35e720a5",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T17:21:50Z",
+          "attempt_id": "release-8150-final-followup32",
+          "scope": "follow-up at fbf0c0bd9 on release-8150-final-followup31: the young-command guarantee is now scoped to commands the check has seen; spec, notes and guide disclose that a start held behind the reader completion probe or an event-log write is unseen and can be interrupted moments after it started, and that after a hung log write no later start is seen; the rule-lock test is renamed to what it proves; no code change",
+          "packet_identity": "86f4a3d539613f8e5a00a91a1b89cf2c25417a6781f9f95346ae531dc5b60a6e",
+          "parent_receipt_identity": "parent-832e94ec8fc0b9640d621981bc62fd14c1c0c24370d4ee6a",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "1c8217f797d04045a07401398083dce5",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T17:21:50Z",
+          "attempt_id": "release-8150-final-followup32",
+          "scope": "follow-up at fbf0c0bd9 on release-8150-final-followup31: the young-command guarantee is now scoped to commands the check has seen; spec, notes and guide disclose that a start held behind the reader completion probe or an event-log write is unseen and can be interrupted moments after it started, and that after a hung log write no later start is seen; the rule-lock test is renamed to what it proves; no code change",
+          "packet_identity": "86f4a3d539613f8e5a00a91a1b89cf2c25417a6781f9f95346ae531dc5b60a6e",
+          "parent_receipt_identity": "parent-832e94ec8fc0b9640d621981bc62fd14c1c0c24370d4ee6a",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "d09d8c07d11943a4a24bca459b48d799",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T17:24:11Z",
+          "attempt_id": "release-8150-final-followup32",
+          "scope": "follow-up at fbf0c0bd9 on release-8150-final-followup31: the young-command guarantee is now scoped to commands the check has seen; spec, notes and guide disclose that a start held behind the reader completion probe or an event-log write is unseen and can be interrupted moments after it started, and that after a hung log write no later start is seen; the rule-lock test is renamed to what it proves; no code change",
+          "packet_identity": "86f4a3d539613f8e5a00a91a1b89cf2c25417a6781f9f95346ae531dc5b60a6e",
+          "parent_receipt_identity": "parent-832e94ec8fc0b9640d621981bc62fd14c1c0c24370d4ee6a",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "aaf8794a8d4145bcd10a69932aab67912ab7df59d0f925a574f9f406cba3ccba"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "e28dfbaff006a1bbe900dd0cf36542846ebc432b6897df74f1e82ceb1760b45d",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "04b7d625e2e63a0154aafb7c05e87d42f3cddcc508a9dfe2d8e461058d68bb74",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8150-final-followup32/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8150-final-followup32/receipt.json",
+      "producer_run_id": "run-release-8150-final-followup32",
+      "findings_identity": "aaf8794a8d4145bcd10a69932aab67912ab7df59d0f925a574f9f406cba3ccba"
+    }
+  ]
+}

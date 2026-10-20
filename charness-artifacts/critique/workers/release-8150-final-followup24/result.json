@@ -1,0 +1,57 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in final pass",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "C-B1-loop-action-overwrites-checkpoint",
+      "severity": "high",
+      "summary": "A loop message can replace a deferred checkpoint request while the rule still records that checkpoint as delivered.",
+      "evidence": [
+        "In `ProgressRule._on_complete`, a repeated command completing after a deferred check sets `_request` to `delivered-between-checks` and `_pending` to the checkpoint action.",
+        "For the third or fourth identical test, lint, or typecheck completion, the loop branch overwrites `_pending` with its own message. `on_event` delivers only that final action.",
+        "The next empty check treats `delivered-between-checks` as an actual checkpoint delivery and starts its window; the lane can therefore be stopped for an unanswered checkpoint it never received.",
+        "The added C-B1 test uses `cat a.py`, outside the loop families, so it does not cover this overlap."
+      ],
+      "action": "Preserve both actions or advance the checkpoint state only when the checkpoint is actually delivered. Add a regression test for a third or fourth loop completion that also resolves a deferred request."
+    },
+    {
+      "id": "parallel-command-interrupt-not-disclosed",
+      "severity": "high",
+      "summary": "A window-triggered preemption can interrupt multiple in-flight commands, but the checkpoint message identifies only one.",
+      "evidence": [
+        "`ProgressRule._in_flight` tracks multiple commands, while `on_tick` selects only `list(in_flight.values())[-1]` for the interruption warning.",
+        "`_kill_recorded_process_group` kills the executor's process group, which can include other running commands.",
+        "The spec says the interruption message names the command and warns about its partial effects; the generated request tells the lane not to simply rerun the named command. Other interrupted commands can have unreported partial effects."
+      ],
+      "action": "Name all in-flight commands that may be interrupted, or make the message and spec explicitly warn that any running commands may be interrupted and have partial effects."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "C-A3: first follow-up names on lane branches and reftable `.invalid` HEAD handling",
+      "bin": "resolved",
+      "disposition": "The code tokenizes every non-default branch before choosing the record name and treats `.invalid` as no lane identity. The bound tests cover both cases and branch-name aliasing."
+    },
+    {
+      "concern": "C-A1, C-A2, C-A4: event-capture claims and loss cases in the notes and StampingPipe docstring",
+      "bin": "no-block",
+      "disposition": "The stated pipe-to-stdout-log boundary, explicit incomplete-capture cases, and short-write, hung-write, reader, and surviving-writer behavior align with the bound implementation. No consumer-action error found in those statements."
+    },
+    {
+      "concern": "C-B1: delivered-between-checks full-window behavior",
+      "bin": "partially-resolved",
+      "disposition": "The pure-rule test covers a deferred request delivered at a repeated command completion and verifies the full window. It misses the loop-action collision described in the finding."
+    }
+  ],
+  "next_move": "Hold release lock-in until checkpoint delivery state is corrected for overlapping loop actions and the interruption warning covers concurrent commands; add focused regression coverage.",
+  "non_claims": [
+    "Reviewed the identity-bound inline payload only; did not inspect other workspace paths.",
+    "Inspected the bound regression tests but did not execute them or verify live executor behavior."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "5375a759e8fb919d45e863794dd7e8ae9a65c951a5e038065255164bc1750e1b",
+  "reviewed_input_identity_sha256": "74e7458b2d8f61fdce5e7454bd03999832a391cdbd337b3c1056d4da03f8d038"
+}

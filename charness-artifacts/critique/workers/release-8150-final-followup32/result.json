@@ -1,0 +1,58 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in final pass",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "unseen-start-guarantee-remains-in-source",
+      "severity": "medium",
+      "summary": "The release notes, spec, and guide now disclose that an unseen start can be interrupted, and the renamed test accurately limits its claim to rule-lock behavior. The bound progress-rule docstring and code comment still state a broader age guarantee. The spec also promises that interruption messages and stop reasons name the commands they kill, though an unseen start is absent from the in-flight state used to build those messages.",
+      "evidence": [
+        "`scripts/task_run/task_run_progress_rule.py` says: “A command that started since the previous check and is still running defers the request, and so the stop, by one check,” without qualifying that the check must have seen the start.",
+        "The same file's `on_tick` comment says “nothing is killed before it has run a full window,” although a start held behind the serialized reader's completion probe or event-log write can be killed moments after starting.",
+        "The spec says the message reports every interrupted command and the stop reason names those commands the same way. An unseen start is absent from `in_flight`, so it cannot be named or counted there even when the process-group kill interrupts it.",
+        "`test_a_completion_probe_does_not_hold_the_rule_lock` now states that the production reader is single-threaded and reads the next line only after the probe; its name describes the lock property it tests."
+      ],
+      "action": "Scope the source docstring and comment to starts the check has seen. Qualify the spec's interruption inventory as covering observed commands, and state how an unseen interrupted command is represented or omitted."
+    },
+    {
+      "id": "hung-write-never-seen-is-too-absolute",
+      "severity": "low",
+      "summary": "The disclosure that a hung event-log write blocks timely observation is accurate, but saying later starts are “never seen” is stronger than the implementation guarantees. Close is bounded and may return while the write remains in flight; if it later returns, the reader can continue to call the observer for buffered lines after close, although no later due check may remain to act on them.",
+      "evidence": [
+        "`StampingPipe.close()` joins and waits for the sink lock only for bounded periods, then marks the pipe released while the reader may still be alive.",
+        "`_feed()` calls `_observe(line)` after `_emit(...)`; if an in-flight sink write eventually returns, the reader can observe subsequent lines even though their bytes are dropped.",
+        "The release notes and spec say that after a hung log write no later command start is seen."
+      ],
+      "action": "Describe later starts as unseen while the write remains blocked and unavailable to the due check, while allowing that the reader could resume after close."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Followup31's claim that a due check can act on stale in-flight state and interrupt an unseen young command.",
+      "bin": "fixed in reader-facing surfaces; bounded limitation disclosed",
+      "disposition": "The spec, release notes, and guide now qualify the young-command guarantee by whether the check has seen the start and disclose the completion-probe/event-log-write exception. The rule-lock test is renamed and explicitly limits what it proves. The remaining unqualified source statements and interruption-inventory promise still need correction."
+    },
+    {
+      "concern": "A start held behind the completion probe or event-log write can be interrupted moments after it started.",
+      "bin": "disclosed bounded limitation",
+      "disposition": "Accurately described for the due check: the completion probe precedes reading the next line, and the sink write precedes event observation. The disclosure should also make clear that an unseen command cannot appear in the interruption inventory."
+    },
+    {
+      "concern": "After a hung log write, no later start is seen.",
+      "bin": "disclosed but overstated",
+      "disposition": "The reader cannot provide timely events while blocked, but bounded close does not terminate the reader thread; a later return from the write can allow buffered events to reach the observer after close."
+    }
+  ],
+  "next_move": "Correct the remaining source and spec claims about unseen commands, then narrow the hung-write wording to the observation window relevant to a due check.",
+  "non_claims": [
+    "Reviewed only the packet's inline semantic input; did not inspect workspace paths.",
+    "Did not run tests or independently verify the reported probe measurements or live executor behavior.",
+    "The supplied goal lineage is not-goal-bound; this review does not close a Goal Run."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "86f4a3d539613f8e5a00a91a1b89cf2c25417a6781f9f95346ae531dc5b60a6e",
+  "reviewed_input_identity_sha256": "e28dfbaff006a1bbe900dd0cf36542846ebc432b6897df74f1e82ceb1760b45d"
+}

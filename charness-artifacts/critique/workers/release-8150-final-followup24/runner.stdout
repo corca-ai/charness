@@ -1,0 +1,77 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'follow-up at 0e12bccf6 on release-8150-final-followup23, after a second claims
+  round blocked the second prepared record (withdrawn unpublished): C-B1 a checkpoint
+  request delivered between checks now gets its full window (new request state delivered-between-checks;
+  test); C-A3 a lane branch first follow-up name is tokenized too and a reftable .invalid
+  HEAD is no lane identity (tests); C-A1, C-A2, C-A4 wording in notes, CLI help, CLI
+  reference, spec, StampingPipe docstring'
+attempt_id: release-8150-final-followup24
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: a6a8941699d59440cf38af98d88a6ef2d81411df32f9a77d082b435d9962c134
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-e88f81c56ad78a414c4e3d7cad07b7ed/receipt.json
+ledger_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-e88f81c56ad78a414c4e3d7cad07b7ed/delivery.json
+producer_run_id: run-release-8150-final-followup24
+producer_binding:
+  output_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-e88f81c56ad78a414c4e3d7cad07b7ed/result.json
+  receipt_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-e88f81c56ad78a414c4e3d7cad07b7ed/receipt.json
+  producer_run_id: run-release-8150-final-followup24
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: b845faf21c1d0ecb8b859fcb41fff50f5be26765b712c14be252ffc4b9ac407e
+receipt_output_sha256: b845faf21c1d0ecb8b859fcb41fff50f5be26765b712c14be252ffc4b9ac407e
+packet_identity: 5375a759e8fb919d45e863794dd7e8ae9a65c951a5e038065255164bc1750e1b
+reviewed_input_identity: 74e7458b2d8f61fdce5e7454bd03999832a391cdbd337b3c1056d4da03f8d038
+parent_receipt_identity: parent-bccc8fb01f003e1024f242aca72e1e4dc5e16bb85947abbe
+provenance:
+  scope: 'follow-up at 0e12bccf6 on release-8150-final-followup23, after a second
+    claims round blocked the second prepared record (withdrawn unpublished): C-B1
+    a checkpoint request delivered between checks now gets its full window (new request
+    state delivered-between-checks; test); C-A3 a lane branch first follow-up name
+    is tokenized too and a reftable .invalid HEAD is no lane identity (tests); C-A1,
+    C-A2, C-A4 wording in notes, CLI help, CLI reference, spec, StampingPipe docstring'
+  packet_identity: 5375a759e8fb919d45e863794dd7e8ae9a65c951a5e038065255164bc1750e1b
+  reviewed_input_identity: 74e7458b2d8f61fdce5e7454bd03999832a391cdbd337b3c1056d4da03f8d038
+  parent_receipt_identity: parent-bccc8fb01f003e1024f242aca72e1e4dc5e16bb85947abbe
+  expected_targets_sha256: null
+  attempt_id: release-8150-final-followup24
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: a6a8941699d59440cf38af98d88a6ef2d81411df32f9a77d082b435d9962c134
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

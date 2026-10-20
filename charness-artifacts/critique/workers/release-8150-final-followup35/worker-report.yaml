@@ -1,0 +1,75 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'follow-up at 9da6bf77e on release-8150-final-followup34: test-only; a parametrized
+  test feeds completions to the rule timeline outside on_event so the fallback tree
+  probe in _on_complete is covered (readable tree: loop-debug pending; unreadable
+  tree: none); both mutants of that line fail it. No source, doc or notes change since
+  followup34'
+attempt_id: release-8150-final-followup35
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 92814d6e0b5352236577bf306d38a2bccf33a207cfd18d2890730158c074f724
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: charness-artifacts/critique/workers/release-8150-final-followup35/receipt.json
+ledger_path: charness-artifacts/critique/workers/release-8150-final-followup35/delivery.json
+producer_run_id: run-release-8150-final-followup35
+producer_binding:
+  output_file: charness-artifacts/critique/workers/release-8150-final-followup35/result.json
+  receipt_file: charness-artifacts/critique/workers/release-8150-final-followup35/receipt.json
+  producer_run_id: run-release-8150-final-followup35
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 138b1057c66fd17132128ff24a5eac5420b4289d78c23cbfc7e64b0d11fd43ec
+receipt_output_sha256: 138b1057c66fd17132128ff24a5eac5420b4289d78c23cbfc7e64b0d11fd43ec
+packet_identity: 70749a5cf52d9e9ea028773c9991a6e19a1cd962b2c336aeadd08433da679098
+reviewed_input_identity: 6d24313b87f02da4519e3c74d0d0fb58dbb54d7a4642ff496282ea75834c0633
+parent_receipt_identity: parent-7bb786297a68c0317066467485a54d94a78b290924310948
+provenance:
+  scope: 'follow-up at 9da6bf77e on release-8150-final-followup34: test-only; a parametrized
+    test feeds completions to the rule timeline outside on_event so the fallback tree
+    probe in _on_complete is covered (readable tree: loop-debug pending; unreadable
+    tree: none); both mutants of that line fail it. No source, doc or notes change
+    since followup34'
+  packet_identity: 70749a5cf52d9e9ea028773c9991a6e19a1cd962b2c336aeadd08433da679098
+  reviewed_input_identity: 6d24313b87f02da4519e3c74d0d0fb58dbb54d7a4642ff496282ea75834c0633
+  parent_receipt_identity: parent-7bb786297a68c0317066467485a54d94a78b290924310948
+  expected_targets_sha256: null
+  attempt_id: release-8150-final-followup35
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 92814d6e0b5352236577bf306d38a2bccf33a207cfd18d2890730158c074f724
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

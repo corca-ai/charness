@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8150-final-followup24",
+      "scope": "follow-up at 0e12bccf6 on release-8150-final-followup23, after a second claims round blocked the second prepared record (withdrawn unpublished): C-B1 a checkpoint request delivered between checks now gets its full window (new request state delivered-between-checks; test); C-A3 a lane branch first follow-up name is tokenized too and a reftable .invalid HEAD is no lane identity (tests); C-A1, C-A2, C-A4 wording in notes, CLI help, CLI reference, spec, StampingPipe docstring",
+      "packet_identity": "5375a759e8fb919d45e863794dd7e8ae9a65c951a5e038065255164bc1750e1b",
+      "parent_receipt_identity": "parent-bccc8fb01f003e1024f242aca72e1e4dc5e16bb85947abbe",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T16:51:34Z",
+      "history": [
+        {
+          "event_id": "b46e9a9e41a943e1a2344179d140310c",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T16:48:36Z",
+          "attempt_id": "release-8150-final-followup24",
+          "scope": "follow-up at 0e12bccf6 on release-8150-final-followup23, after a second claims round blocked the second prepared record (withdrawn unpublished): C-B1 a checkpoint request delivered between checks now gets its full window (new request state delivered-between-checks; test); C-A3 a lane branch first follow-up name is tokenized too and a reftable .invalid HEAD is no lane identity (tests); C-A1, C-A2, C-A4 wording in notes, CLI help, CLI reference, spec, StampingPipe docstring",
+          "packet_identity": "5375a759e8fb919d45e863794dd7e8ae9a65c951a5e038065255164bc1750e1b",
+          "parent_receipt_identity": "parent-bccc8fb01f003e1024f242aca72e1e4dc5e16bb85947abbe",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "b962da0c991e4b29947098ff88de5cee",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T16:48:36Z",
+          "attempt_id": "release-8150-final-followup24",
+          "scope": "follow-up at 0e12bccf6 on release-8150-final-followup23, after a second claims round blocked the second prepared record (withdrawn unpublished): C-B1 a checkpoint request delivered between checks now gets its full window (new request state delivered-between-checks; test); C-A3 a lane branch first follow-up name is tokenized too and a reftable .invalid HEAD is no lane identity (tests); C-A1, C-A2, C-A4 wording in notes, CLI help, CLI reference, spec, StampingPipe docstring",
+          "packet_identity": "5375a759e8fb919d45e863794dd7e8ae9a65c951a5e038065255164bc1750e1b",
+          "parent_receipt_identity": "parent-bccc8fb01f003e1024f242aca72e1e4dc5e16bb85947abbe",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "ebba0165546244fd87ae15c3c368e628",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T16:51:34Z",
+          "attempt_id": "release-8150-final-followup24",
+          "scope": "follow-up at 0e12bccf6 on release-8150-final-followup23, after a second claims round blocked the second prepared record (withdrawn unpublished): C-B1 a checkpoint request delivered between checks now gets its full window (new request state delivered-between-checks; test); C-A3 a lane branch first follow-up name is tokenized too and a reftable .invalid HEAD is no lane identity (tests); C-A1, C-A2, C-A4 wording in notes, CLI help, CLI reference, spec, StampingPipe docstring",
+          "packet_identity": "5375a759e8fb919d45e863794dd7e8ae9a65c951a5e038065255164bc1750e1b",
+          "parent_receipt_identity": "parent-bccc8fb01f003e1024f242aca72e1e4dc5e16bb85947abbe",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "b845faf21c1d0ecb8b859fcb41fff50f5be26765b712c14be252ffc4b9ac407e"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "74e7458b2d8f61fdce5e7454bd03999832a391cdbd337b3c1056d4da03f8d038",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "a6a8941699d59440cf38af98d88a6ef2d81411df32f9a77d082b435d9962c134",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8150-final-followup24/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8150-final-followup24/receipt.json",
+      "producer_run_id": "run-release-8150-final-followup24",
+      "findings_identity": "b845faf21c1d0ecb8b859fcb41fff50f5be26765b712c14be252ffc4b9ac407e"
+    }
+  ]
+}

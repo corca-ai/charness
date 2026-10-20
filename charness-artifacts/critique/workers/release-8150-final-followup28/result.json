@@ -1,0 +1,46 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in final pass",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "young-command-can-be-missed-during-progress-probe",
+      "severity": "medium",
+      "summary": "The guarantee that a command younger than one window is never killed is not reliable during a slow fingerprint check.",
+      "evidence": [
+        "ProgressRule.on_tick holds its lock while calling the injected fingerprint, then reads the in-flight command state.",
+        "ProgressRule.on_event needs the same lock before it feeds a command-start event into the timeline. If that event arrives during a fingerprint probe, it can wait until after the check has decided there is no command in flight.",
+        "The spec and v8.15.0 notes say the window check never kills a command younger than W and describe interrupted commands as having run for at least W. The fingerprint can take up to three sequential 60-second probes, so the check can preempt a newly started command before it has run for W.",
+        "The supplied progress-rule tests exercise sequential event delivery; none covers a command-start event interleaved with a slow fingerprint."
+      ],
+      "action": "Keep command-start observations available while fingerprint probes run, add a deterministic interleaving regression test, and align the spec and release note with the verified guarantee."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "C-B1: a zero progress window disables loop checks too",
+      "bin": "verified",
+      "disposition": "The on_event guard returns when the window is non-positive, and the supplied test asserts repeated loop-family completions produce no actions. Test source was inspected but not executed."
+    },
+    {
+      "concern": "C-A3: a lane branch never takes the plain dated follow-up name",
+      "bin": "verified",
+      "disposition": "The routing helper requires a lane token before accepting the plain candidate; supplied integration tests cover lane-specific naming and aliasing. Test source was inspected but not executed."
+    },
+    {
+      "concern": "C-A1, C-A2, C-A4 and remaining progress-rule claims",
+      "bin": "mostly accurate",
+      "disposition": "The changed wording that unnamed completions always count as new matches the implementation. The young-command guarantee remains inaccurate in the concurrent probe case described in the finding."
+    }
+  ],
+  "next_move": "Resolve the command-start race and add an interleaving regression test before release lock-in; then recheck the affected progress-rule claims.",
+  "non_claims": [
+    "Reviewed the identity-checked inline payload only; did not inspect current workspace paths.",
+    "Inspected test assertions but did not execute tests or probe live Codex or Muse behavior."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "1f1371a566fabc34df22cdf780d6c38abfad158ba1c5a613854cbdb094b146e8",
+  "reviewed_input_identity_sha256": "6394814a69cc13a571878f1bbdd743ab5434d4bfe32c95b8630f4b1619fcc9a4"
+}

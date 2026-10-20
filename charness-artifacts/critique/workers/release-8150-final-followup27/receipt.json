@@ -1,0 +1,82 @@
+{
+  "attempt_id": "release-8150-final-followup27",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/release-8150-final-followup27/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-10-20T17:07:57Z",
+  "model_application_state": "unverified-by-provider",
+  "output_file": "charness-artifacts/critique/workers/release-8150-final-followup27/result.json",
+  "output_fresh": true,
+  "output_sha256": "9bab6e63c1d03ba44084f5267fb11efde0b69064658af56e2e59b0d5323ca5ef",
+  "output_size": 2879,
+  "packet_identity": "727917d086b7d43bb13c312bd2af3040cc5cf06b2174b1bba5e460cc82b44261",
+  "parent_receipt_identity": "parent-e88789958c8255952b6b59345831488aa1f55f04c8654df4",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/release-8150-final-followup27/review-prompt.md",
+  "prompt_sha256": "ac40aaa34aee8a17f78e1cf465f930d4fbbe11ad548dcecf903b8ef90e3e7aa4",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "requested_model": "gpt-6-luna",
+  "requested_reasoning_effort": "xhigh",
+  "reviewed_input_identity": "e31ab67741814a1d16f6d241280fbc6c6d0fa67af5414d1959aea4aba974f76c",
+  "reviewer_tier": "high-leverage",
+  "run_id": "run-release-8150-final-followup27",
+  "schema_file": "charness-artifacts/critique/workers/release-8150-final-followup27/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "follow-up at d394845c1 on release-8150-final-followup26: a known repeat on an unreadable tree delivers a deferred request at completion (test); a no-progress stop reason names the commands it interrupts (test); notes scope the debug default-branch fallback to main/master/trunk/develop and the reftable .invalid placeholder; spec aligned",
+  "started_at": "2026-10-20T17:05:42Z",
+  "status": "succeeded",
+  "stderr_file": "charness-artifacts/critique/workers/release-8150-final-followup27/backend.stderr",
+  "stdout_file": "charness-artifacts/critique/workers/release-8150-final-followup27/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "unsupported_reviewer_fields": [
+    "service_tier=priority",
+    "fork_turns=none"
+  ],
+  "workspace": "/home/hwidong/codes/charness"
+}

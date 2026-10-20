@@ -1,0 +1,56 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "release lock-in final pass",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "young-command-can-still-be-killed-before-window",
+      "severity": "medium",
+      "summary": "The lock change lets a command-start event through during on_tick's fingerprint probe, but the rule still does not guarantee that the command has run for a full window before it can be killed.",
+      "evidence": [
+        "The interleaving test proves the start event is observed and deferred at that check, but does not test the following due check.",
+        "on_tick records _last_check_at using the time passed in before the fingerprint probe, then adds the newly observed command to _in_flight_at_check. The next check is due W after that earlier time, so a command started near the end of a slow probe can be less than W old when the deferred request is delivered and kills it.",
+        "Separately, _on_complete calls the fingerprint while on_event holds the rule lock. A completion can therefore block the event reader from feeding a subsequent command-start event during a slow probe."
+      ],
+      "action": "Track command start times and enforce the minimum age using elapsed time, and keep completion fingerprint work from blocking event ingestion. Add deterministic regressions that cover the next check after a slow probe and a command start queued behind a completion probe."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "C-A1: lane-branch follow-up records receive a lane-specific suffix, including the first record.",
+      "bin": "accurate",
+      "disposition": "The routing code skips the plain candidate when a lane token exists and selects a followup-token name."
+    },
+    {
+      "concern": "C-A2: slugs can alias, while the raw-branch hash distinguishes names except for an 8-hex prefix collision.",
+      "bin": "accurate",
+      "disposition": "The code hashes the full branch name and retains the documented collision caveat."
+    },
+    {
+      "concern": "C-A3: a lane branch does not take the plain dated name when the current pointer target has a different name.",
+      "bin": "pass",
+      "disposition": "The code repair enforces this and the supplied regression test covers that case."
+    },
+    {
+      "concern": "C-A4: default branches, detached HEADs, the reftable placeholder, and unreadable branch metadata use the counter fallback.",
+      "bin": "accurate",
+      "disposition": "The branch reader and routing helper implement these fallback cases as stated."
+    },
+    {
+      "concern": "C-B1: command events arriving during a slow on_tick probe are fed first and a command started mid-probe is young.",
+      "bin": "incomplete",
+      "disposition": "The supplied interleaving test covers the first check only; the minimum-age guarantee and completion-probe ingestion path remain unresolved."
+    }
+  ],
+  "next_move": "Resolve the remaining command-age and event-ingestion races, add regressions for both, then update the spec and v8.15.0 notes: their claims that an interrupted command has run for at least W are not currently reliable.",
+  "non_claims": [
+    "Reviewed the identity-bound inline payload only; did not inspect workspace paths.",
+    "Inspected supplied test assertions but did not execute tests or probe live Codex or Muse behavior.",
+    "The packet's goal lineage is not-goal-bound; this review does not close a Goal Run."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "6857c725c592638c203cd72330ba859bb547ef6b2fe629a80060fe6ee4e9bf84",
+  "reviewed_input_identity_sha256": "d02083e3a706b414a6e64161e39114ab883051c98820a5c41d95cbfa43937e2e"
+}

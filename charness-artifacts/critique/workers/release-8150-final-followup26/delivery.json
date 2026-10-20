@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8150-final-followup26",
+      "scope": "follow-up at 8b51e4620 on release-8150-final-followup25: the checkpoint request now names each interrupted command whose text it has seen and counts the rest (Muse bash task before its first output), with a regression test; spec aligned",
+      "packet_identity": "7a417812425e8fa719f7961f629c697322c72d2ed9857e6ff1c523c281b2b946",
+      "parent_receipt_identity": "parent-938da9cf1bd4290bdedd424df0c40f4005f9c25502128305",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-10-20T17:04:49Z",
+      "history": [
+        {
+          "event_id": "ba1ae101d9d04ca1938f91732b6da90b",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-10-20T17:01:35Z",
+          "attempt_id": "release-8150-final-followup26",
+          "scope": "follow-up at 8b51e4620 on release-8150-final-followup25: the checkpoint request now names each interrupted command whose text it has seen and counts the rest (Muse bash task before its first output), with a regression test; spec aligned",
+          "packet_identity": "7a417812425e8fa719f7961f629c697322c72d2ed9857e6ff1c523c281b2b946",
+          "parent_receipt_identity": "parent-938da9cf1bd4290bdedd424df0c40f4005f9c25502128305",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "d5309f61c45c49ef987b1a200c803510",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-10-20T17:01:35Z",
+          "attempt_id": "release-8150-final-followup26",
+          "scope": "follow-up at 8b51e4620 on release-8150-final-followup25: the checkpoint request now names each interrupted command whose text it has seen and counts the rest (Muse bash task before its first output), with a regression test; spec aligned",
+          "packet_identity": "7a417812425e8fa719f7961f629c697322c72d2ed9857e6ff1c523c281b2b946",
+          "parent_receipt_identity": "parent-938da9cf1bd4290bdedd424df0c40f4005f9c25502128305",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "d653e2bc89f64b629e8e7abc6243c7ca",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-10-20T17:04:49Z",
+          "attempt_id": "release-8150-final-followup26",
+          "scope": "follow-up at 8b51e4620 on release-8150-final-followup25: the checkpoint request now names each interrupted command whose text it has seen and counts the rest (Muse bash task before its first output), with a regression test; spec aligned",
+          "packet_identity": "7a417812425e8fa719f7961f629c697322c72d2ed9857e6ff1c523c281b2b946",
+          "parent_receipt_identity": "parent-938da9cf1bd4290bdedd424df0c40f4005f9c25502128305",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "92982faf353453a9619103555d01653a5a392c86bf9d457fd2881c1d7acf74a2"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "4a8ea1e3407411ea20e5d10563007eafdfd2d2a0210479b02b36d6cd86846e34",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "f8ac9d11c3d573c113b78a877cbbff22780a972f9fbb4f22d7d473e2ca31e4a9",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8150-final-followup26/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8150-final-followup26/receipt.json",
+      "producer_run_id": "run-release-8150-final-followup26",
+      "findings_identity": "92982faf353453a9619103555d01653a5a392c86bf9d457fd2881c1d7acf74a2"
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'follow-up at 26131a7f6 on release-8150-final-followup28: on_tick now runs
+  the worktree fingerprint outside the rule lock, so command events arriving during
+  a slow probe are fed first and a command started mid-probe is young (deterministic
+  interleaving test)'
+attempt_id: release-8150-final-followup29
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: c9aa2d4b4863d823cb7edbcadc8668c15949956721fe9e84bd779a68c1513e3b
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-2dda90d2950ed9d953dc0de3097ff174/receipt.json
+ledger_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-2dda90d2950ed9d953dc0de3097ff174/delivery.json
+producer_run_id: run-release-8150-final-followup29
+producer_binding:
+  output_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-2dda90d2950ed9d953dc0de3097ff174/result.json
+  receipt_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-2dda90d2950ed9d953dc0de3097ff174/receipt.json
+  producer_run_id: run-release-8150-final-followup29
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: 4018ff4bf6f3ef61d1f288246927c49bed67d99a00cda0e4bed61153a3100b21
+receipt_output_sha256: 4018ff4bf6f3ef61d1f288246927c49bed67d99a00cda0e4bed61153a3100b21
+packet_identity: 6857c725c592638c203cd72330ba859bb547ef6b2fe629a80060fe6ee4e9bf84
+reviewed_input_identity: d02083e3a706b414a6e64161e39114ab883051c98820a5c41d95cbfa43937e2e
+parent_receipt_identity: parent-d72c891825feea82c09fa5718407d831ce7e0e681c16c967
+provenance:
+  scope: 'follow-up at 26131a7f6 on release-8150-final-followup28: on_tick now runs
+    the worktree fingerprint outside the rule lock, so command events arriving during
+    a slow probe are fed first and a command started mid-probe is young (deterministic
+    interleaving test)'
+  packet_identity: 6857c725c592638c203cd72330ba859bb547ef6b2fe629a80060fe6ee4e9bf84
+  reviewed_input_identity: d02083e3a706b414a6e64161e39114ab883051c98820a5c41d95cbfa43937e2e
+  parent_receipt_identity: parent-d72c891825feea82c09fa5718407d831ce7e0e681c16c967
+  expected_targets_sha256: null
+  attempt_id: release-8150-final-followup29
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: c9aa2d4b4863d823cb7edbcadc8668c15949956721fe9e84bd779a68c1513e3b
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes
