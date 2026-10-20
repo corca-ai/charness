@@ -241,10 +241,24 @@ def _muse_command(payload: Mapping[str, Any]) -> str | None:
     return command if isinstance(command, str) else None
 
 
+def _muse_exit_code(payload: Mapping[str, Any], previous: object) -> object:
+    event = payload.get("event")
+    chunk = event.get("chunk") if isinstance(event, Mapping) else None
+    try:
+        record = json.loads(chunk) if isinstance(chunk, str) else None
+    except ValueError:
+        return previous
+    code = record.get("exit_code") if isinstance(record, Mapping) else None
+    return code if isinstance(code, int) else previous
+
+
 class _Timeline:
     """Fold one events log into commands and first-seen phase markers."""
 
-    def __init__(self) -> None:
+    def __init__(
+        self, *, on_complete: Callable[[str | None, object], None] | None = None
+    ) -> None:
+        self._on_complete = on_complete
         self.commands: dict[str, dict[str, Any]] = {}
         self.phases: dict[str, datetime] = {}
         self.first: datetime | None = None
@@ -287,6 +301,9 @@ class _Timeline:
         elif event.get("type") == "item.completed":
             self._start(key, None, command, observed=False)
             self.commands[key]["completed"] = at
+            self.commands[key]["done"] = True
+            if self._on_complete is not None:
+                self._on_complete(self.commands[key]["command"], item.get("exit_code"))
 
     def _feed_muse(self, at: datetime | None, event: Mapping[str, Any]) -> None:
         payload_type, payload = event.get("payload_type"), event.get("payload")
@@ -305,10 +322,24 @@ class _Timeline:
             self._start(task_id, at, None)
         elif payload_type == "task.lifecycle.output":
             self._start(task_id, None, None, observed=False)
-            self.commands[task_id]["command"] = _muse_command(payload) or self.commands[task_id]["command"]
+            entry = self.commands[task_id]
+            entry["command"] = _muse_command(payload) or entry["command"]
+            entry["exit_code"] = _muse_exit_code(payload, entry.get("exit_code"))
         elif payload_type == "task.lifecycle.completed":
             self._start(task_id, None, None, observed=False)
-            self.commands[task_id]["completed"] = at
+            entry = self.commands[task_id]
+            entry["completed"] = at
+            entry["done"] = True
+            if self._on_complete is not None:
+                self._on_complete(entry["command"], entry.get("exit_code"))
+
+    def in_flight(self) -> list[str]:
+        """Commands whose start was seen and whose completion was not."""
+        return [
+            str(entry["command"] or "")
+            for entry in self.commands.values()
+            if entry["start_seen"] and not entry.get("done")
+        ]
 
     def _phase_text(self, at: datetime | None, text: str) -> None:
         self._agent_text += text
