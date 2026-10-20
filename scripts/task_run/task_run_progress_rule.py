@@ -267,9 +267,13 @@ class ProgressRule:
         if interrupted:
             # The kill takes the executor's whole process group, so every
             # running command is interrupted, not only the oldest one.
-            named = ", ".join(f"`{command[:200]}`" for command in interrupted)
+            named = [f"`{command[:200]}`" for command in interrupted if command]
+            unnamed = len(interrupted) - len(named)
+            if unnamed:  # e.g. a Muse bash task killed before its first output
+                named.append(f"{unnamed} command(s) whose text was not yet seen")
             text += (
-                f" Every command still running was interrupted ({named}), each after "
+                f" Every command still running was interrupted ({', '.join(named)}), "
+                "each after "
                 f"running for at least {_duration(self.window_seconds)}; they may have "
                 "left partial output or files. Do not simply rerun them: run a narrower "
                 "or faster variant, or report that one needs longer."

@@ -117,6 +117,20 @@ def test_the_checkpoint_names_every_command_the_kill_interrupts() -> None:
     assert request is not None and f"`{TEST}`" in request.text and "`sleep 900`" in request.text
 
 
+def test_an_interrupted_muse_command_without_text_is_still_counted() -> None:
+    """A Muse bash task has no command text until its first output; the
+    checkpoint still says it was interrupted (follow-up review 25)."""
+    rule, _tree = _rule()
+    rule.on_event({"payload_type": "task.lifecycle.proposed",
+                   "payload": {"task_id": "m1", "event": {"task_kind": "tool.bash"}}})
+    rule.on_event({"payload_type": "task.lifecycle.started", "payload": {"task_id": "m1"}})
+    assert rule.on_tick(100.0) is None  # young: deferred
+    request = rule.on_tick(200.0)
+    assert request is not None
+    assert "1 command(s) whose text was not yet seen" in request.text
+    assert "``" not in request.text
+
+
 def test_a_loop_repeat_that_resolves_a_deferred_request_delivers_the_checkpoint() -> None:
     """A third identical test run arriving while a request is deferred sends the
     checkpoint request, not the loop message, so the state the next check reads
