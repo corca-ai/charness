@@ -278,3 +278,31 @@ def test_a_watch_that_cannot_check_stops_the_lane_instead_of_leaving_it_unbounde
 
     assert reasons[:-1] == [None] * (task_run_progress.MAX_RULE_FAILURES - 1)
     assert reasons[-1] is not None and "cannot be bounded" in reasons[-1]
+
+
+def test_a_stopped_watch_ignores_events_and_a_second_stop_and_its_poll_ends(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("CHARNESS_TASK_RUN_PROGRESS_POLL_SECONDS", "0.05")
+    repo = _repo(tmp_path)
+    runtime = tmp_path / "runtime" / "lane-1"
+    runtime.mkdir(parents=True)
+    watch = task_run_progress.build_progress_watch(
+        require_change=False,
+        stdout_log=runtime / "codex.stdout.log",
+        stderr_log=runtime / "codex.stderr.log",
+        worktree=repo,
+        base_sha=_git(repo, "rev-parse", "HEAD").stdout.strip(),
+        scope_specs=[],
+    )
+    assert watch is not None
+    kills: list[str] = []
+    watch.start(emit=lambda *_args: None, kill=lambda: kills.append("kill"))
+    watch._stop_now("first stop")
+    watch._stop_now("second stop")  # first wins
+    watch.observe_event(json.loads(_event("item.completed", "c1")))  # ignored
+    watch._thread.join(timeout=30)  # the poll loop ends on its own once stopped
+
+    assert not watch._thread.is_alive()
+    assert (watch.stop_reason, kills) == ("first stop", ["kill"])
+    watch.stop()

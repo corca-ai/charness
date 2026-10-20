@@ -244,3 +244,22 @@ def test_a_failing_pipe_read_is_recorded(monkeypatch: pytest.MonkeyPatch) -> Non
 
     assert pipe.capture()["error"] == "OSError: select failed"
     assert pipe.capture()["complete"] is False
+
+
+def test_the_observer_sees_complete_events_and_its_faults_cost_no_bytes() -> None:
+    seen: list[dict[str, object]] = []
+
+    def observer(event: dict[str, object]) -> None:
+        seen.append(event)
+        raise RuntimeError("observer bug")
+
+    sink = io.BytesIO()
+    pipe = timing.StampingPipe(sink, clock=lambda: STAMP, observer=observer)
+    os.write(pipe.fileno(), LINES + b"{broken json\n" + PARTIAL)
+    pipe.close()
+
+    assert sink.getvalue() == STAMPED + b"{broken json\n" + PARTIAL
+    # Two JSON objects reach the observer; text, broken JSON and the
+    # unfinished line do not, and its exceptions are contained.
+    assert [event["type"] for event in seen] == ["thread.started", "item.started"]
+    assert pipe.capture()["complete"] is True

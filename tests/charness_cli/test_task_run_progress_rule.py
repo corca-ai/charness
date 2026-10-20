@@ -279,3 +279,57 @@ def test_a_stopped_rule_raises_no_more_messages() -> None:
     assert rule.on_tick(200.0).kind == "stop"
     for index in range(3):
         assert rule.on_event(_completed(TEST, f"c{index}")) is None
+
+
+def test_muse_edit_tools_are_outcomes_but_model_responses_are_not() -> None:
+    rule, _tree = _rule()
+
+    def task(task_id: str, kind: str) -> list[dict[str, object]]:
+        return [
+            {"payload_type": "task.lifecycle.proposed",
+             "payload": {"task_id": task_id, "event": {"task_kind": kind}}},
+            {"payload_type": "task.lifecycle.completed", "payload": {"task_id": task_id}},
+        ]
+
+    for event in task("r1", "model.meta.response"):
+        rule.on_event(event)
+    assert rule.on_tick(100.0) is not None  # a model turn alone is not progress
+    for event in task("e1", "tool.edit"):
+        rule.on_event(event)
+    assert rule.on_tick(200.0) is None
+
+
+def test_worktree_fingerprint_is_none_outside_git_and_skips_vanished_files(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plain = tmp_path / "not-a-repo"
+    plain.mkdir()
+    assert rule_owner.worktree_fingerprint(plain) is None
+
+    repo = _repo(tmp_path)
+    (repo / "gone.txt").write_text("x\n", encoding="utf-8")
+    import os as real_os
+
+    def vanished(path: object, **kwargs: object) -> object:
+        if str(path).endswith("gone.txt"):
+            raise FileNotFoundError(path)
+        return real_os.stat(path, **kwargs)
+
+    # Rebinds only this module's `os`; the file vanishes between listing and stat.
+    monkeypatch.setattr(rule_owner, "os", type("Os", (), {"stat": staticmethod(vanished)}))
+    assert rule_owner.worktree_fingerprint(repo) is not None
+
+
+def test_bootstrap_shims_insert_the_repo_root_when_it_is_absent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import sys
+
+    from scripts.task_run import task_run_lane_signals
+
+    root = Path(__file__).resolve().parents[2]
+    for module in (rule_owner, task_run_lane_signals):
+        stripped = [entry for entry in sys.path if entry and Path(entry).resolve() != root]
+        monkeypatch.setattr(sys, "path", stripped)
+        module._load_repo_runtime_bootstrap()
+        assert str(root) in sys.path
