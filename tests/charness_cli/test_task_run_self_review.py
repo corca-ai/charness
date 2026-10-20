@@ -249,3 +249,39 @@ def test_self_review_module_imports_before_execution() -> None:
         text=True,
     )
     assert result.returncode == 0, result.stderr
+
+
+def test_self_review_stays_read_only_while_lanes_get_network(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Lanes run Codex workspace-write with network on (operator, 2026-10-20);
+    the reviewer swaps the sandbox mode to read-only, where the
+    workspace-write network key does not apply."""
+    from scripts.task_run import task_run_runtime
+
+    lane = task_run_runtime.build_codex_command("codex", effort="medium")
+    assert lane[lane.index("--sandbox") + 1] == "workspace-write"
+    assert lane[-3:] == ["-c", "sandbox_workspace_write.network_access=true", "-"]
+    captured: list[list[str]] = []
+
+    def capture(command, **_kwargs):  # noqa: ANN001, ANN202
+        captured.append(list(command))
+        return {"exit_code": 2, "timed_out": False, "interrupted": False}
+
+    monkeypatch.setattr(task_run_execution, "_execute_codex", capture)
+    (tmp_path / "worktree").mkdir()
+    block = task_run_execution.run_self_review(
+        {
+            "self_review_policy": "always",
+            "_self_review_prompt": "Review this candidate.",
+            "executor": {"kind": "codex", "command": [sys.executable]},
+            "candidate": {"changed_paths": ["src/module.py"]},
+            "execution_runtime_root": str(tmp_path / "runtime"),
+            "worktree_path": str(tmp_path / "worktree"),
+        }
+    )
+
+    assert len(captured) == 1, block
+    command = captured[0]
+    assert command[command.index("--sandbox") + 1] == "read-only"
+    assert "workspace-write" not in command

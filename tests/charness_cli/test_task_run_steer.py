@@ -625,6 +625,9 @@ def test_steered_invocation_places_codex_overrides_after_resume_and_keeps_fallba
     assert resumed[model_index + 1] == task_run_runtime.TASK_MODEL
     assert config_index > resume_index + 1
     assert resumed[config_index + 1] == "model_reasoning_effort=xhigh"
+    # Lane network rides the resume scope too, or a steered lane loses it.
+    network_index = resumed.index("sandbox_workspace_write.network_access=true")
+    assert network_index > resume_index + 1 and resumed[network_index - 1] == "-c"
     assert "Keep names stable." in prompt
     assert path == "session-resume"
 

@@ -99,12 +99,25 @@ def _task_id(branch: str, requested: str | None) -> str:
     return f"{slug[:87] or 'task'}-{digest}"
 
 
+#: Network for executor lanes (operator, 2026-10-20). Codex: the
+#: workspace-write sandbox's own network switch. Muse: `--sandbox-network`
+#: (`restricted|enabled|proxy-only`, default proxy-only).
+CODEX_LANE_NETWORK_CONFIG = "sandbox_workspace_write.network_access=true"
+MUSE_LANE_SANDBOX_NETWORK = "enabled"
+
+
 def build_codex_args(
     *,
     effort: str,
     writable_dirs: Sequence[Path] = (),
 ) -> list[str]:
     """Build Codex host arguments with the task runner's fixed Luna model."""
+    # Lanes run loopback servers and fetches in their tests; the operator allowed
+    # network for task-run lanes (2026-10-20). Lane worktrees carry no credentials.
+    # The key configures only workspace-write: the read-only reviewers that swap
+    # the sandbox mode (self-review, brief critique) keep their network off. It
+    # follows `-m` with the other `-c` overrides, so a steer resume moves it
+    # into the `exec resume` parser scope with them (see ef7c520ed).
     args: list[str] = ["--sandbox", "workspace-write"]
     for writable_dir in writable_dirs:
         args.extend(["--add-dir", str(writable_dir.resolve())])
@@ -112,7 +125,7 @@ def build_codex_args(
     if effort not in TASK_EFFORTS:
         allowed = ", ".join(TASK_EFFORTS)
         raise TaskRunError(f"--effort must be one of: {allowed} (codex executor)")
-    args.extend(["-c", f"model_reasoning_effort={effort}"])
+    args.extend(["-c", f"model_reasoning_effort={effort}", "-c", CODEX_LANE_NETWORK_CONFIG])
     return args
 
 
@@ -142,7 +155,7 @@ def build_muse_args(
     `muse exec` takes no stdin prompt, so the lane prompt travels via
     `--prompt-file`. Approval prompts cannot be answered headless, so they are
     disabled; the OS sandbox stays on (the Codex lane's workspace-write
-    equivalent). `muse exec` honors a single effective workspace (the last
+    equivalent) with its network enabled like the Codex lane's. `muse exec` honors a single effective workspace (the last
     `--workspace` wins), so the lane worktree root is passed exactly once:
     passing every writable dir rooted the lane at `<worktree>/.agents` and
     every write outside it was refused (#814). The lane worktree is created
@@ -161,6 +174,8 @@ def build_muse_args(
         "--reasoning-effort",
         effort,
         "--disable-approval",
+        "--sandbox-network",
+        MUSE_LANE_SANDBOX_NETWORK,
         "--trust-workspace",
         "--workspace",
         str(worktree),

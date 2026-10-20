@@ -183,3 +183,64 @@ def test_incomplete_capture_reaches_the_execution_record(
     assert [(gap["invocation"], gap["writer_open_at_close"]) for gap in gaps] == [(0, True)]
     assert _events(payload).startswith(STAMPED + PARTIAL)
     json.dumps(payload)  # the receipt stays serializable
+
+
+class _HungSink(io.BytesIO):
+    """A sink whose first write blocks until the test releases it."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.entered = threading.Event()
+        self.release = threading.Event()
+
+    def write(self, data: bytes) -> int:  # type: ignore[override]
+        self.entered.set()
+        self.release.wait(timeout=30)
+        return super().write(data)
+
+
+def test_a_hung_sink_cannot_hang_close_or_receive_writes_after_it(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(timing, "_CLOSE_GRACE_SECONDS", 0.05)
+    sink = _HungSink()
+    pipe = timing.StampingPipe(sink, clock=lambda: STAMP)
+    os.write(pipe.fileno(), LINES)
+    assert sink.entered.wait(timeout=30)
+
+    pipe.close()  # returns although the reader is stuck in the sink
+    capture = pipe.capture()
+    sink.release.set()
+    pipe._thread.join(timeout=30)
+
+    assert capture["complete"] is False
+    assert capture["error"] == "event reader did not finish before close"
+    # The stuck write finishes; every later line is dropped and counted.
+    assert pipe.capture()["dropped_bytes"] > 0
+    assert sink.getvalue().count(b"\n") == 1
+
+
+def test_a_failing_clock_keeps_the_bytes_unstamped_and_records_it() -> None:
+    def broken_clock() -> str:
+        raise ValueError("clock broke")
+
+    sink = io.BytesIO()
+    pipe = timing.StampingPipe(sink, clock=broken_clock)
+    os.write(pipe.fileno(), LINES + PARTIAL)
+    pipe.close()
+
+    assert sink.getvalue() == LINES + PARTIAL
+    assert pipe.capture()["error"] == "ValueError: clock broke"
+
+
+def test_a_failing_pipe_read_is_recorded(monkeypatch: pytest.MonkeyPatch) -> None:
+    def failing_select(*_args: object) -> object:
+        raise OSError("select failed")
+
+    # Rebinds only the timing module's name, not the process-wide select module.
+    monkeypatch.setattr(timing, "select", type("S", (), {"select": staticmethod(failing_select)}))
+    pipe = timing.StampingPipe(io.BytesIO(), clock=lambda: STAMP)
+    pipe.close()
+
+    assert pipe.capture()["error"] == "OSError: select failed"
+    assert pipe.capture()["complete"] is False
