@@ -123,9 +123,9 @@ Status reads the external result store. Each record adds read-time `liveness`
 (`runner_pid` and advisory `alive`); a dead pid on a `running` record is stale,
 while a live pid on a terminal record is normal during retention.
 
-Each JSON line of `<executor>.events.log` gains `charness_received_at` (UTC
-receive time); `task status <task-id> --commands` reports command
-durations (receive-time estimates), family starts (pattern matches), and phase times
+Each event line of `<executor>.events.log` gains `charness_received_at` (UTC);
+a command's completing line adds `charness_duration_ms`. `task status <task-id> --commands`
+reports receive-time command durations, family starts, and phase times
 ([owner](../scripts/task_run/task_run_event_timing.py)). Event byte loss is recorded in `execution.event_capture_incomplete`.
 
 ### Aggregate running-task inventory

@@ -8,7 +8,8 @@ millisecond ISO-8601) at the front of every JSON-object line as it arrives.
 Non-JSON lines pass through unchanged. The stamp is the time charness
 received the line, not the time the executor produced it; pipe buffering
 makes it an upper bound on the producer's own time, so a duration between
-two stamps can err in either direction.
+two stamps can err in either direction. The line that completes a command
+also carries `charness_duration_ms` (receive time of its start to its own).
 
 `command_timing` reads a stamped events log back into per-command durations
 (`item.started` to `item.completed` for Codex, `task.lifecycle.started` to
@@ -28,7 +29,9 @@ from datetime import datetime, timezone
 from typing import Any, BinaryIO, Callable, Iterable, Mapping
 
 RECEIVED_AT_FIELD = "charness_received_at"
+DURATION_MS_FIELD = "charness_duration_ms"
 _FIELD_BYTES = json.dumps(RECEIVED_AT_FIELD).encode("ascii")
+_DURATION_BYTES = json.dumps(DURATION_MS_FIELD).encode("ascii")
 _CLOSE_GRACE_SECONDS = 2.0
 _POLL_SECONDS = 0.1
 _CHUNK_BYTES = 64 * 1024
@@ -70,11 +73,70 @@ def utc_receive_stamp() -> str:
     )
 
 
-def stamp_event_line(line: bytes, received_at: str) -> bytes:
+class CommandDurations:
+    """Receive-time duration of each command, known when its completion arrives.
+
+    Codex: `item.started` to `item.completed` of a `command_execution` item.
+    Muse: `task.lifecycle.started` to `task.lifecycle.completed` of a task
+    proposed as `tool.bash`. Same receive-time estimate as `command_timing`.
+    """
+
+    def __init__(self) -> None:
+        self._started: dict[str, datetime] = {}
+        self._bash_tasks: set[str] = set()
+
+    def completed_ms(self, event: Mapping[str, Any], received_at: str) -> int | None:
+        """Note a start; return the duration in ms on the matching completion."""
+        at = _parse_stamp(received_at)
+        if at is None:
+            return None
+        if "payload_type" in event:
+            key, phase = self._muse_key(event)
+        else:
+            item = event.get("item")
+            kind = event.get("type")
+            if not isinstance(item, Mapping) or item.get("type") != "command_execution":
+                return None
+            key = str(item.get("id"))
+            phase = {"item.started": "start", "item.completed": "end"}.get(str(kind))
+        if key is None or phase is None:
+            return None
+        if phase == "start":
+            self._started[key] = at
+            return None
+        started = self._started.pop(key, None)
+        return None if started is None else max(0, round((at - started).total_seconds() * 1000))
+
+    def _muse_key(self, event: Mapping[str, Any]) -> tuple[str | None, str | None]:
+        payload = event.get("payload")
+        if not isinstance(payload, Mapping):
+            return None, None
+        task_id = str(payload.get("task_id"))
+        inner = payload.get("event")
+        payload_type = event.get("payload_type")
+        if (
+            payload_type == "task.lifecycle.proposed"
+            and isinstance(inner, Mapping)
+            and inner.get("task_kind") == "tool.bash"
+        ):
+            self._bash_tasks.add(task_id)
+        if task_id not in self._bash_tasks:
+            return None, None
+        return task_id, {
+            "task.lifecycle.started": "start",
+            "task.lifecycle.completed": "end",
+        }.get(str(payload_type))
+
+
+def stamp_event_line(
+    line: bytes, received_at: str, durations: CommandDurations | None = None
+) -> bytes:
     """Insert the receive-time field first in one JSON-object line.
 
+    With `durations`, the line that completes a command also gets
+    `charness_duration_ms`, so a raw grep of the log names the slow command.
     The rest of the line keeps its original bytes, so a reader that ignores
-    the field sees the executor's event unchanged.
+    the fields sees the executor's event unchanged.
     """
     start = line.find(b"{")
     if start < 0 or line[:start].strip():
@@ -88,6 +150,9 @@ def stamp_event_line(line: bytes, received_at: str) -> bytes:
     head, rest = line[: start + 1], line[start + 1 :]
     separator = b"" if rest.lstrip().startswith(b"}") else b","
     stamp = _FIELD_BYTES + b":" + json.dumps(received_at).encode("ascii")
+    elapsed = durations.completed_ms(event, received_at) if durations is not None else None
+    if elapsed is not None:
+        stamp += b"," + _DURATION_BYTES + b":" + str(elapsed).encode("ascii")
     return head + stamp + separator + rest
 
 
@@ -134,6 +199,7 @@ class StampingPipe:
         self._released = False
         self._sink_failed = False
         self._pending = b""
+        self._durations = CommandDurations()
         self.received_bytes = 0
         self.dropped_bytes = 0
         self.error: str | None = None
@@ -169,7 +235,7 @@ class StampingPipe:
 
     def _stamped(self, line: bytes) -> bytes:
         try:
-            return stamp_event_line(line, self._clock())
+            return stamp_event_line(line, self._clock(), self._durations)
         except Exception as exc:  # noqa: BLE001 - keep the bytes, record the clock fault
             self.error = self.error or f"{type(exc).__name__}: {exc}"
             return line

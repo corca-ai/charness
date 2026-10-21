@@ -75,6 +75,10 @@ def _task_command_timing(
     )
     events_log = lane_log.with_name(f"{kind}.events.log")
     text = events_log.read_text(encoding="utf-8", errors="replace") if events_log.is_file() else ""
+    # The events log gains an invocation's events only when it ends; a running
+    # lane's current invocation is still in the stdout log, so read it too.
+    if record.get("status") == "running" and lane_log.is_file():
+        text += "\n" + lane_log.read_text(encoding="utf-8", errors="replace")
     return {
         "event": "task-command-timing",
         "task_id": task_id,

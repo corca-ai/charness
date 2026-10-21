@@ -280,3 +280,87 @@ def test_cmd_status_commands_without_a_task_id_is_refused(
         task_payload.cmd_task_status(
             argparse.Namespace(repo_root=tmp_path, task_id=None, all_repos=False, commands=True)
         )
+
+
+def test_stamping_pipe_puts_duration_ms_on_the_line_that_completes_a_command() -> None:
+    """A raw grep of the lane log must name the slow command (the 90-minute lanes)."""
+    sink = io.BytesIO()
+    stamps = iter(
+        [
+            "2026-10-20T08:00:00.000Z",
+            "2026-10-20T08:00:00.500Z",
+            "2026-10-20T08:12:30.250Z",
+            "2026-10-20T08:12:31.000Z",
+        ]
+    )
+    pipe = timing.StampingPipe(sink, clock=lambda: next(stamps))
+    cmd = {"id": "item_1", "type": "command_execution", "command": "pnpm run lint"}
+    os.write(
+        pipe.fileno(),
+        (
+            json.dumps({"type": "item.started", "item": cmd})
+            + "\n"
+            + json.dumps({"type": "item.started", "item": {"id": "m", "type": "agent_message"}})
+            + "\n"
+            + json.dumps({"type": "item.completed", "item": cmd})
+            + "\n"
+            + json.dumps({"type": "item.completed", "item": {"id": "x", "type": "command_execution"}})
+            + "\n"
+        ).encode(),
+    )
+    pipe.close()
+
+    events = [json.loads(line) for line in sink.getvalue().decode().splitlines()]
+    assert [e.get(timing.DURATION_MS_FIELD) for e in events] == [None, None, 750250, None]
+    assert events[2][timing.RECEIVED_AT_FIELD] == "2026-10-20T08:12:30.250Z"
+
+
+def test_muse_bash_task_completion_carries_duration_ms() -> None:
+    durations = timing.CommandDurations()
+
+    def line(at: str, kind: str, **event: object) -> bytes:
+        body = {"payload_type": f"task.lifecycle.{kind}", "payload": {"task_id": "t1", "event": event}}
+        return timing.stamp_event_line(json.dumps(body).encode() + b"\n", at, durations)
+
+    assert timing.DURATION_MS_FIELD.encode() not in line(
+        "2026-10-20T08:00:00.000Z", "proposed", task_kind="tool.bash"
+    )
+    assert timing.DURATION_MS_FIELD.encode() not in line("2026-10-20T08:00:03.000Z", "started")
+    done = json.loads(line("2026-10-20T08:00:09.500Z", "completed"))
+    assert done[timing.DURATION_MS_FIELD] == 6500
+
+
+def test_cmd_status_commands_reads_a_running_lanes_live_stdout_log(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The events log gains an invocation only when it ends; a running lane is in stdout."""
+    lane = tmp_path / "task-run" / "lane-a"
+    lane.mkdir(parents=True)
+    record = {
+        "task_id": "lane-a",
+        "status": "running",
+        "executor": {"kind": "codex"},
+        "logs": {"stdout": str(lane / "codex.stdout.log")},
+    }
+    (lane / "result.json").write_text(json.dumps(record), encoding="utf-8")
+    cmd = {"id": "c1", "type": "command_execution", "command": "pnpm run lint"}
+    (lane / "codex.stdout.log").write_text(
+        _codex("2026-10-20T08:00:00.000Z", "item.started", cmd) + "\n"
+        + _codex("2026-10-20T08:00:04.000Z", "item.completed", cmd) + "\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(task_payload, "_load_task_run_lib", lambda _args: task_run)
+    monkeypatch.setattr(task_run_runtime, "task_runtime_root", lambda _root: tmp_path)
+    monkeypatch.setattr(
+        task_run_runtime._git_owner, "_require_git_root", lambda root: Path(root).resolve()
+    )
+    emitted: list[dict[str, object]] = []
+    monkeypatch.setattr(task_payload, "emit_yaml", emitted.append)
+
+    task_payload.cmd_task_status(
+        argparse.Namespace(repo_root=tmp_path, task_id="lane-a", all_repos=False, commands=True)
+    )
+
+    assert emitted[-1]["longest_commands"] == [
+        {"command": "pnpm run lint", "duration_seconds": 4.0, "families": ["lint"]}
+    ]
