@@ -94,6 +94,26 @@ def test_explicit_runtime_root_replaces_all_inherited_managed_paths(tmp_path: Pa
         assert Path(configured[key]).is_relative_to(lane_runtime)
 
 
+def test_lane_environment_keeps_every_managed_path_inside_its_temp_root(tmp_path: Path) -> None:
+    # A Muse lane's sandbox writes only its workspace, /tmp and the inherited
+    # $TMPDIR subtree (probed 2026-10-22: `<runtime>/npm` was read-only while
+    # `<runtime>/tmp` was writable), so a managed cache beside TMPDIR broke
+    # every `npm pack` in ceal lanes with EROFS. Each managed path must sit
+    # inside the temp root the lane child inherits.
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    lane_runtime = tmp_path / "lane-runtime"
+    configured = lib.prepare_exec_environment(repo, {}, runtime_root=lane_runtime)
+
+    temp_root = Path(configured["TMPDIR"])
+    assert configured["TMP"] == configured["TEMP"] == configured["TMPDIR"]
+    markers = {"CHARNESS_RUNTIME_ROOT_AUTO", "CHARNESS_RUNTIME_REPO_KEY"}
+    for key in lib.MANAGED_RUNTIME_PATH_KEYS:
+        if key in markers or key not in configured:
+            continue
+        assert Path(configured[key]).is_relative_to(temp_root), key
+
+
 def test_exec_refuses_primary_worktree_by_default(tmp_path: Path) -> None:
     repo = _make_primary(tmp_path)
     with pytest.raises(lib.WorktreeExecError, match="primary worktree"):

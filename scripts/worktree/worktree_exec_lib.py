@@ -61,7 +61,14 @@ def prepare_exec_environment(
     if runtime_root is not None:
         for key in MANAGED_RUNTIME_PATH_KEYS:
             child_env.pop(key, None)
-        child_env["CHARNESS_RUNTIME_ROOT"] = str(runtime_root.resolve())
+        lane_root = str(runtime_root.resolve())
+        child_env["CHARNESS_RUNTIME_ROOT"] = lane_root
+        # The lane's temp root is the runtime root itself, so every managed
+        # cache is inside it: a Muse sandbox writes only its workspace, /tmp
+        # and the inherited $TMPDIR subtree, and `<root>/npm` beside
+        # `<root>/tmp` was read-only there (ceal npm pack EROFS, 2026-10-22).
+        for key in ("TMPDIR", "TMP", "TEMP"):
+            child_env[key] = lane_root
     configured = configure_runtime_environment(repo_root, child_env)
 
     configured.pop("CHARNESS_REPO_ROOT", None)
