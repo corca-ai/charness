@@ -28,6 +28,8 @@ import time
 from datetime import datetime, timezone
 from typing import Any, BinaryIO, Callable, Iterable, Mapping
 
+from scripts.task_run import task_run_claude_events as _claude_events
+
 RECEIVED_AT_FIELD = "charness_received_at"
 DURATION_MS_FIELD = "charness_duration_ms"
 _FIELD_BYTES = json.dumps(RECEIVED_AT_FIELD).encode("ascii")
@@ -92,6 +94,8 @@ class CommandDurations:
             return None
         if "payload_type" in event:
             key, phase = self._muse_key(event)
+        elif event.get("type") in {"assistant", "user"}:
+            key, phase = self._claude_key(event)
         else:
             item = event.get("item")
             kind = event.get("type")
@@ -106,6 +110,9 @@ class CommandDurations:
             return None
         started = self._started.pop(key, None)
         return None if started is None else max(0, round((at - started).total_seconds() * 1000))
+
+    def _claude_key(self, event: Mapping[str, Any]) -> tuple[str | None, str | None]:
+        return _claude_events.command_key(event, self._bash_tasks)
 
     def _muse_key(self, event: Mapping[str, Any]) -> tuple[str | None, str | None]:
         payload = event.get("payload")
@@ -393,6 +400,8 @@ class _Timeline:
             self.last = at
         if "payload_type" in event:
             self._feed_muse(at, event)
+        elif event.get("type") in {"assistant", "user"}:
+            self._feed_claude(at, event)
         else:
             self._feed_codex(at, event)
 
@@ -426,6 +435,9 @@ class _Timeline:
             self.commands[key]["done"] = True
             if self._on_complete is not None:
                 self._on_complete(self.commands[key]["command"], item.get("exit_code"))
+
+    def _feed_claude(self, at: datetime | None, event: Mapping[str, Any]) -> None:
+        _claude_events.feed_timeline(self, at, event)
 
     def _feed_muse(self, at: datetime | None, event: Mapping[str, Any]) -> None:
         payload_type, payload = event.get("payload_type"), event.get("payload")

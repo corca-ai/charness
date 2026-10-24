@@ -198,7 +198,7 @@ def _prepare_fallback_executor(
 ) -> dict[str, Any]:
     """Build the next runner command while retaining the current lane candidate."""
     resolved = context
-    if executor == "muse":
+    if executor != "codex":
         payload.pop("codex", None)
         payload.pop("writable_dirs", None)
     else:

@@ -59,11 +59,11 @@ def _task_command_timing(
     repo_root: Path, task_id: str, record: dict[str, object]
 ) -> dict[str, object]:
     """One lane's command durations, family starts, and phase times from its events log."""
-    from scripts.task_run import task_run_event_timing, task_run_runtime
+    from scripts.task_run import task_run_contract, task_run_event_timing, task_run_runtime
 
     executor = record.get("executor")
     kind = executor.get("kind") if isinstance(executor, dict) else None
-    kind = kind if kind in ("codex", "muse") else "codex"
+    kind = kind if kind in task_run_contract.TASK_EXECUTORS else "codex"
     logs = record.get("logs")
     stdout_log = logs.get("stdout") if isinstance(logs, dict) else None
     lane_log = (

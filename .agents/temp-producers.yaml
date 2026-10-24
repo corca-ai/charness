@@ -235,3 +235,8 @@ producers:
   symbol: tmpdir
   disposition: test-compatibility-only
   rationale: Packaging validation uses a local temporary fixture workspace only.
+- identity: scripts/task_run/task_run_claude_sandbox.py::_copy_bundle_for_host::target
+  path: scripts/task_run/task_run_claude_sandbox.py
+  symbol: target
+  disposition: atomic-sibling
+  rationale: A no-follow bundle byte copy atomically replaces the trusted task-level import bundle outside the agent-writable execution root; task runtime retention owns it.

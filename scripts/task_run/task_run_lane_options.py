@@ -93,12 +93,12 @@ def resolve_granted_writable(
     escape hatch.
     """
     entries = [str(entry) for entry in raw or ()]
-    if entries and executor is not None and "muse" in [
-        part.strip() for part in executor.split(",")
-    ]:
+    if entries and executor is not None and any(
+        part.strip() != "codex" for part in executor.split(",")
+    ):
         raise TaskRunError(
             "--grant-writable needs the codex executor; muse roots a single "
-            "--workspace and takes no extra writable grant (#814)"
+            "--workspace and claude grants only its worktree and private runtime"
         )
     home = Path.home()
     resolved: list[str] = []

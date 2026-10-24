@@ -9,7 +9,7 @@ import os
 import shutil
 import signal
 import tempfile
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -31,6 +31,9 @@ from scripts.core.subprocess_guard import (  # noqa: E402
     render_display,
     run_monitored_phase,
 )
+from scripts.task_run import task_run_claude_auth as _claude_auth  # noqa: E402
+from scripts.task_run import task_run_claude_events as _claude_events  # noqa: E402
+from scripts.task_run import task_run_claude_sandbox as _claude_sandbox  # noqa: E402
 from scripts.task_run import task_run_event_timing as _event_timing  # noqa: E402
 from scripts.task_run import task_run_evidence as _evidence  # noqa: E402
 from scripts.task_run import task_run_friction as _friction  # noqa: E402
@@ -46,6 +49,7 @@ _DESCENDANT_CLEANUP_SHELL = (
     'printf "%s\\n" "$$" > "$1"; shift; exec 3<&0; "$@" <&3 & '
     'child=$!; wait "$child"; status=$?; exit "$status"'
 )
+
 
 def _env_seconds(name: str, default: float) -> tuple[float, bool]:
     """Read one finite duration from the environment: (value, parsed_from_env).
@@ -255,6 +259,8 @@ def _execute_codex(
                 _record_steer_delivery(queue_path, pending, resume_path)
     except OSError as exc:
         result["exec_error"] = str(exc)
+    _claude_sandbox.finalize_executor_candidate(result, executor, target_path, configured_env)
+    _claude_events.apply_executor_result(result, executor, event_log, event_log_offset)
     finish_lane = getattr(lane_watch, "finish_lane", None)
     if finish_lane is not None and not result.get("progress_stopped"):
         finish_lane(
@@ -298,10 +304,13 @@ def _run_executor_invocation(
     result: dict[str, Any] = {"exit_code": None, "timed_out": False, "interrupted": False}
     try:
         with (
+            (_claude_auth.claude_auth_proxy(dict(configured_env))
+             if executor == "claude" else nullcontext(dict(configured_env))) as invocation_env,
             stdout_log.open("wb") as stdout_handle,
             stderr_log.open("a" if append_stderr else "w", encoding="utf-8") as stderr_handle,
             tempfile.TemporaryFile(mode="w+", encoding="utf-8") as prompt_handle,
         ):
+            configured_env = invocation_env
             prompt_handle.write(prompt)
             prompt_handle.flush()
             prompt_handle.seek(0)
@@ -375,7 +384,7 @@ def _record_steer_delivery(
 
 
 def _command_session_id(command: Sequence[str], executor: str) -> str | None:
-    if executor != "muse" or "--session-id" not in command:
+    if executor not in {"muse", "claude"} or "--session-id" not in command:
         return None
     try:
         return str(command[command.index("--session-id") + 1])
@@ -421,6 +430,8 @@ def _retain_invocation_events(
         return _codex_session_id(raw_output) or session_id
     if executor == "muse":
         _muse_events._retain_muse_events(stdout_log, event_log)
+    elif executor == "claude":
+        return _claude_events.retain_events(stdout_log, event_log) or session_id
     return session_id
 
 

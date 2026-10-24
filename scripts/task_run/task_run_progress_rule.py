@@ -48,6 +48,7 @@ def _load_repo_runtime_bootstrap():
 _load_repo_runtime_bootstrap()
 
 from scripts.core.subprocess_guard import run_process  # noqa: E402
+from scripts.task_run import task_run_claude_events as _claude_events  # noqa: E402
 from scripts.task_run import task_run_event_timing as _timing  # noqa: E402
 
 #: Muse task kinds that change files (seen in ceal lane logs, 2026-10-20);
@@ -155,6 +156,7 @@ class ProgressRule:
         self._completion_state: object = _NO_PROBE
         self._timeline = _timing._Timeline(on_complete=self._on_complete)
         self._muse_kinds: dict[str, str] = {}
+        self._claude_edits: set[str] = set()
         self._outcomes: dict[tuple[str, str], int] = {}
         self._pending: Action | None = None
         self._last_check_at: float | None = None
@@ -184,6 +186,7 @@ class ProgressRule:
                 self._invocation += 1
                 self._timeline = _timing._Timeline(on_complete=self._on_complete)
                 self._muse_kinds = {}
+                self._claude_edits = set()
 
     def _in_flight(self) -> dict[str, str]:
         return {
@@ -210,6 +213,12 @@ class ProgressRule:
         item = event.get("item")
         if event.get("type") == "item.completed" and isinstance(item, Mapping):
             return item.get("type") == "command_execution"
+        if event.get("type") == "user":
+            return any(
+                block.get("type") == "tool_result"
+                and str(block.get("tool_use_id")) in self._timeline.bash_tasks()
+                for block in _claude_events.content_blocks(event)
+            )
         payload = event.get("payload")
         return (
             event.get("payload_type") == "task.lifecycle.completed"
@@ -219,6 +228,15 @@ class ProgressRule:
 
     def _count_edit_outcome(self, event: Mapping[str, Any]) -> None:
         """File edits the executor reports are outcomes even when git cannot be read."""
+        for block in _claude_events.content_blocks(event):
+            if event.get("type") == "assistant" and block.get("type") == "tool_use" and block.get("name") in {"Edit", "Write", "NotebookEdit"}:
+                self._claude_edits.add(str(block.get("id")))
+            elif event.get("type") == "user" and block.get("type") == "tool_result":
+                key = str(block.get("tool_use_id"))
+                if key in self._claude_edits:
+                    self._claude_edits.discard(key)
+                    if not block.get("is_error"):
+                        self._new_outcomes += 1
         item = event.get("item")
         if (
             event.get("type") == "item.completed"

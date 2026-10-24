@@ -238,6 +238,7 @@ _SECRET_ENV_EXACT = frozenset({"TOKEN", "API_KEY", "SECRET", "PASSWORD"})
 _EXECUTOR_SECRET_KEEPS: dict[str, frozenset[str]] = {
     "codex": frozenset({"OPENAI_API_KEY"}),
     "muse": frozenset(),
+    "claude": frozenset({"ANTHROPIC_API_KEY", "CLAUDE_CODE_OAUTH_TOKEN"}),
 }
 
 #: Operator override: comma-separated exact env names to keep in lane env.
@@ -260,12 +261,14 @@ def scrubbed_lane_env(
 
     Unknown executors keep nothing secret-patterned (fail closed). Only the
     executor's auth keeps and explicit `CHARNESS_TASK_RUN_KEEP_SECRET_ENV`
-    names survive; the receipt records scrubbed/kept names, never values.
+    names survive for Codex/Muse. Claude ignores extra secret keeps; provider
+    auth is consumed by its parent proxy. Receipts record names, never values.
     """
     keeps = set(_EXECUTOR_SECRET_KEEPS.get(executor, frozenset()))
-    for extra in os.environ.get(LANE_KEEP_SECRET_ENV, "").split(","):
-        if extra.strip():
-            keeps.add(extra.strip())
+    if executor != "claude":
+        for extra in os.environ.get(LANE_KEEP_SECRET_ENV, "").split(","):
+            if extra.strip():
+                keeps.add(extra.strip())
     scrubbed = sorted(
         name for name in env if _is_secret_env_name(name) and name not in keeps
     )
@@ -277,7 +280,15 @@ def scrubbed_lane_env(
         "scrubbed": scrubbed,
         "kept_secret_names": kept,
     }
-    return {name: value for name, value in env.items() if name not in scrubbed}
+    child = {name: value for name, value in env.items() if name not in scrubbed}
+    if executor == "claude":
+        from scripts.task_run.task_run_claude_sandbox import configure_claude_environment
+
+        child = configure_claude_environment(
+            child, worktree=Path(str(payload["worktree_path"])),
+            execution_runtime_path=Path(child["CHARNESS_RUNTIME_ROOT"]),
+        )
+    return child
 
 
 def task_runtime_root(repo_root: Path) -> Path:

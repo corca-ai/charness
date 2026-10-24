@@ -9,7 +9,13 @@ import pytest
 import yaml
 
 import scripts.cli.cmd_task as task_payload
-from scripts.task_run import task_run_attempts, task_run_plan, task_run_runtime, task_run_state
+from scripts.task_run import (
+    task_run_attempts,
+    task_run_contract,
+    task_run_plan,
+    task_run_runtime,
+    task_run_state,
+)
 from tests.charness_cli.support import CLI, load_cli_module
 from tests.charness_cli.test_task_run_fixtures import _codex, _repo, _run
 
@@ -62,7 +68,7 @@ def test_task_executors_resolves_paths_without_invoking_or_starting_lane(
     bindir = tmp_path / "bin"
     bindir.mkdir()
     invocation_log = tmp_path / "invoked.txt"
-    for name in ("codex", "muse"):
+    for name in task_run_contract.TASK_EXECUTORS:
         _executable(
             bindir / name,
             f"printf '%s\\n' {name} >> {str(invocation_log)!r}\nexit 99",
@@ -80,7 +86,7 @@ def test_task_executors_resolves_paths_without_invoking_or_starting_lane(
 
     assert report["probe"] == "executable-resolution-only"
     assert report["lane_started"] is False
-    assert [item["kind"] for item in report["executors"]] == ["codex", "muse"]
+    assert [item["kind"] for item in report["executors"]] == list(task_run_contract.TASK_EXECUTORS)
     assert all(item["availability"] == "available" for item in report["executors"])
     assert all(item["quota_state"] == "unknown" for item in report["executors"])
     assert not invocation_log.exists()

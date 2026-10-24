@@ -10,7 +10,9 @@ FAIL = "fail"
 SCHEMA_VERSION = 1
 TASK_MODEL = "gpt-6-luna"
 TASK_EFFORTS = ("medium", "xhigh", "max")
-TASK_EXECUTORS = ("codex", "muse")
+TASK_EXECUTORS = ("codex", "muse", "claude")
+# Operator-selected Haiku pilot; effort remains orchestration metadata.
+TASK_CLAUDE_MODEL = "claude-haiku-5-5"
 TASK_EXECUTOR_DEFAULT = "codex"
 # Muse (Meta) lanes run the `muse` CLI's default model; the runner pins only
 # the reasoning effort. `high` is the muse default and the curator-approved
