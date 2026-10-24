@@ -7,7 +7,7 @@
 `charness task run` executes one bounded lane; `task status` reads its external
 result store. There is no scheduler lifecycle. Executors: Codex (default,
 `gpt-6-luna`; medium/xhigh/max), Muse (default model; medium/high/xhigh/max),
-and [Claude Haiku](./claude-task-executor.md).
+and [Claude (Sonnet or Haiku)](./claude-task-executor.md).
 
 The receipt's canonical executor block is `payload["executor"]`. Codex keeps
 legacy aliases and log names; Muse records its trusted lane worktree as the

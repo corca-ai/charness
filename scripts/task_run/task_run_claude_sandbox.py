@@ -171,6 +171,8 @@ def configure_claude_environment(
         configured.pop(name, None)
     configured.update(
         HOME=str(home), CLAUDE_CONFIG_DIR=str(home / ".claude"),
+        CODEX_HOME=str(home / ".codex"), CEAL_HOME=str(home / ".ceal"),
+        XDG_STATE_HOME=str(home / ".local/state"),
         CLAUDE_CODE_TMPDIR=str(root / "tmp"), TMPDIR=str(root / "tmp"),
         TMP=str(root / "tmp"), TEMP=str(root / "tmp"),
         XDG_CONFIG_HOME=str(home / ".config"), XDG_CACHE_HOME=str(root / "cache"),
@@ -285,14 +287,14 @@ def sandbox_prefix(worktree: Path, execution_runtime_path: Path) -> list[str]:
 
 
 def build_claude_command(
-    executable: str, worktree: Path, execution_runtime_path: Path,
+    executable: str, worktree: Path, execution_runtime_path: Path, *, model: str = TASK_CLAUDE_MODEL,
 ) -> list[str]:
     """Prepare a resumable isolated lane; stdin supplies its prompt."""
     worktree, runtime = _bounded_paths(worktree, execution_runtime_path)
     configure_claude_environment({}, worktree, runtime)
     _prepare_git(worktree, runtime)
     settings = _settings(worktree, runtime)
-    return [*sandbox_prefix(worktree, runtime), "--", executable, "-p", "--model", TASK_CLAUDE_MODEL,
+    return [*sandbox_prefix(worktree, runtime), "--", executable, "-p", "--model", model,
             "--output-format", "stream-json", "--verbose", "--permission-mode", "dontAsk",
             "--permission-prompts", "none", "--settings", str(settings), "--setting-sources", "project",
             "--strict-mcp-config", "--mcp-config", '{"mcpServers":{}}']

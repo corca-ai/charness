@@ -73,12 +73,15 @@ def test_private_review_home_inherits_only_needed_auth(
     assert env["HOME"] == str(operator_home)
 
 
-@pytest.mark.parametrize("executor", ["claude", "codex", "muse"])
+@pytest.mark.parametrize("executor", ["claude", "codex", "muse", "muse,claude"])
 def test_brief_critique_isolates_home_only_for_claude(
     tmp_path: Path, operator_home: Path, monkeypatch, executor: str
 ) -> None:
     execution_runtime = tmp_path / "execution"
     original_env = {"PATH": "/usr/bin", "HOME": str(operator_home)}
+    state_names = {"CODEX_HOME": ".codex", "CLAUDE_CONFIG_DIR": ".claude", "CEAL_HOME": ".ceal", "XDG_STATE_HOME": ".local/state"}
+    original_env.update({key: str(operator_home / suffix) for key, suffix in state_names.items()})
+    before = {path.relative_to(operator_home): path.read_bytes() for path in operator_home.rglob("*") if path.is_file()}
     exec_lib = import_repo_module(critique.__file__, "scripts.worktree.worktree_exec_lib")
     monkeypatch.setattr(task_run_runtime, "_resolve_codex", lambda _name: "/usr/bin/codex")
     monkeypatch.setattr(
@@ -89,6 +92,11 @@ def test_brief_critique_isolates_home_only_for_claude(
 
     def execute(_command, **kwargs):
         observed.update(kwargs["configured_env"])
+        if "claude" in executor.split(","):
+            for name in state_names:
+                destination = Path(observed[name])
+                destination.mkdir(parents=True, exist_ok=True)
+                (destination / "session-fixture").write_text("private")
         kwargs["stdout_log"].write_text(
             json.dumps({"premise_failure": False, "findings": [], "premise_checks": []})
         )
@@ -100,15 +108,19 @@ def test_brief_critique_isolates_home_only_for_claude(
         resolved={
             "runtime_path": tmp_path / "runtime",
             "target_path": tmp_path,
-            "executor": executor,
+            "executor": executor.split(",")[0],
+            "executor_order": executor.split(","),
         },
         prompt="Read the fixture contract.",
         premise_checks=[],
     )
     assert result["status"] == "completed"
-    if executor == "claude":
+    if "claude" in executor.split(","):
         assert observed["HOME"] == str(review.reviewer_home(execution_runtime))
-        assert Path(observed["CODEX_HOME"]).is_relative_to(execution_runtime)
+        for name in state_names:
+            assert Path(observed[name]).is_relative_to(execution_runtime)
+        after = {path.relative_to(operator_home): path.read_bytes() for path in operator_home.rglob("*") if path.is_file()}
+        assert after == before
     else:
         assert observed == original_env
         assert not review.reviewer_home(execution_runtime).exists()

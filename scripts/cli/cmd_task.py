@@ -401,6 +401,7 @@ def cmd_task_run(args: argparse.Namespace) -> int:
         scopes=args.scope,
         prompt=prompt_text or "",
         executor=args.executor,
+        claude_model=args.claude_model,
         effort=args.effort,
         task_id=args.task_id,
         prepare=args.prepare,

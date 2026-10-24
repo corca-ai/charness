@@ -4,8 +4,11 @@
 > Source of truth: `scripts/task_run/task_run_claude_sandbox.py` and `task_run_claude_auth.py`
 > Last verified: 2026-10-25
 
-`charness task run --executor claude --effort medium` runs `claude -p` with
-`claude-haiku-5-5`. Effort stays orchestration metadata; the model is pinned.
+`charness task run --executor claude --claude-model sonnet --effort medium`
+runs `claude -p` with the selected model. Sonnet is the lane default;
+`--claude-model haiku` selects `claude-haiku-5-5`. The Sonnet family uses the
+Claude CLI’s `sonnet` alias. The selected command model is recorded in
+`executor.model`; effort stays orchestration metadata.
 The default executor remains Codex. The host currently requires Linux bubblewrap.
 No extra host-state writable grants are accepted for Claude.
 
@@ -40,4 +43,6 @@ The [task-run contract](./agent-task-runs.md) owns completion and retention.
 For Claude lanes, the separate Codex preflight uses a private home under the
 retained execution runtime and inherits authentication only. It copies no real
 configuration or sessions. That reviewer-home subtree is masked from Claude,
-including shell reads, after the runtime receives its writable grant.
+including shell reads, after the runtime receives its writable grant. Both
+process environments rebind Claude, Codex, Ceal and XDG state destinations to
+their private home even when the caller exports explicit session directories.

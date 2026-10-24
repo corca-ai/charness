@@ -24,7 +24,7 @@ def _load_repo_runtime_bootstrap():
 
 _load_repo_runtime_bootstrap()
 
-from scripts.task_run.task_run_contract import TaskRunError  # noqa: E402
+from scripts.task_run.task_run_contract import TaskRunError, resolve_claude_model  # noqa: E402
 
 #: The standing-rules prompt section names this sentence; scope evidence
 #: never sees it because rules files are listed here, never inlined.
@@ -126,6 +126,7 @@ def resolve_launch_options(
     grant_writable: Sequence[str | Path],
     *,
     executor: str | None,
+    claude_model: str | None = None,
 ) -> None:
     """Validate lane options before any launch work and stash them on `resolved`.
 
@@ -133,6 +134,7 @@ def resolve_launch_options(
     shaping, sandbox grants, and the executor-fallback context all follow
     these keys, so no parallel parameter plumbing can drift apart.
     """
+    resolved["claude_model"] = resolve_claude_model(claude_model)
     resolved["rules_files"] = resolve_rules_files(rules_files)
     resolved["granted_writable_dirs"] = resolve_granted_writable(
         repo_root, grant_writable, executor=executor

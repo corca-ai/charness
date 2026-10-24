@@ -108,7 +108,7 @@ def _run_brief_critique(
         "codex",
     )
     lane_executor, lane_executable = _lane_executor_facts(payload, resolved)
-    if lane_executor == "claude":
+    if lane_executor == "claude" or "claude" in resolved.get("executor_order", ()):
         from scripts.task_run.task_run_claude_review import private_review_environment
 
         configured_env = private_review_environment(configured_env, execution_root)

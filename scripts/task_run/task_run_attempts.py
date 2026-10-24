@@ -207,6 +207,7 @@ def _prepare_fallback_executor(
         payload,
         executor=executor,
         executable=executable,
+        claude_model=context.get("claude_model", _support.TASK_CLAUDE_MODEL),
         effort=context["effort"],
         timeout_seconds=context["timeout_seconds"],
     )

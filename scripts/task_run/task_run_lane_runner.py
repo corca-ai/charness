@@ -265,6 +265,7 @@ def prepare_lane_execution(
     command = lane_command(
         executor=executor,
         executable=executable,
+        claude_model=resolved.get("claude_model", _support.TASK_CLAUDE_MODEL),
         effort=effort,
         prompt=lane_prompt,
         execution_runtime_path=execution_runtime_path,
@@ -373,6 +374,7 @@ def lane_command(
     execution_runtime_path: Path,
     writable_dirs: Sequence[Path],
     worktree: Path,
+    claude_model: str = _support.TASK_CLAUDE_MODEL,
 ) -> list[str]:
     """Build the lane runner command for the selected executor.
 
@@ -386,7 +388,7 @@ def lane_command(
         from scripts.task_run.task_run_claude_sandbox import build_claude_command
 
         return build_claude_command(
-            executable, worktree=worktree, execution_runtime_path=execution_runtime_path
+            executable, worktree=worktree, execution_runtime_path=execution_runtime_path, model=claude_model
         )
     if executor == "muse":
         prompt_file = execution_runtime_path / "prompt.md"
@@ -418,6 +420,7 @@ def record_lane_runner(
     executable: str,
     effort: str,
     timeout_seconds: int | None,
+    claude_model: str = _support.TASK_CLAUDE_MODEL,
 ) -> None:
     """Record the lane runner block and its legacy `codex` alias."""
     block = {
@@ -425,7 +428,7 @@ def record_lane_runner(
         "executable": executable,
         "model": (
             _support.TASK_MODEL if executor == "codex"
-            else _support.TASK_CLAUDE_MODEL if executor == "claude"
+            else claude_model if executor == "claude"
             else _support.TASK_MUSE_MODEL
         ),
         "effort": effort,

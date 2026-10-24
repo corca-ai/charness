@@ -135,6 +135,8 @@ def _prompt_argv(args: argparse.Namespace) -> list[str]:
         argv += ["--prompt", args.prompt]
     else:
         argv += ["--prompt-file", str(args.prompt_file)]
+    if getattr(args, "claude_model", None) is not None:
+        argv += ["--claude-model", args.claude_model]
     return argv + ["--executor", args.executor, "--effort", args.effort]
 
 

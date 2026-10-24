@@ -1645,6 +1645,10 @@ def build_parser() -> argparse.ArgumentParser:
         help="Ordered lane executors, comma-separated (for example codex,muse); usage-limit failures fall through in order. Default: codex. Effort must fit every listed executor.",
     )
     task_run_parser.add_argument(
+        "--claude-model",
+        help="Claude lane model family (default: sonnet); applies only to Claude in the executor order.",
+    )
+    task_run_parser.add_argument(
         "--effort",
         required=True,
         help="Orchestrator-selected reasoning effort: medium, xhigh, or max for codex; medium, high, xhigh, or max for muse.",

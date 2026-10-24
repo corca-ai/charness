@@ -28,6 +28,8 @@ def private_review_environment(env: Mapping[str, str], execution_runtime: Path) 
     roots = {
         "HOME": home,
         "CODEX_HOME": home / ".codex",
+        "CLAUDE_CONFIG_DIR": home / ".claude",
+        "CEAL_HOME": home / ".ceal",
         "XDG_CONFIG_HOME": home / ".config",
         "XDG_CACHE_HOME": home / ".cache",
         "XDG_STATE_HOME": home / ".local/state",

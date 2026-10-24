@@ -193,6 +193,7 @@ def run_task(
     prompt: str,
     codex: str = "codex",
     executor: str | None = None,
+    claude_model: str | None = None,
     effort: str | None = None,
     task_id: str | None = None,
     prepare: bool | None = None,
@@ -234,6 +235,7 @@ def run_task(
             rules_files,
             grant_writable,
             executor=executor,
+            claude_model=claude_model,
         )
         resolved = _plan.resolve_task_inputs(
             resolved_repo,
@@ -314,6 +316,7 @@ def run_task(
         payload,
         executor=resolved_executor,
         executable=codex_path,
+        claude_model=resolved["claude_model"],
         effort=resolved["effort"],
         timeout_seconds=timeout_seconds,
     )
