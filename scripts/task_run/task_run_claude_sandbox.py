@@ -74,9 +74,11 @@ def _prepare_git(worktree: Path, runtime: Path) -> None:
     if not hooks.is_absolute():
         hooks = worktree / hooks
     _git(worktree, "config", "core.hooksPath", str(hooks.resolve()), git_dir=private)
-    # Identity is deliberately lane-owned, never taken from a writable home config.
-    _git(worktree, "config", "user.name", "Hwidong Bae", git_dir=private)
-    _git(worktree, "config", "user.email", "bae.hwidong@gmail.com", git_dir=private)
+    # Resolve the trusted repository identity before isolating HOME. The agent
+    # cannot change this private configuration, and ambient author overrides
+    # are removed from its environment.
+    for setting in ("user.name", "user.email"):
+        _git(worktree, "config", setting, _git(worktree, "config", "--get", setting), git_dir=private)
     _git(worktree, "symbolic-ref", "HEAD", f"refs/heads/{branch}", git_dir=private)
     _git(worktree, "update-ref", f"refs/heads/{branch}", base, git_dir=private)
     _git(worktree, "read-tree", "HEAD", git_dir=private)
@@ -159,7 +161,7 @@ def configure_claude_environment(
         directory.mkdir(parents=True, exist_ok=True)
     configured = dict(env)
     for name in list(configured):
-        if name in _GIT_ENV_KEYS or name.startswith("GIT_CONFIG_"):
+        if name in _GIT_ENV_KEYS or name.startswith(("GIT_CONFIG_", "GIT_AUTHOR_", "GIT_COMMITTER_")):
             configured.pop(name, None)
     for name in ("BASH_ENV", "ENV", "ZDOTDIR", "SSH_AUTH_SOCK", "GIT_SSH_COMMAND", "GIT_ASKPASS",
                  "ANTHROPIC_CUSTOM_HEADERS", "CLAUDE_CODE_USE_BEDROCK", "CLAUDE_CODE_USE_VERTEX", "CLAUDE_CODE_USE_FOUNDRY"):
@@ -172,8 +174,6 @@ def configure_claude_environment(
         GIT_DIR=str(private), GIT_WORK_TREE=str(worktree.resolve()),
         CLAUDE_CODE_SUBPROCESS_ENV_SCRUB="1", DISABLE_AUTOUPDATER="1",
         GIT_CONFIG_NOSYSTEM="1", GIT_CONFIG_GLOBAL="/dev/null",
-        GIT_AUTHOR_NAME="Hwidong Bae", GIT_AUTHOR_EMAIL="bae.hwidong@gmail.com",
-        GIT_COMMITTER_NAME="Hwidong Bae", GIT_COMMITTER_EMAIL="bae.hwidong@gmail.com",
     )
     if not any(configured.get(name) for name in ("ANTHROPIC_API_KEY", "CLAUDE_CODE_OAUTH_TOKEN", "ANTHROPIC_AUTH_TOKEN")):
         credentials = Path.home() / ".claude/.credentials.json"

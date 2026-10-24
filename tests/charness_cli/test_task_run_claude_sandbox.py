@@ -82,7 +82,7 @@ def test_private_git_commit_roundtrip_keeps_hooks_and_shared_git_readonly(tmp_pa
     assert not outside.exists(), "trusted metadata import ran a task-controlled hook"
     assert _git(lane, "rev-parse", "HEAD") != base
     assert _git(lane, "diff", "--name-only", "HEAD") == ""
-    assert _git(lane, "log", "-1", "--format=%an <%ae>") == "Hwidong Bae <bae.hwidong@gmail.com>"
+    assert _git(lane, "log", "-1", "--format=%an <%ae>") == "Test <test@example.com>"
     assert _git(repo, "rev-parse", "main") == base
     sandbox.finalize_claude_git(lane, runtime)
 
