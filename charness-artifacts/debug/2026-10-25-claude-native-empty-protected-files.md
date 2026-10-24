@@ -75,8 +75,9 @@ Confirmed runtime/provider roundtrip, Claude 2.1.302, model `claude-haiku-5-5`:
 | absent | absent | 1/0 | 0 |
 
 The minimal repositories lack two files already present in the pilot, explaining
-seventeen versus fifteen new files. Final parent integration tests and a fresh
-end-to-end lane remain the acceptance observer; these probes do not claim them.
+seventeen versus fifteen new files. Parent integration now passes 135 tests. The final isolated lane completed
+with a clean docs-only commit, hooks and VERIFY; private reviewer storage was
+observed before normal retention. See the [pilot proof](../impl/2026-10-25-claude-executor-pilot.md).
 
 ## Root Cause
 

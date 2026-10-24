@@ -1,6 +1,6 @@
 # Claude native sandbox composition
 
-Status: current acceptance handoff
+Status: acceptance verified on 2026-10-25
 
 The Claude executor uses mandatory whole-process bwrap and a parent-side auth
 proxy. Native Bash, file tools, and hooks inherit the OS write boundary. Genuine
@@ -38,3 +38,10 @@ no corresponding session in the real home. Earlier owned review sessions are
 eligible only for exact-identity cleanup; never infer ownership from timestamps
 or clean shared session databases. Do not claim a globally unchanged home when
 concurrent writers were observed.
+
+Verified final lane: `claude-haiku-isolated-20261025`, result `completed` /
+`success`, task commit `15b63f0da123236e3f94d5e8c328ec3b93eb2713` (unlanded).
+Seven native Bash calls succeeded, both Git hooks ran, VERIFY was delivered,
+and private reviewer-session readback passed before retention.
+The [pilot proof](../impl/2026-10-25-claude-executor-pilot.md) records the exact
+files, checks, safety output, local commits and remaining legacy-session cleanup.
