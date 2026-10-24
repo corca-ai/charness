@@ -101,7 +101,8 @@ def test_claude_settings_and_environment_are_invocation_local(tmp_path: Path, mo
     assert "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB" not in env
     assert settings["permissions"]["disableBypassPermissionsMode"] == "disable"
     assert "Read(//proc/**)" in settings["permissions"]["deny"]
-    assert settings["permissions"]["blockReadsOutsideWorkingDirectories"] is True
+    assert "blockReadsOutsideWorkingDirectories" not in settings["permissions"]
+    assert "Bash(*)" in settings["permissions"]["allow"]
 
 
 @pytest.mark.parametrize("which", ["home", "ancestor", "overlap"])

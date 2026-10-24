@@ -19,6 +19,7 @@ from typing import Any, Mapping
 
 from scripts.core.subprocess_guard import run_process
 from scripts.task_run.task_run_claude_auth import claude_auth_proxy as claude_auth_proxy
+from scripts.task_run.task_run_claude_review import reviewer_home
 from scripts.task_run.task_run_contract import TASK_CLAUDE_MODEL, TaskRunError
 
 _SECRET_DIRECTORIES = (".claude", ".codex", ".ceal", ".ssh", ".aws", ".azure", ".kube", ".gnupg", ".config", ".local/state/ceal")
@@ -192,6 +193,7 @@ def _settings(worktree: Path, runtime: Path) -> Path:
     root, _home, _private = _paths(runtime)
     home = Path.home()
     sensitive = [home / path for path in (*_SECRET_DIRECTORIES, *_SECRET_FILES)]
+    sensitive.append(reviewer_home(runtime))
     deny = [f"Read(/{path}/**)" for path in sensitive]
     deny += [f"Read(/{path})" for path in sensitive]
     deny += [f"Edit(/{path}/**)" for path in sensitive]
@@ -200,7 +202,6 @@ def _settings(worktree: Path, runtime: Path) -> Path:
     settings = {
         "permissions": {
             "defaultMode": "dontAsk", "disableBypassPermissionsMode": "disable",
-            "blockReadsOutsideWorkingDirectories": True,
             "allow": ["Bash(*)", f"Edit(/{worktree}/**)", f"Read(/{worktree}/**)", f"Read(/{runtime.resolve()}/**)", f"Edit(/{runtime.resolve()}/**)"],
             "deny": deny,
         },
@@ -274,6 +275,9 @@ def sandbox_prefix(worktree: Path, execution_runtime_path: Path) -> list[str]:
     for path in (worktree / ".git", root / "git-identity.json", root / "settings.json", private / "config"):
         if path.exists():
             command.extend(("--ro-bind", str(path), str(path)))
+    private_review = reviewer_home(runtime)
+    if private_review.exists():
+        command.extend(("--tmpfs", str(private_review), "--remount-ro", str(private_review)))
     for path in _credential_files(worktree):
         command.extend(("--ro-bind", str(mask), str(path)))
     command.extend(("--chdir", str(worktree)))

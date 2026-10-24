@@ -26,6 +26,20 @@ runtime output from incidental worktree pollution. Upstream reports describe the
 same filename burst: [46165](https://github.com/anthropics/claude-code/issues/46165)
 and [51405](https://github.com/anthropics/claude-code/issues/51405).
 
+The subsequent clean pilot returned `validated-partial-result`: two multiline
+Python Bash calls were rejected before execution (`reject/config/mode`), while
+simple commands were accepted (`accept/config/rule`). Native comparison
+`/tmp/claude-native-permission-uizeppqc/summary.json` refuted replacing `Bash(*)`
+with `Bash`: both rejected the same input. Removing only
+`blockReadsOutsideWorkingDirectories` accepted it within unchanged OS confinement.
+
+All three initial Codex preflights inherited HOME/CODEX_HOME; exact reviewer
+identities matched three new real-home session files absent from the initial
+snapshot. The private cleanup manifest is
+`/tmp/claude-haiku-pilot-evidence/owned-review-session-cleanup.private.json`.
+Workspace-trash refused those paths; all three files remain. Concurrent
+`.claude.json` changes are unattributed; no global unchanged-home claim is made.
+
 ## Reproduction
 
 Four clean temporary repositories exercised a two-by-two matrix: subprocess scrub
@@ -144,3 +158,13 @@ the proxy substitutes a disposable token before process creation, while bwrap
 continues to constrain every tool and hook. Counterweight: installing socat or
 suppressing incidental files would retain redundant isolation and hide the
 composition error. Preserve original evidence and rerun a fresh real lane.
+
+The narrower composition repair removes the redundant read-boundary setting;
+Read/Edit denials and OS credential masks remain. Claude-selected preflights now
+use runtime-owned private HOME/CODEX_HOME and XDG/temp roots, inherit only needed
+auth with mode 0600, and remove shell startup overrides. The subsequent OS
+invocation masks that reviewer home after granting runtime writes. Tests cover
+executor selection and the real mask; final acceptance must locate the new
+review session privately with no corresponding real-home file. Other executors
+retain their behavior. The original detection gap covered the main executor
+but omitted its auxiliary writer; the same home invariant now names both.

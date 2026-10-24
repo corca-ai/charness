@@ -36,3 +36,8 @@ lane commits inside the sandbox. Host metadata import disables hooks and fsmonit
 so agent-edited hook files cannot escape the filesystem boundary during import.
 
 The [task-run contract](./agent-task-runs.md) owns completion and retention.
+
+For Claude lanes, the separate Codex preflight uses a private home under the
+retained execution runtime and inherits authentication only. It copies no real
+configuration or sessions. That reviewer-home subtree is masked from Claude,
+including shell reads, after the runtime receives its writable grant.
