@@ -93,12 +93,12 @@ def test_claude_settings_and_environment_are_invocation_local(tmp_path: Path, mo
     runtime.mkdir()
     (runtime / "claude").mkdir()
     settings = json.loads(sandbox._settings(lane, runtime).read_text(encoding="utf-8"))
-    env = sandbox.configure_claude_environment({"BASH_ENV": "do-not-source", "GIT_DIR": "old"}, lane, runtime)
+    env = sandbox.configure_claude_environment({"BASH_ENV": "do-not-source", "GIT_DIR": "old", "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB": "1"}, lane, runtime)
     assert "BASH_ENV" not in env
     assert Path(env["HOME"]).is_relative_to(runtime)
     assert Path(env["CLAUDE_CONFIG_DIR"]).is_relative_to(runtime)
     assert Path(env["GIT_DIR"]).is_relative_to(runtime)
-    assert env["CLAUDE_CODE_SUBPROCESS_ENV_SCRUB"] == "1"
+    assert "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB" not in env
     assert settings["permissions"]["disableBypassPermissionsMode"] == "disable"
     assert "Read(//proc/**)" in settings["permissions"]["deny"]
     assert settings["permissions"]["blockReadsOutsideWorkingDirectories"] is True

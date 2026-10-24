@@ -163,7 +163,9 @@ def configure_claude_environment(
     for name in list(configured):
         if name in _GIT_ENV_KEYS or name.startswith(("GIT_CONFIG_", "GIT_AUTHOR_", "GIT_COMMITTER_")):
             configured.pop(name, None)
-    for name in ("BASH_ENV", "ENV", "ZDOTDIR", "SSH_AUTH_SOCK", "GIT_SSH_COMMAND", "GIT_ASKPASS",
+    # This native flag forces an additional Bash sandbox on Linux even when
+    # sandbox.enabled is false. Auth is isolated by our parent-side proxy.
+    for name in ("CLAUDE_CODE_SUBPROCESS_ENV_SCRUB", "BASH_ENV", "ENV", "ZDOTDIR", "SSH_AUTH_SOCK", "GIT_SSH_COMMAND", "GIT_ASKPASS",
                  "ANTHROPIC_CUSTOM_HEADERS", "CLAUDE_CODE_USE_BEDROCK", "CLAUDE_CODE_USE_VERTEX", "CLAUDE_CODE_USE_FOUNDRY"):
         configured.pop(name, None)
     configured.update(
@@ -172,7 +174,7 @@ def configure_claude_environment(
         TMP=str(root / "tmp"), TEMP=str(root / "tmp"),
         XDG_CONFIG_HOME=str(home / ".config"), XDG_CACHE_HOME=str(root / "cache"),
         GIT_DIR=str(private), GIT_WORK_TREE=str(worktree.resolve()),
-        CLAUDE_CODE_SUBPROCESS_ENV_SCRUB="1", DISABLE_AUTOUPDATER="1",
+        DISABLE_AUTOUPDATER="1",
         GIT_CONFIG_NOSYSTEM="1", GIT_CONFIG_GLOBAL="/dev/null",
     )
     if not any(configured.get(name) for name in ("ANTHROPIC_API_KEY", "CLAUDE_CODE_OAUTH_TOKEN", "ANTHROPIC_AUTH_TOKEN")):

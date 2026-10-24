@@ -1,1 +1,1 @@
-2026-10-15-task-run-intentional-deletion-followup.md
+2026-10-25-claude-native-empty-protected-files.md
