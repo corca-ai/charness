@@ -84,7 +84,7 @@ def resolve_granted_writable(
     *,
     executor: str | None,
 ) -> list[str]:
-    """Validate per-lane codex `--add-dir` grants before any launch work.
+    """Validate per-lane Codex/Claude host-state grants before any launch work.
 
     Muse roots a single `--workspace` and takes no extra grant, so a lane
     that may fall through to muse refuses the flag loudly instead of
@@ -94,11 +94,10 @@ def resolve_granted_writable(
     """
     entries = [str(entry) for entry in raw or ()]
     if entries and executor is not None and any(
-        part.strip() != "codex" for part in executor.split(",")
+        part.strip() not in {"codex", "claude"} for part in executor.split(",")
     ):
         raise TaskRunError(
-            "--grant-writable needs the codex executor; muse roots a single "
-            "--workspace and claude grants only its worktree and private runtime"
+            "--grant-writable needs the codex executor or claude executor; muse roots a single --workspace"
         )
     home = Path.home()
     resolved: list[str] = []

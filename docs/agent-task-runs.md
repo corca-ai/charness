@@ -109,7 +109,7 @@ the scope refusal with the launch's own code instead of launching. `task
 wait` blocks until the named lanes end and exits with the finished lane's
 code, so a host background job's notification carries the verdict.
 `--rules-file` names standing material by absolute path (never inlined,
-never scope evidence); `--grant-writable` grants a codex lane one
+never scope evidence); `--grant-writable` grants Codex or Claude lanes a
 host-state directory (refused for muse, the repo root, `$HOME`, and `/`).
 
 ## Status

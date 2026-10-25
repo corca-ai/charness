@@ -10,7 +10,7 @@ runs `claude -p` with the selected model. Sonnet is the lane default;
 Claude CLI’s `sonnet` alias. The selected command model is recorded in
 `executor.model`; effort stays orchestration metadata.
 The default executor remains Codex. The host currently requires Linux bubblewrap.
-No extra host-state writable grants are accepted for Claude.
+Claude accepts validated `--grant-writable` host-state directories. Muse still refuses them.
 
 
 Claude lanes keep the same result/report, branch, hooks, progress and verification
@@ -20,10 +20,15 @@ worktree as its current directory.
 
 The Claude adapter wraps the entire process in a filesystem sandbox, supplies
 per-invocation permission settings, and isolates home/config/cache state under
-the private execution runtime. Only the worktree and private runtime are writable.
+the private execution runtime. The worktree, private runtime and explicit host-state grants are writable.
 Private Git storage allows normal commits and hooks without granting the agent
 writes into the parent repository; the trusted runner imports the task branch
-after execution. Real home configuration and credential files remain protected.
+after execution. When the caller explicitly grants this checkout’s resolved Git
+common directory, the lane instead uses its native linked-worktree Git directory:
+commits and hook attestations are immediately visible in shared Git, and no
+private import runs. Shared Git configuration remains read-only. Callers must
+explicitly grant any external tool/verification caches their gates use.
+Real home configuration and credential files remain protected.
 Real provider credentials stay in a parent-side proxy; the child receives an
 invocation token. Credential-shaped workspace files are masked from shell reads
 as well as denied to file tools. The safety and real-lane evidence record states

@@ -14,10 +14,10 @@ from scripts.task_run import task_run_detach as detach
 
 @pytest.mark.parametrize("requested,expected", [(None, "sonnet"), ("haiku", "claude-haiku-5-5"), ("sonnet", "sonnet")])
 def test_claude_model_parameter_reaches_command_and_result(tmp_path: Path, monkeypatch, requested, expected) -> None:
-    monkeypatch.setattr(sandbox, "configure_claude_environment", lambda *_a: {})
+    monkeypatch.setattr(sandbox, "configure_claude_environment", lambda *_a, **_k: {})
     monkeypatch.setattr(sandbox, "_prepare_git", lambda *_a: None)
     monkeypatch.setattr(sandbox, "_settings", lambda *_a: tmp_path / "settings.json")
-    monkeypatch.setattr(sandbox, "sandbox_prefix", lambda *_a: ["bwrap"])
+    monkeypatch.setattr(sandbox, "sandbox_prefix", lambda *_a, **_k: ["bwrap"])
     selected = contract.resolve_claude_model(requested)
     command = sandbox.build_claude_command("claude", tmp_path / "lane", tmp_path / "runtime", model=selected)
     payload = {}

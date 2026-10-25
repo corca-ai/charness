@@ -287,6 +287,7 @@ def scrubbed_lane_env(
         child = configure_claude_environment(
             child, worktree=Path(str(payload["worktree_path"])),
             execution_runtime_path=Path(child["CHARNESS_RUNTIME_ROOT"]),
+            writable_dirs=[Path(path) for path in payload.get("granted_writable_dirs", ())],
         )
     return child
 

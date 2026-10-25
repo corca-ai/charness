@@ -349,8 +349,17 @@ def lane_writable_dirs(
     by lane options) join the same grant list. Muse lanes root their
     single `--workspace` at the lane worktree itself and take no
     `--add-dir` grants (#814); the receipt records that root as
-    `workspace` instead of `writable_dirs`.
+    `workspace` instead of `writable_dirs`. Claude forwards only explicit
+    grants; its sandbox owns the implicit worktree/runtime roots and selects
+    native Git only for an explicit common-directory grant.
     """
+    if executor == "claude":
+        writable_dirs = []
+        _lane_options.apply_granted_writable(
+            writable_dirs, payload, resolved.get("granted_writable_dirs", ())
+        )
+        payload["writable_dirs"] = [str(path) for path in writable_dirs]
+        return writable_dirs
     if executor != "codex":
         payload["workspace"] = str(worktree)
         return []
@@ -382,13 +391,14 @@ def lane_command(
     prompt, so muse lanes carry it via a prompt file in the lane-private
     execution root. Muse lanes root their single `--workspace` at the lane
     worktree itself (#814); the Codex `--add-dir` grants in `writable_dirs`
-    do not apply to them.
+    do not apply to them. Claude passes explicit grants to its OS sandbox.
     """
     if executor == "claude":
         from scripts.task_run.task_run_claude_sandbox import build_claude_command
 
         return build_claude_command(
-            executable, worktree=worktree, execution_runtime_path=execution_runtime_path, model=claude_model
+            executable, worktree=worktree, execution_runtime_path=execution_runtime_path, model=claude_model,
+            writable_dirs=writable_dirs
         )
     if executor == "muse":
         prompt_file = execution_runtime_path / "prompt.md"

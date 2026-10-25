@@ -2,8 +2,8 @@
 
 The complete Claude process (including hooks and file tools) runs behind bwrap;
 Claude's Bash-only sandbox cannot enforce this boundary. Runtime retention is
-owned by the enclosing task-run runtime. A trusted host imports the single lane
-branch after execution; the agent never writes the shared Git administration.
+owned by the enclosing task-run runtime. By default a trusted host imports the lane branch after execution. Explicitly
+granting the checkout’s common Git directory selects native shared Git instead.
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ import shutil
 import stat
 import tempfile
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
 from scripts.core.subprocess_guard import run_process
 from scripts.task_run.task_run_claude_auth import claude_auth_proxy as claude_auth_proxy
@@ -152,8 +152,19 @@ def finalize_claude_git(worktree: Path, execution_runtime_path: Path) -> None:
     marker.write_text(json.dumps(identity), encoding="utf-8")
 
 
+def _shared_git_dir(worktree: Path, writable_dirs: Sequence[Path]) -> Path | None:
+    """Only an explicit grant of this checkout's common dir opts into native Git."""
+    if not writable_dirs:
+        return None
+    common = Path(_git(worktree, "rev-parse", "--path-format=absolute", "--git-common-dir")).resolve()
+    if common not in [Path(path).resolve() for path in writable_dirs]:
+        return None
+    return Path(_git(worktree, "rev-parse", "--absolute-git-dir"))
+
+
 def configure_claude_environment(
     env: dict[str, str], worktree: Path, execution_runtime_path: Path,
+    *, writable_dirs: Sequence[Path] = (),
 ) -> dict[str, str]:
     """Isolate home and auth without logging or copying the real credential store."""
     worktree, execution_runtime_path = _bounded_paths(worktree, execution_runtime_path)
@@ -176,7 +187,7 @@ def configure_claude_environment(
         CLAUDE_CODE_TMPDIR=str(root / "tmp"), TMPDIR=str(root / "tmp"),
         TMP=str(root / "tmp"), TEMP=str(root / "tmp"),
         XDG_CONFIG_HOME=str(home / ".config"), XDG_CACHE_HOME=str(root / "cache"),
-        GIT_DIR=str(private), GIT_WORK_TREE=str(worktree.resolve()),
+        GIT_DIR=str(_shared_git_dir(worktree, writable_dirs) or private), GIT_WORK_TREE=str(worktree.resolve()),
         DISABLE_AUTOUPDATER="1",
         GIT_CONFIG_NOSYSTEM="1", GIT_CONFIG_GLOBAL="/dev/null",
     )
@@ -191,7 +202,7 @@ def configure_claude_environment(
     return configured
 
 
-def _settings(worktree: Path, runtime: Path) -> Path:
+def _settings(worktree: Path, runtime: Path, writable_dirs: Sequence[Path] = ()) -> Path:
     root, _home, _private = _paths(runtime)
     home = Path.home()
     sensitive = [home / path for path in (*_SECRET_DIRECTORIES, *_SECRET_FILES)]
@@ -201,10 +212,12 @@ def _settings(worktree: Path, runtime: Path) -> Path:
     deny += [f"Edit(/{path}/**)" for path in sensitive]
     deny += [f"Edit(/{path})" for path in sensitive]
     deny += ["Read(//proc/**)", "Read(**/.env)", "Read(**/.env.*)", "Read(**/*.pem)", "Read(**/*.key)", "Bash(git push *)"]
+    grants = [permission for path in writable_dirs
+              for permission in (f"Edit(/{path}/**)", f"Read(/{path}/**)")]
     settings = {
         "permissions": {
             "defaultMode": "dontAsk", "disableBypassPermissionsMode": "disable",
-            "allow": ["Bash(*)", f"Edit(/{worktree}/**)", f"Read(/{worktree}/**)", f"Read(/{runtime.resolve()}/**)", f"Edit(/{runtime.resolve()}/**)"],
+            "allow": [*grants, "Bash(*)", f"Edit(/{worktree}/**)", f"Read(/{worktree}/**)", f"Read(/{runtime.resolve()}/**)", f"Edit(/{runtime.resolve()}/**)"],
             "deny": deny,
         },
         # Outer bwrap covers the whole process, including hooks/file tools. The
@@ -234,7 +247,8 @@ def _credential_files(worktree: Path) -> list[Path]:
     return sorted(paths)
 
 
-def sandbox_prefix(worktree: Path, execution_runtime_path: Path) -> list[str]:
+def sandbox_prefix(worktree: Path, execution_runtime_path: Path, *,
+                   writable_dirs: Sequence[Path] = ()) -> list[str]:
     """Return the OS boundary shared by Claude and the adversarial safety probe."""
     bwrap = shutil.which("bwrap")
     if bwrap is None:
@@ -252,6 +266,9 @@ def sandbox_prefix(worktree: Path, execution_runtime_path: Path) -> list[str]:
     finally:
         os.close(mask_fd)
     command = [bwrap, "--die-with-parent", "--new-session", "--unshare-pid", "--unshare-ipc", "--unshare-uts", "--ro-bind", "/", "/", "--proc", "/proc", "--dev", "/dev"]
+    # Explicit grants precede all secret and policy masks.
+    for path in writable_dirs:
+        command.extend(("--bind", str(path), str(path)))
     for name in _SECRET_DIRECTORIES:
         path = home / name
         if path.exists():
@@ -265,8 +282,8 @@ def sandbox_prefix(worktree: Path, execution_runtime_path: Path) -> list[str]:
         if path.exists():
             command.extend(("--tmpfs", str(path), "--remount-ro", str(path)))
     command.extend(("--bind", str(worktree), str(worktree), "--bind", str(runtime), str(runtime)))
-    # Policy and Git identity must not become agent-writable through the broad
-    # lane grants. All other shared Git metadata is already on the read-only /.
+    # Policy and Git identity remain protected through the writable grants.
+    # Shared Git is read-only unless the caller explicitly grants it.
     root, _home, private = _paths(runtime)
     # Make each policy-bearing ancestor a mountpoint too. A file-only mount
     # otherwise permits renaming its ancestor and recreating a writable policy.
@@ -277,6 +294,16 @@ def sandbox_prefix(worktree: Path, execution_runtime_path: Path) -> list[str]:
     for path in (worktree / ".git", root / "git-identity.json", root / "settings.json", private / "config"):
         if path.exists():
             command.extend(("--ro-bind", str(path), str(path)))
+    shared_git = _shared_git_dir(worktree, writable_dirs)
+    if shared_git is not None:
+        common = Path(_git(worktree, "rev-parse", "--path-format=absolute", "--git-common-dir"))
+        # Mount each linked-admin ancestor so renaming it cannot replace policy.
+        for directory in reversed((shared_git, *shared_git.parents)):
+            if directory != common and directory.is_relative_to(common):
+                command.extend(("--bind", str(directory), str(directory)))
+        for path in (common / "config", common / "config.worktree", shared_git / "config.worktree"):
+            if path.exists():
+                command.extend(("--ro-bind", str(path), str(path)))
     private_review = reviewer_home(runtime)
     if private_review.exists():
         command.extend(("--tmpfs", str(private_review), "--remount-ro", str(private_review)))
@@ -288,13 +315,15 @@ def sandbox_prefix(worktree: Path, execution_runtime_path: Path) -> list[str]:
 
 def build_claude_command(
     executable: str, worktree: Path, execution_runtime_path: Path, *, model: str = TASK_CLAUDE_MODEL,
+    writable_dirs: Sequence[Path] = (),
 ) -> list[str]:
     """Prepare a resumable isolated lane; stdin supplies its prompt."""
     worktree, runtime = _bounded_paths(worktree, execution_runtime_path)
-    configure_claude_environment({}, worktree, runtime)
-    _prepare_git(worktree, runtime)
-    settings = _settings(worktree, runtime)
-    return [*sandbox_prefix(worktree, runtime), "--", executable, "-p", "--model", model,
+    configure_claude_environment({}, worktree, runtime, writable_dirs=writable_dirs)
+    if _shared_git_dir(worktree, writable_dirs) is None:
+        _prepare_git(worktree, runtime)
+    settings = _settings(worktree, runtime, writable_dirs)
+    return [*sandbox_prefix(worktree, runtime, writable_dirs=writable_dirs), "--", executable, "-p", "--model", model,
             "--output-format", "stream-json", "--verbose", "--permission-mode", "dontAsk",
             "--permission-prompts", "none", "--settings", str(settings), "--setting-sources", "project",
             "--strict-mcp-config", "--mcp-config", '{"mcpServers":{}}']
@@ -306,8 +335,11 @@ def finalize_executor_candidate(
     if executor != "claude":
         return
 
+    runtime = Path(env["CHARNESS_RUNTIME_ROOT"])
+    if Path(env.get("GIT_DIR", str(_paths(runtime)[2]))) != _paths(runtime)[2]:
+        return
     try:
-        finalize_claude_git(worktree, Path(env["CHARNESS_RUNTIME_ROOT"]))
+        finalize_claude_git(worktree, runtime)
     except (OSError, TaskRunError):
         result["exec_error"] = "Claude private Git import failed; inspect retained runtime"
         result["exit_code"] = 1

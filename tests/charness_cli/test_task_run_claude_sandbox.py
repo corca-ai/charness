@@ -216,3 +216,70 @@ def test_preexisting_worktree_credentials_are_masked_for_subprocesses(tmp_path: 
     result = run_process([*sandbox.sandbox_prefix(lane, runtime), "--", sys.executable, "-c", code], cwd=lane)
     assert result.returncode == 0, result.stderr
     assert secret.read_text(encoding="utf-8") == "synthetic-credential-sentinel"
+
+
+@pytest.mark.boundary_contract(reason="Explicit host grants must roundtrip native task-branch commits and gate receipts through the actual OS sandbox")
+def test_explicit_grants_allow_shared_git_and_gate_cache(tmp_path: Path) -> None:
+    if not shutil.which("bwrap"):
+        pytest.skip("bubblewrap not installed")
+    from scripts.task_run import task_run_lane_options as options, task_run_lane_runner as runner
+    from scripts.task_run.task_run_runtime import scrubbed_lane_env
+
+    repo, lane, runtime, cache = [tmp_path / name for name in ("repo", "lane", "runtime", "cache")]
+    repo.mkdir()
+    cache.mkdir()
+    _git(repo, "init", "--initial-branch=main")
+    _git(repo, "config", "user.name", "Test")
+    _git(repo, "config", "user.email", "test@example.com")
+    _git(repo, "commit", "--allow-empty", "-m", "seed")
+    _git(repo, "worktree", "add", "-b", "pilot", str(lane))
+    # A retained private runtime must not import its stale branch after opt-in.
+    sandbox.build_claude_command("claude", lane, runtime)
+    common = repo / ".git"
+    _git(repo, "config", "extensions.worktreeConfig", "true")
+    _git(lane, "config", "--worktree", "user.name", "Test")
+    linked = Path(_git(lane, "rev-parse", "--absolute-git-dir"))
+    grants = options.resolve_granted_writable(repo, [common, cache], executor="claude")
+    payload = {"worktree_path": str(lane)}
+    resolved = {"git_common_dir": common, "granted_writable_dirs": grants}
+    writable = runner.lane_writable_dirs(payload, resolved, common / "worktrees/lane", runtime,
+                                         executor="claude", worktree=lane)
+    command = runner.lane_command(executor="claude", executable="claude", effort="medium",
+                                  prompt="probe", execution_runtime_path=runtime,
+                                  writable_dirs=writable, worktree=lane)
+    env = scrubbed_lane_env(payload, dict(os.environ, CHARNESS_RUNTIME_ROOT=str(runtime)), "claude")
+    base = _git(repo, "rev-parse", "main")
+    receipt = common / "ceal/pre-push-attestations/probe.jsonl"
+    code = ("from pathlib import Path; import subprocess\n"
+            f"receipt=Path({str(receipt)!r}); receipt.parent.mkdir(parents=True,exist_ok=True); receipt.write_text('gate-pass\\n')\n"
+            f"Path({str(cache / 'verification.json')!r}).write_text('verified')\n"
+            "subprocess.run(['git','commit','--allow-empty','-m','sandbox probe'],check=True)\n"
+            f"assert Path({str(common / 'config')!r}).read_text()\n"
+            f"outside=Path({str(tmp_path / 'outside')!r})\n"
+            f"config=Path({str(common / 'config')!r})\n"
+            "try: config.write_text('changed')\n"
+            "except OSError: pass\n"
+            "else: raise AssertionError('shared Git policy writable')\n"
+            f"linked=Path({str(linked)!r})\n"
+            "try: (linked / 'config.worktree').write_text('changed')\n"
+            "except OSError: pass\n"
+            "else: raise AssertionError('linked Git policy writable')\n"
+            "try: linked.rename(linked.with_name('replaced'))\n"
+            "except OSError: pass\n"
+            "else: raise AssertionError('linked policy ancestor replaceable')\n"
+            "try: outside.write_text('escape')\n"
+            "except OSError: pass\n"
+            "else: raise AssertionError('outside grant writable')\n")
+    prefix = command[:command.index("--")]
+    result = run_process([*prefix, "--", sys.executable, "-c", code], cwd=lane, env=env)
+    assert result.returncode == 0, result.stderr
+    assert payload["granted_writable_dirs"] == grants
+    assert receipt.read_text() == "gate-pass\n"
+    assert (cache / "verification.json").read_text() == "verified"
+    tip = _git(lane, "rev-parse", "HEAD")
+    assert tip != base
+    finalized = {"exit_code": 0}
+    sandbox.finalize_executor_candidate(finalized, "claude", lane, env)
+    assert finalized == {"exit_code": 0}
+    assert _git(lane, "rev-parse", "HEAD") == tip
+    assert _git(repo, "rev-parse", "main") == base
