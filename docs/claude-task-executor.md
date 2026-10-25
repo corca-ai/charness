@@ -26,7 +26,11 @@ writes into the parent repository; the trusted runner imports the task branch
 after execution. When the caller explicitly grants this checkout’s resolved Git
 common directory, the lane instead uses its native linked-worktree Git directory:
 commits and hook attestations are immediately visible in shared Git, and no
-private import runs. Shared Git configuration remains read-only. Callers must
+private import runs. Native Git discovers the existing linked `.git`; private mode
+mounts a protected private `gitdir:` pointer over that file only inside the sandbox.
+Claude receives no process-wide Git repository selectors, so foreign cwd and `-C`
+lookups retain their own repository identity. Private preparation and import select
+the private repository for individual Git invocations only. Shared Git configuration remains read-only. Callers must
 explicitly grant any external tool/verification caches their gates use.
 Native tools receive private writable `/tmp` for OS-level locks even when they ignore `TMPDIR`. Known temporary trees containing the worktree, runtime, Git object source and explicit grants retain read-only visibility before writable descendants are restored. Host temporary files remain unwritable. `XDG_RUNTIME_DIR` is a private mode-0700 directory.
 Real home configuration and credential files remain protected.

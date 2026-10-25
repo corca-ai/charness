@@ -194,7 +194,7 @@ def configure_claude_environment(
         TMP=str(root / "tmp"), TEMP=str(root / "tmp"),
         XDG_CONFIG_HOME=str(home / ".config"), XDG_CACHE_HOME=str(root / "cache"),
         XDG_RUNTIME_DIR=str(root / "run"),
-        GIT_DIR=str(_shared_git_dir(worktree, writable_dirs) or private), GIT_WORK_TREE=str(worktree.resolve()),
+        CHARNESS_CLAUDE_GIT_MODE="shared" if _shared_git_dir(worktree, writable_dirs) else "private",
         DISABLE_AUTOUPDATER="1",
         GIT_CONFIG_NOSYSTEM="1", GIT_CONFIG_GLOBAL="/dev/null",
     )
@@ -316,6 +316,13 @@ def sandbox_prefix(worktree: Path, execution_runtime_path: Path, *,
         if path.exists():
             command.extend(("--ro-bind", str(path), str(path)))
     shared_git = _shared_git_dir(worktree, writable_dirs)
+    if shared_git is None and private.exists() and (worktree / ".git").is_file():
+        # Scope private discovery to this worktree's mount namespace. Exported
+        # selectors would override every foreign cwd/-C lookup in child tools.
+        pointer = root / "git-discovery"
+        pointer.write_text(f"gitdir: {private}\n", encoding="utf-8")
+        command.extend(("--ro-bind", str(pointer), str(pointer),
+                        "--ro-bind", str(pointer), str(worktree / ".git")))
     if shared_git is not None:
         common = Path(_git(worktree, "rev-parse", "--path-format=absolute", "--git-common-dir"))
         # Mount each linked-admin ancestor so renaming it cannot replace policy.
@@ -357,7 +364,7 @@ def finalize_executor_candidate(
         return
 
     runtime = Path(env["CHARNESS_RUNTIME_ROOT"])
-    if Path(env.get("GIT_DIR", str(_paths(runtime)[2]))) != _paths(runtime)[2]:
+    if env.get("CHARNESS_CLAUDE_GIT_MODE") == "shared":
         return
     try:
         finalize_claude_git(worktree, runtime)

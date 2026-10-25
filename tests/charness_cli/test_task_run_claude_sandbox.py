@@ -87,6 +87,52 @@ def test_private_git_commit_roundtrip_keeps_hooks_and_shared_git_readonly(tmp_pa
     sandbox.finalize_claude_git(lane, runtime)
 
 
+
+@pytest.mark.boundary_contract(reason="Claude Git discovery must honor foreign repositories while task commits roundtrip through private Git or explicit native grants")
+@pytest.mark.parametrize("shared", [False, True], ids=["private", "native"])
+def test_lane_git_discovery_respects_foreign_checkout(tmp_path: Path, shared: bool) -> None:
+    if not shutil.which("bwrap"):
+        pytest.skip("bubblewrap not installed")
+    repo, lane, foreign, runtime = [tmp_path / name for name in ("repo", "lane", "foreign", "runtime")]
+    for root in (repo, foreign):
+        root.mkdir()
+        _git(root, "init", "--initial-branch=main")
+        _git(root, "config", "user.name", "Test")
+        _git(root, "config", "user.email", "test@example.com")
+        _git(root, "commit", "--allow-empty", "-m", root.name)
+    base = _git(repo, "rev-parse", "HEAD")
+    foreign_head = _git(foreign, "rev-parse", "HEAD")
+    assert foreign_head != base
+    _git(repo, "worktree", "add", "-b", "pilot", str(lane))
+    writable = [repo / ".git"] if shared else []
+    command = sandbox.build_claude_command("claude", lane, runtime, writable_dirs=writable)
+    env = sandbox.configure_claude_environment(dict(os.environ, CHARNESS_RUNTIME_ROOT=str(runtime)),
+                                                lane, runtime, writable_dirs=writable)
+    prefix = command[:command.index("--")]
+    code = (
+        "import subprocess; from pathlib import Path\n"
+        "def git(*args, cwd=None):\n"
+        " return subprocess.check_output(['git',*args],cwd=cwd,text=True).strip()\n"
+        f"assert git('-C',{str(foreign)!r},'rev-parse','HEAD') == {foreign_head!r}, 'foreign -C discovery'\n"
+        f"assert git('rev-parse','HEAD',cwd={str(foreign)!r}) == {foreign_head!r}, 'foreign cwd discovery'\n"
+        "Path('nested').mkdir()\n"
+        f"assert git('rev-parse','HEAD',cwd='nested') == {base!r}\n"
+        "git('commit','--allow-empty','-m','lane discovery')\n"
+        "print(git('rev-parse','HEAD'))\n"
+    )
+    result = run_process([*prefix, "--", sys.executable, "-c", code], cwd=lane, env=env)
+    assert result.returncode == 0, result.stderr
+    tip = result.stdout.splitlines()[-1]
+    assert tip != base
+    assert _git(lane, "rev-parse", "HEAD") == (tip if shared else base)
+    finalized = {"exit_code": 0}
+    sandbox.finalize_executor_candidate(finalized, "claude", lane, env)
+    assert finalized == {"exit_code": 0}
+    assert _git(lane, "rev-parse", "HEAD") == tip
+    assert _git(repo, "rev-parse", "main") == base
+    assert _git(foreign, "rev-parse", "HEAD") == foreign_head
+
+
 def test_claude_settings_and_environment_are_invocation_local(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(sandbox.Path, "home", lambda: tmp_path / "operator")
     lane, runtime = tmp_path / "lane", tmp_path / "runtime"
@@ -97,7 +143,7 @@ def test_claude_settings_and_environment_are_invocation_local(tmp_path: Path, mo
     assert "BASH_ENV" not in env
     assert Path(env["HOME"]).is_relative_to(runtime)
     assert Path(env["CLAUDE_CONFIG_DIR"]).is_relative_to(runtime)
-    assert Path(env["GIT_DIR"]).is_relative_to(runtime)
+    assert not any(key in env for key in ("GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR"))
     assert "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB" not in env
     assert settings["permissions"]["disableBypassPermissionsMode"] == "disable"
     assert "Read(//proc/**)" in settings["permissions"]["deny"]

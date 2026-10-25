@@ -1,1 +1,1 @@
-2026-10-25-claude-native-empty-protected-files.md
+2026-10-25-claude-git-discovery.md
