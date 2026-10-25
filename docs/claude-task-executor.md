@@ -28,6 +28,7 @@ common directory, the lane instead uses its native linked-worktree Git directory
 commits and hook attestations are immediately visible in shared Git, and no
 private import runs. Shared Git configuration remains read-only. Callers must
 explicitly grant any external tool/verification caches their gates use.
+Native tools receive private writable `/tmp` for OS-level locks even when they ignore `TMPDIR`. Known temporary trees containing the worktree, runtime, Git object source and explicit grants retain read-only visibility before writable descendants are restored. Host temporary files remain unwritable. `XDG_RUNTIME_DIR` is a private mode-0700 directory.
 Real home configuration and credential files remain protected.
 Real provider credentials stay in a parent-side proxy; the child receives an
 invocation token. Credential-shaped workspace files are masked from shell reads

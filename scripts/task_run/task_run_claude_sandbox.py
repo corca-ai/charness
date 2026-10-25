@@ -171,6 +171,12 @@ def configure_claude_environment(
     root, home, private = _paths(execution_runtime_path)
     for directory in (root, home, home / ".claude", root / "tmp", root / "cache"):
         directory.mkdir(parents=True, exist_ok=True)
+    (root / "run").mkdir(mode=0o700, exist_ok=True)
+    runtime_fd = os.open(root / "run", os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        os.fchmod(runtime_fd, 0o700)
+    finally:
+        os.close(runtime_fd)
     configured = dict(env)
     for name in list(configured):
         if name in _GIT_ENV_KEYS or name.startswith(("GIT_CONFIG_", "GIT_AUTHOR_", "GIT_COMMITTER_")):
@@ -187,6 +193,7 @@ def configure_claude_environment(
         CLAUDE_CODE_TMPDIR=str(root / "tmp"), TMPDIR=str(root / "tmp"),
         TMP=str(root / "tmp"), TEMP=str(root / "tmp"),
         XDG_CONFIG_HOME=str(home / ".config"), XDG_CACHE_HOME=str(root / "cache"),
+        XDG_RUNTIME_DIR=str(root / "run"),
         GIT_DIR=str(_shared_git_dir(worktree, writable_dirs) or private), GIT_WORK_TREE=str(worktree.resolve()),
         DISABLE_AUTOUPDATER="1",
         GIT_CONFIG_NOSYSTEM="1", GIT_CONFIG_GLOBAL="/dev/null",
@@ -266,6 +273,20 @@ def sandbox_prefix(worktree: Path, execution_runtime_path: Path, *,
     finally:
         os.close(mask_fd)
     command = [bwrap, "--die-with-parent", "--new-session", "--unshare-pid", "--unshare-ipc", "--unshare-uts", "--ro-bind", "/", "/", "--proc", "/proc", "--dev", "/dev"]
+    # Native tools can use OS /tmp rather than TMPDIR for locks. Give them
+    # private scratch storage; never grant writes to the host temporary root.
+    # Later binds restore the worktree, runtime and explicit caches under /tmp.
+    command.extend(("--tmpfs", "/tmp"))
+    # Preserve read access to known temporary trees (including private Git's
+    # object source), then restore only their explicitly writable descendants.
+    read_paths = [worktree, runtime, *writable_dirs]
+    if (worktree / ".git").exists():
+        read_paths.append(Path(_git(worktree, "rev-parse", "--path-format=absolute", "--git-common-dir")).resolve())
+    temporary_root = Path("/tmp")
+    read_roots = {temporary_root / path.relative_to(temporary_root).parts[0]
+                  for path in read_paths if path.is_relative_to(temporary_root) and path != temporary_root}
+    for path in sorted(read_roots):
+        command.extend(("--ro-bind", str(path), str(path)))
     # Explicit grants precede all secret and policy masks.
     for path in writable_dirs:
         command.extend(("--bind", str(path), str(path)))

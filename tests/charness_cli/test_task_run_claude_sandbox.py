@@ -283,3 +283,47 @@ def test_explicit_grants_allow_shared_git_and_gate_cache(tmp_path: Path) -> None
     assert finalized == {"exit_code": 0}
     assert _git(lane, "rev-parse", "HEAD") == tip
     assert _git(repo, "rev-parse", "main") == base
+
+
+@pytest.mark.boundary_contract(reason="Native package managers must acquire private OS tmp locks without a writable host tmp grant")
+def test_private_tmp_allows_package_manager_locks_without_host_writes(tmp_path: Path) -> None:
+    if not shutil.which("bwrap"):
+        pytest.skip("bubblewrap not installed")
+    lane, runtime = tmp_path / "lane", tmp_path / "runtime"
+    lane.mkdir()
+    runtime.mkdir()
+    env = sandbox.configure_claude_environment({}, lane, runtime)
+    lock_name = "claude-package-manager-lock-" + tmp_path.name
+    code = (
+        "from pathlib import Path; import os\n"
+        f"lock = Path('/tmp') / {lock_name!r}\n"
+        "lock.mkdir(); (lock / 'lock').write_text('locked')\n"
+        "assert (lock / 'lock').read_text() == 'locked'\n"
+        "runtime = Path(os.environ['XDG_RUNTIME_DIR'])\n"
+        "(runtime / 'runtime-lock').write_text('locked')\n"
+        "assert runtime.stat().st_mode & 0o777 == 0o700\n"
+        "print('package-manager-lock=write/read private-tmp=ok')\n"
+    )
+    result = run_process([*sandbox.sandbox_prefix(lane, runtime), "--", sys.executable, "-c", code], cwd=lane, env=env)
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "package-manager-lock=write/read private-tmp=ok"
+    assert not (Path('/tmp') / lock_name).exists()
+
+
+def test_runtime_directory_reclaims_mode_without_following_symlinks(tmp_path: Path) -> None:
+    lane, runtime = tmp_path / "lane", tmp_path / "runtime"
+    lane.mkdir()
+    runtime.mkdir()
+    sandbox.configure_claude_environment({}, lane, runtime)
+    run = runtime / "claude/run"
+    run.chmod(0o777)
+    sandbox.configure_claude_environment({}, lane, runtime)
+    assert run.stat().st_mode & 0o777 == 0o700
+    run.rename(run.with_name("previous-run"))
+    outside = tmp_path / "outside"
+    outside.mkdir(mode=0o755)
+    before = outside.stat().st_mode
+    run.symlink_to(outside, target_is_directory=True)
+    with pytest.raises(OSError):
+        sandbox.configure_claude_environment({}, lane, runtime)
+    assert outside.stat().st_mode == before
