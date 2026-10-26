@@ -289,6 +289,21 @@ def scrubbed_lane_env(
             execution_runtime_path=Path(child["CHARNESS_RUNTIME_ROOT"]),
             writable_dirs=[Path(path) for path in payload.get("granted_writable_dirs", ())],
         )
+    # Cache placement is decided after provider-specific HOME/XDG isolation.
+    # A caller may share one cache only through a writable capability already
+    # granted to the lane; a request never creates an additional sandbox grant.
+    requested_cache = child.pop("CHARNESS_TASK_RUN_CACHE_HOME", "").strip()
+    if requested_cache and Path(requested_cache).is_absolute() and executor != "muse":
+        candidate = Path(requested_cache).resolve()
+        grants = [Path(path).resolve() for path in payload.get("granted_writable_dirs", ())]
+        if any(candidate.is_relative_to(grant) for grant in grants):
+            child["XDG_CACHE_HOME"] = str(candidate)
+    if child.get("XDG_CACHE_HOME"):
+        cache = Path(child["XDG_CACHE_HOME"])
+        for name, path in {"GOCACHE": cache / "go-build", "GOPATH": cache / "go",
+                           "GOMODCACHE": cache / "go/pkg/mod"}.items():
+            path.mkdir(parents=True, exist_ok=True)
+            child[name] = str(path)
     return child
 
 
