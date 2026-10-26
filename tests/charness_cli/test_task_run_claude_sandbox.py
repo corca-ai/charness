@@ -133,6 +133,27 @@ def test_lane_git_discovery_respects_foreign_checkout(tmp_path: Path, shared: bo
     assert _git(foreign, "rev-parse", "HEAD") == foreign_head
 
 
+
+def test_lane_loads_only_managed_charness_plugin(tmp_path: Path, monkeypatch) -> None:
+    from scripts.cli.bootstrap import managed_checkout_root
+
+    operator = tmp_path / "operator"
+    monkeypatch.setattr(sandbox.Path, "home", lambda: operator)
+    monkeypatch.setattr(sandbox, "_prepare_git", lambda *_args: None)
+    monkeypatch.setattr(sandbox, "sandbox_prefix", lambda *_args, **_kwargs: ["bwrap"])
+    lane, runtime = tmp_path / "lane", tmp_path / "runtime"
+    command = sandbox.build_claude_command("claude", lane, runtime)
+    plugin = managed_checkout_root(operator) / "plugins" / "charness"
+    assert command.count("--plugin-dir") == 1
+    assert command[command.index("--plugin-dir") + 1] == str(plugin)
+    assert command[command.index("--setting-sources") + 1] == "project"
+    assert "--strict-mcp-config" in command
+    assert command[command.index("--mcp-config") + 1] == '{"mcpServers":{}}'
+    env = sandbox.configure_claude_environment({}, lane, runtime)
+    assert Path(env["HOME"]).is_relative_to(runtime)
+    assert Path(env["CLAUDE_CONFIG_DIR"]).is_relative_to(runtime)
+
+
 def test_claude_settings_and_environment_are_invocation_local(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(sandbox.Path, "home", lambda: tmp_path / "operator")
     lane, runtime = tmp_path / "lane", tmp_path / "runtime"

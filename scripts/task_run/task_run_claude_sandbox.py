@@ -17,6 +17,7 @@ import tempfile
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from scripts.cli.bootstrap import managed_checkout_root
 from scripts.core.subprocess_guard import run_process
 from scripts.task_run.task_run_claude_auth import claude_auth_proxy as claude_auth_proxy
 from scripts.task_run.task_run_claude_review import reviewer_home
@@ -351,10 +352,12 @@ def build_claude_command(
     if _shared_git_dir(worktree, writable_dirs) is None:
         _prepare_git(worktree, runtime)
     settings = _settings(worktree, runtime, writable_dirs)
+    # Load only the managed plugin; private HOME must not import operator settings.
+    plugin = managed_checkout_root(Path.home()) / "plugins" / "charness"
     return [*sandbox_prefix(worktree, runtime, writable_dirs=writable_dirs), "--", executable, "-p", "--model", model,
             "--output-format", "stream-json", "--verbose", "--permission-mode", "dontAsk",
             "--permission-prompts", "none", "--settings", str(settings), "--setting-sources", "project",
-            "--strict-mcp-config", "--mcp-config", '{"mcpServers":{}}']
+            "--plugin-dir", str(plugin), "--strict-mcp-config", "--mcp-config", '{"mcpServers":{}}']
 
 
 def finalize_executor_candidate(
