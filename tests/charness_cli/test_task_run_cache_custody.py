@@ -35,3 +35,12 @@ def test_go_paths_follow_final_xdg_cache(tmp_path, monkeypatch, executor, grante
     result = run_process(command, env=child, cwd=worktree)
     assert result.returncode == 0, result.stderr
     assert result.stdout.strip() == "ok"
+
+
+def test_codex_lane_overrides_ambient_writable_roots(tmp_path):
+    cache = tmp_path / "cache"; cache.mkdir()
+    command = runtime.build_codex_command("codex", effort="medium", writable_dirs=[cache])
+    assert "sandbox_workspace_write.writable_roots=[]" in command
+    assert command[command.index("--add-dir") + 1] == str(cache.resolve())
+    reviewed = runtime.read_only_codex(command.copy())
+    assert "sandbox_workspace_write.writable_roots=[]" not in reviewed

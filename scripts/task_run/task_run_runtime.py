@@ -103,6 +103,8 @@ def _task_id(branch: str, requested: str | None) -> str:
 #: workspace-write sandbox's own network switch. Muse: `--sandbox-network`
 #: (`restricted|enabled|proxy-only`, default proxy-only).
 CODEX_LANE_NETWORK_CONFIG = "sandbox_workspace_write.network_access=true"
+# Ambient user grants are not lane capabilities; --add-dir carries explicit roots.
+CODEX_LANE_WRITABLE_CONFIG = "sandbox_workspace_write.writable_roots=[]"
 MUSE_LANE_SANDBOX_NETWORK = "enabled"
 
 
@@ -125,17 +127,17 @@ def build_codex_args(
     if effort not in TASK_EFFORTS:
         allowed = ", ".join(TASK_EFFORTS)
         raise TaskRunError(f"--effort must be one of: {allowed} (codex executor)")
-    args.extend(["-c", f"model_reasoning_effort={effort}", "-c", CODEX_LANE_NETWORK_CONFIG])
+    args.extend(["-c", f"model_reasoning_effort={effort}", "-c", CODEX_LANE_WRITABLE_CONFIG,
+                 "-c", CODEX_LANE_NETWORK_CONFIG])
     return args
 
 
 def read_only_codex(command: list[str]) -> list[str]:
     """Turn a lane's Codex argv into a read-only reviewer's: no write, no lane network."""
     command[command.index("--sandbox") + 1] = "read-only"
-    for index in range(len(command) - 1):
-        if command[index] == "-c" and command[index + 1] == CODEX_LANE_NETWORK_CONFIG:
+    for index in range(len(command) - 2, -1, -1):
+        if command[index] == "-c" and command[index + 1] in (CODEX_LANE_NETWORK_CONFIG, CODEX_LANE_WRITABLE_CONFIG):
             del command[index : index + 2]
-            break
     return command
 
 
