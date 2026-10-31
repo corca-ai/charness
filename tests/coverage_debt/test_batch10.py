@@ -353,12 +353,16 @@ def test_fake_executor_records_delivery_through_lane_watch(tmp_path: Path) -> No
                 }
             ]
             self.deliveries: list[str] = []
+            self.completions = 0
 
         def start(self, **_kwargs: Any) -> None:
             return None
 
         def stop(self) -> None:
             return None
+
+        def observe_completion(self) -> None:
+            self.completions += 1
 
         def pending_steers(self) -> list[dict[str, str]]:
             pending, self.pending = self.pending, []
@@ -374,6 +378,7 @@ def test_fake_executor_records_delivery_through_lane_watch(tmp_path: Path) -> No
     assert result["exit_code"] == 0
     assert counter.read_text(encoding="utf-8") == "3"
     assert watch.deliveries == ["session-resume", "relaunch-in-place"]
+    assert watch.completions > 0
 
 
 def test_fake_executor_open_error_is_returned_as_exec_error(tmp_path: Path) -> None:
