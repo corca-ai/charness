@@ -106,6 +106,12 @@ def _repo_runtime_key(repo_root: Path) -> str:
     return hashlib.sha256(str(repo_root.resolve()).encode("utf-8")).hexdigest()[:16]
 
 
+# Python's own temporary-directory search order, read from the supplied snapshot:
+# a process that already bootstrapped has redirected tempfile.tempdir under its
+# runtime root, and a snapshot taken before that must not derive a root there.
+_TEMP_ENV_KEYS = ("TMPDIR", "TEMP", "TMP")
+
+
 def _runtime_root(repo_root: Path, env: MutableMapping[str, str]) -> tuple[Path, bool]:
     runtime_key = _repo_runtime_key(repo_root)
     configured = env.get("CHARNESS_RUNTIME_ROOT", "").strip()
@@ -125,7 +131,7 @@ def _runtime_root(repo_root: Path, env: MutableMapping[str, str]) -> tuple[Path,
 
     base_text = (
         env.get("XDG_CACHE_HOME", "").strip()
-        or env.get("TMPDIR", "").strip()
+        or next((value for key in _TEMP_ENV_KEYS if (value := env.get(key, "").strip())), "")
         or tempfile.gettempdir()
     )
     base = _hoist_out_of_runtime_tree(Path(base_text).expanduser().resolve())
