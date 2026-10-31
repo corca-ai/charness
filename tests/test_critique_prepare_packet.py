@@ -4,8 +4,10 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 from functools import partial
 from pathlib import Path
+from types import SimpleNamespace
 
 import yaml
 
@@ -26,6 +28,7 @@ from scripts.review.critique_packet_lib import (
     reviewer_tier_evidence,
     write_packet,
 )
+from scripts.review import critique_packet_lib
 from scripts.review.reviewed_input_verification import verify_reviewed_input_identity
 from scripts.review.validate_critique_artifacts import (
     CRITIQUE_PREPARE_PACKET_TITLE_RE,
@@ -160,6 +163,21 @@ def test_execute_script_section_success(tmp_path: Path) -> None:
     result = execute_section(section, repo_root=tmp_path)
     assert result["ok"] is True
     assert "packet-section-output" in result["content"]
+
+
+def test_execute_script_section_uses_current_python_on_windows(tmp_path: Path, monkeypatch) -> None:
+    commands = []
+    monkeypatch.setattr(critique_packet_lib, "os", SimpleNamespace(name="nt", environ=os.environ))
+
+    def run(argv, **_kwargs):
+        commands.append(argv)
+        return SimpleNamespace(timed_out=False, returncode=0, stdout="output", stderr="")
+
+    monkeypatch.setattr(critique_packet_lib, "run_monitored_phase", run)
+    section = {"id": "x", "title": "X", "content_kind": "script", "command": "python3 producer.py"}
+    result = execute_section(section, repo_root=tmp_path)
+    assert result["ok"] is True
+    assert commands == [[sys.executable, "producer.py"]]
 
 
 def test_execute_script_section_failure_propagates_errors(tmp_path: Path) -> None:
