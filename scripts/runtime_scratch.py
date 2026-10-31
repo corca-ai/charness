@@ -35,8 +35,33 @@ _load_repo_runtime_bootstrap()
 
 try:
     import fcntl
-except ImportError:  # pragma: no cover - Windows has no fcntl
+except ImportError:  # pragma: no cover - exercised on Windows
     fcntl = None
+    if os.name == "nt":
+        import msvcrt
+        import types
+
+        # The owner lock is an exclusive non-blocking byte-range lock.  It is
+        # taken far past the end of the lock record so that a reader of the
+        # record (inspection) is never denied by the lock itself, and it
+        # conflicts across handles of one process like POSIX flock does.
+        _LOCK_OFFSET = 1 << 30
+
+        def _windows_flock(fd: int, operation: int) -> None:
+            position = os.lseek(fd, 0, os.SEEK_CUR)
+            os.lseek(fd, _LOCK_OFFSET, os.SEEK_SET)
+            try:
+                if operation & 2:  # LOCK_EX; contention is always non-blocking here
+                    try:
+                        msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+                    except PermissionError as exc:
+                        raise BlockingIOError(*exc.args) from exc
+                else:
+                    msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
+            finally:
+                os.lseek(fd, position, os.SEEK_SET)
+
+        fcntl = types.SimpleNamespace(LOCK_EX=2, LOCK_NB=4, LOCK_UN=8, flock=_windows_flock)
 
 from scripts.runtime_bootstrap import (  # noqa: E402
     import_repo_module,
