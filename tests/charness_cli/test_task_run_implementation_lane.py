@@ -244,6 +244,31 @@ def test_watch_completion_reads_last_output_without_a_poll(tmp_path: Path) -> No
     assert watch.stop_reason is None
 
 
+def test_watch_completion_survives_progress_output_oserror(tmp_path: Path) -> None:
+    watch = _watch(tmp_path)
+    watch._started_at = 0.0
+    watch._clock = lambda: 1.0
+
+    def broken_output(_phases, _elapsed):
+        raise BrokenPipeError("progress output closed")
+
+    watch._emit = broken_output
+    watch._stderr_log.write_text("CONTRACT-READ\n", encoding="utf-8")
+    watch.observe_completion()
+    assert watch.receipt()["last_phases"] == ["CONTRACT-READ"]
+
+
+def test_watch_completion_exposes_unexpected_errors(tmp_path: Path) -> None:
+    watch = _watch(tmp_path)
+
+    def broken_clock():
+        raise ValueError("invalid clock")
+
+    watch._clock = broken_clock
+    with pytest.raises(ValueError, match="invalid clock"):
+        watch.observe_completion()
+
+
 def test_watch_tick_relays_phases_then_stops_on_spent_budget(
     tmp_path: Path,
 ) -> None:

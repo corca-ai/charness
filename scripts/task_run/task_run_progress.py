@@ -164,7 +164,7 @@ class LaneProgressWatch:
         """Record final drained output without enforcing live-only stop rules."""
         try:
             self._poll(self._clock())
-        except Exception:  # noqa: BLE001 - final observation is best effort
+        except OSError:  # A closed progress stream must not interrupt cleanup.
             pass
 
     def receipt(self) -> dict[str, Any]:
