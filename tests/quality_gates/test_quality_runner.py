@@ -40,6 +40,22 @@ def test_quality_runner_seed_uses_the_cross_worker_cache(tmp_path: Path) -> None
     assert (seed / "scripts" / "run-quality.sh").is_file()
 
 
+def test_nested_quality_runner_uses_fixture_runtime(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    shared_tmp = tmp_path / "unrelated-temp"
+    shared_tmp.mkdir()
+    env["TMPDIR"] = str(shared_tmp)
+    env["CHARNESS_QUALITY_LABELS"] = "pytest"
+
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+
+    assert result.returncode == 0, result.stderr
+    assert "PASS pytest" in result.stdout
+    assert not (shared_tmp / "charness" / "runtime").exists()
+
+
 def _assert_external_failure_recovery(repo: Path, label: str) -> None:
     receipt = json.loads((repo / "receipt.json").read_text(encoding="utf-8"))
     recovery = receipt["adverse_subjects"][0]["recovery"]

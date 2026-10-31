@@ -632,6 +632,12 @@ def seed_agent_browser_runtime_guard_stub(target_dir: Path) -> None:
     )
 
 
+def _quality_runner_env(repo: Path) -> dict[str, str]:
+    """Keep nested retention out of host and other fixtures' runtime trees."""
+    return {"PATH": f"{repo / 'bin'}:/usr/bin:/bin",
+            "CHARNESS_RUNTIME_ROOT": str(repo.parent / f".{repo.name}-quality-runtime")}
+
+
 def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     repo = tmp_path / "repo"
     scripts_dir = repo / "scripts"
@@ -823,14 +829,13 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
     origin_main = repo / ".git" / "refs" / "remotes" / "origin" / "main"
     origin_main.parent.mkdir(parents=True, exist_ok=True)
     origin_main.write_text(oid + "\n", encoding="ascii")
-    return repo, {"PATH": f"{bin_dir}:/usr/bin:/bin"}
+    return repo, _quality_runner_env(repo)
 
 
 def clone_quality_runner_repo(tmp_path: Path, seeded_repo: Path) -> tuple[Path, dict[str, str]]:
     repo = tmp_path / "repo"
     shutil.copytree(seeded_repo, repo)
-    env = {"PATH": f"{repo / 'bin'}:/usr/bin:/bin"}
-    return repo, env
+    return repo, _quality_runner_env(repo)
 
 
 def make_minimal_skill_repo(tmp_path: Path, description: str) -> Path:
