@@ -160,6 +160,13 @@ class LaneProgressWatch:
         if self._thread is not None:
             self._thread.join(timeout=self._poll_seconds + 5)
 
+    def observe_completion(self) -> None:
+        """Record final drained output without enforcing live-only stop rules."""
+        try:
+            self._poll(self._clock())
+        except Exception:  # noqa: BLE001 - final observation is best effort
+            pass
+
     def receipt(self) -> dict[str, Any]:
         """The guard configuration and outcome for the lane receipt."""
         return {

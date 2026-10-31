@@ -3,20 +3,20 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 199,
-  "indexed_artifact_count": 184,
+  "source_artifact_count": 200,
+  "indexed_artifact_count": 185,
   "risk_class_counts": {
     "contract-freeze-risk": 35,
     "external-seam": 26,
     "host-disproves-local": 8,
-    "none": 82,
+    "none": 83,
     "operator-visible-recovery": 23,
     "repeated-symptom": 24
   },
   "generalization_pressure_counts": {
     "factor-now": 26,
     "monitor": 126,
-    "none": 32
+    "none": 33
   },
   "entries": [
     {
@@ -2582,6 +2582,20 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-10-15-task-run-intentional-deletion-followup.md",
+      "is_current_pointer": false,
+      "interrupt_id": "none",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "canonical carrier persistence to completion eligibility",
+      "generalization_pressure": "none",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-10-15-task-run-intentional-deletion.md",
       "is_current_pointer": false,
       "interrupt_id": "none",
@@ -2598,13 +2612,13 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "none",
+      "interrupt_id": "final-lane-progress",
       "risk_classes": [
         "none"
       ],
-      "seam": "canonical carrier persistence to completion eligibility",
+      "seam": "executor output capture to progress guard receipt",
       "generalization_pressure": "none",
-      "critique_required": true,
+      "critique_required": false,
       "next_step": "impl",
       "handoff_artifact": "none",
       "forced": false

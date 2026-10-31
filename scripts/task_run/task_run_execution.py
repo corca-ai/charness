@@ -345,9 +345,11 @@ def _run_executor_invocation(
             finally:
                 if lane_watch is not None:
                     lane_watch.stop()
-                terminal_stderr.close()
                 _kill_recorded_process_group(group_path)
                 stdout_pipe.close()
+                if lane_watch is not None:
+                    lane_watch.observe_completion()
+                terminal_stderr.close()
                 capture = stdout_pipe.capture()
                 if not capture["complete"]:
                     # Lost event bytes are recorded, never silent (v8.15 R1).
