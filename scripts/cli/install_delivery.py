@@ -130,13 +130,18 @@ def load_packaging(path: Path) -> dict[str, object]:
 def read_jsonrpc_line_before(
     stream: subprocess.Popen[str], *, deadline: float
 ) -> dict[str, object]:
+    def raise_timeout_or_exit() -> None:
+        if stream.poll() is not None:
+            raise CharnessError("Codex app-server exited before returning a response")
+        raise CharnessError("timed out while waiting for Codex app-server response")
+
     while True:
         remaining = deadline - time.monotonic()
         if remaining <= 0:
-            raise CharnessError("timed out while waiting for Codex app-server response")
+            raise_timeout_or_exit()
         ready, _, _ = select.select([stream.stdout], [], [], remaining)
         if not ready:
-            raise CharnessError("timed out while waiting for Codex app-server response")
+            raise_timeout_or_exit()
         line = stream.stdout.readline()
         if not line:
             stderr_output = stream.stderr.read() if stream.stderr is not None else ""
