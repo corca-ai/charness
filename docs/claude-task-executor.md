@@ -32,11 +32,17 @@ lookups retain their own repository identity. Private preparation and import sel
 the private repository for individual Git invocations only. Shared Git configuration remains read-only. Callers must
 explicitly grant any external tool/verification caches their gates use.
 Native tools receive private writable `/tmp` for OS-level locks even when they ignore `TMPDIR`. Known temporary trees containing the worktree, runtime, Git object source and explicit grants retain read-only visibility before writable descendants are restored. Host temporary files remain unwritable. `XDG_RUNTIME_DIR` is a private mode-0700 directory.
-Real home configuration and credential files remain protected.
+Real home configuration and credential files remain protected, including
+`~/.docker`. Container daemon sockets (Docker, containerd, Podman, CRI-O) are
+masked, because a read-only bind does not stop a connect.
+The sandbox does not restrict network egress: a lane can reach any address the
+host can, including cloud metadata endpoints and host TCP services
+([#889](https://github.com/corca-ai/charness/issues/889)).
 Real provider credentials stay in a parent-side proxy; the child receives an
 invocation token. Credential-shaped workspace files are masked from shell reads
 as well as denied to file tools. The safety and real-lane evidence record states
-the tested host boundary.
+the tested host boundary. The real-sandbox tests skip where bubblewrap is
+absent, and CI does not install it.
 
 Credential masks cover known `.env*`, `.pem`, `.key` and credential filenames,
 not arbitrary secret-bearing content. The API proxy forwards only to the fixed

@@ -37,7 +37,11 @@ from scripts.task_run.task_run_claude_auth import (  # noqa: E402
 from scripts.task_run.task_run_claude_review import reviewer_home  # noqa: E402
 from scripts.task_run.task_run_contract import TASK_CLAUDE_MODEL, TaskRunError  # noqa: E402
 
-_SECRET_DIRECTORIES = (".claude", ".codex", ".ceal", ".ssh", ".aws", ".azure", ".kube", ".gnupg", ".config", ".local/state/ceal")
+_SECRET_DIRECTORIES = (".claude", ".codex", ".ceal", ".ssh", ".aws", ".azure", ".kube", ".docker", ".gnupg", ".config", ".local/state/ceal")
+# Container daemon sockets grant host-root-equivalent control to any member of
+# their group; a read-only root bind does not stop connect(). Mask each one.
+_HOST_DAEMON_SOCKETS = ("/run/docker.sock", "/var/run/docker.sock", "/run/containerd/containerd.sock",
+                        "/run/podman/podman.sock", "/run/crio/crio.sock")
 _SECRET_FILES = (".claude.json", ".netrc", ".npmrc", ".git-credentials", ".bashrc", ".bash_profile", ".profile", ".zshrc", ".zshenv", ".zprofile")
 _GIT_ENV_KEYS = ("GIT_DIR", "GIT_COMMON_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES")
 
@@ -317,6 +321,8 @@ def sandbox_prefix(worktree: Path, execution_runtime_path: Path, *,  # noqa: C90
     for path in (Path("/run/user") / str(os.getuid()),):
         if path.exists():
             command.extend(("--tmpfs", str(path), "--remount-ro", str(path)))
+    for path in sorted({Path(socket).resolve() for socket in _HOST_DAEMON_SOCKETS if Path(socket).exists()}):
+        command.extend(("--ro-bind", str(mask), str(path)))
     command.extend(("--bind", str(worktree), str(worktree), "--bind", str(runtime), str(runtime)))
     # Policy and Git identity remain protected through the writable grants.
     # Shared Git is read-only unless the caller explicitly grants it.

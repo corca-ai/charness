@@ -394,3 +394,47 @@ def test_runtime_directory_reclaims_mode_without_following_symlinks(tmp_path: Pa
     with pytest.raises(OSError):
         sandbox.configure_claude_environment({}, lane, runtime)
     assert outside.stat().st_mode == before
+
+
+def test_sandbox_masks_docker_credentials_and_host_daemon_sockets(monkeypatch, tmp_path: Path) -> None:
+    """A docker-group member must not reach the daemon or registry auth from a lane."""
+    home = tmp_path / "home"
+    (home / ".docker").mkdir(parents=True)
+    lane = tmp_path / "lane"
+    runtime = tmp_path / "runtime"
+    lane.mkdir()
+    runtime.mkdir()
+    daemon = tmp_path / "daemon.sock"  # existence is what the mask keys on
+    daemon.write_text("", encoding="utf-8")
+    monkeypatch.setattr(sandbox.Path, "home", classmethod(lambda _cls: home))
+    monkeypatch.setattr(sandbox.shutil, "which", lambda _name: "/usr/bin/bwrap")
+    monkeypatch.setattr(sandbox, "_HOST_DAEMON_SOCKETS", (str(daemon), str(tmp_path / "absent.sock")))
+
+    command = sandbox.sandbox_prefix(lane, runtime)
+
+    mask = str(runtime.resolve() / "claude" / "empty-credential")
+    docker = str(home / ".docker")
+    assert ["--tmpfs", docker, "--remount-ro", docker] in [command[i:i + 4] for i in range(len(command))]
+    assert ["--ro-bind", mask, str(daemon.resolve())] in [command[i:i + 3] for i in range(len(command))]
+    assert str(tmp_path / "absent.sock") not in command
+
+
+@pytest.mark.boundary_contract(reason="The real OS sandbox must refuse a connect to the host Docker daemon socket")
+def test_lane_cannot_connect_to_the_host_docker_socket(tmp_path: Path) -> None:
+    socket_path = Path("/run/docker.sock")
+    if not shutil.which("bwrap") or not socket_path.exists():
+        pytest.skip("bubblewrap or a host Docker socket is not present")
+    lane = tmp_path / "lane"
+    runtime = tmp_path / "runtime"
+    lane.mkdir()
+    runtime.mkdir()
+    script = (
+        "import socket\n"
+        "s = socket.socket(socket.AF_UNIX)\n"
+        "try:\n s.connect('/run/docker.sock')\n"
+        "except OSError as exc:\n print('refused', type(exc).__name__)\n"
+        "else:\n print('connected')\n"
+    )
+    result = run_process([*sandbox.sandbox_prefix(lane, runtime), "--", sys.executable, "-c", script], cwd=lane)
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.startswith("refused"), result.stdout

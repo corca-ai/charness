@@ -1651,7 +1651,7 @@ def build_parser() -> argparse.ArgumentParser:
     task_run_parser.add_argument(
         "--effort",
         required=True,
-        help="Orchestrator-selected reasoning effort: medium, xhigh, or max for codex; medium, high, xhigh, or max for muse.",
+        help="Orchestrator-selected reasoning effort: medium, xhigh, or max for codex; medium, high, xhigh, or max for muse; claude records it as lane metadata only.",
     )
     task_run_parser.add_argument(
         "--task-id",
@@ -1745,8 +1745,9 @@ def build_parser() -> argparse.ArgumentParser:
         action="append",
         type=Path,
         default=[],
-        help="Absolute host-state directory a codex lane may write (mapped to codex --add-dir); "
-        "repeatable. Refused for muse lanes and for grants covering the repo root, $HOME, or /.",
+        help="Absolute host-state directory a codex or claude lane may write (codex --add-dir; a "
+        "writable bind in the claude sandbox); repeatable. Refused for muse lanes and for grants "
+        "covering the repo root, $HOME, or /.",
     )
     task_run_parser.add_argument(
         "--detach",

@@ -390,7 +390,7 @@ options:
                         only to Claude in the executor order.
   --effort EFFORT       Orchestrator-selected reasoning effort: medium, xhigh,
                         or max for codex; medium, high, xhigh, or max for
-                        muse.
+                        muse; claude records it as lane metadata only.
   --task-id TASK_ID     Optional receipt/log identifier for explicit runs;
                         shorthand derives it from --lane.
   --prepare             Run the worktree adapter prepare step before the lane
@@ -436,10 +436,10 @@ options:
                         lane prompt, never inlined, and never read by scope
                         evidence.
   --grant-writable GRANT_WRITABLE
-                        Absolute host-state directory a codex lane may write
-                        (mapped to codex --add-dir); repeatable. Refused for
-                        muse lanes and for grants covering the repo root,
-                        $HOME, or /.
+                        Absolute host-state directory a codex or claude lane
+                        may write (codex --add-dir; a writable bind in the
+                        claude sandbox); repeatable. Refused for muse lanes
+                        and for grants covering the repo root, $HOME, or /.
   --detach              Launch the lane detached and return once its carrier
                         has started (exit 0, printing the task id and result
                         path), or with the task-run exit code of a preflight
