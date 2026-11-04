@@ -1,5 +1,6 @@
 """Final lane cache environment follows sandbox selection and explicit grants."""
 from pathlib import Path
+import shutil
 import sys
 import pytest
 from scripts.core.subprocess_guard import run_process
@@ -30,6 +31,8 @@ def test_go_paths_follow_final_xdg_cache(tmp_path, monkeypatch, executor, grante
     code = "from pathlib import Path; import os; p=Path(os.environ['GOCACHE'])/'probe'; p.write_text('ok'); print(p.read_text())"
     command = [sys.executable, "-c", code]
     if executor == "claude":
+        if not shutil.which("bwrap"):
+            pytest.skip("bubblewrap not installed")
         command = [*sandbox.sandbox_prefix(worktree, private,
                      writable_dirs=[shared] if granted else []), "--", *command]
     result = run_process(command, env=child, cwd=worktree)
