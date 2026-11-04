@@ -98,6 +98,11 @@ def _write_release_fixture(path: Path) -> str:
     return str(path)
 
 
+def _path_without_codex() -> str:
+    entries = os.environ.get("PATH", "").split(os.pathsep)
+    return os.pathsep.join(entry for entry in entries if not (Path(entry) / "codex").exists())
+
+
 def _spawn(
     *argv: str,
     home: Path,
@@ -128,6 +133,10 @@ def _spawn(
         userbase_env = {"PYTHONUSERBASE": site.getuserbase()}
     env = {
         **os.environ,
+        # A host `codex` on PATH turns the update's Codex host-cache refresh into a
+        # real app-server launch; under full-suite load the 28s spawn bound expired
+        # inside that step. These tests own the entry's fallbacks, not that refresh.
+        "PATH": _path_without_codex(),
         "HOME": str(home),
         **userbase_env,
         "CHARNESS_STATE_HOME": str(home / ".local" / "state"),

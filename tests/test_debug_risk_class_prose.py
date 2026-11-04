@@ -40,7 +40,9 @@ def test_risk_class_value_is_read_apart_from_explanatory_prose(
     assert payload["mode"] != "repair-risk-declaration"
 
 
-@pytest.mark.parametrize("risk_line", ["none, bogus (prose)", "bogus; prose", "(prose first) none"])
+@pytest.mark.parametrize(
+    "risk_line", ["none, bogus (prose)", "bogus; prose", "(prose first) none", "none/bogus", "none, (prose)"]
+)
 def test_prose_does_not_launder_an_unknown_risk_value(tmp_path: Path, risk_line: str) -> None:
     repo = tmp_path / "repo"
     write_forced_risk_artifact(repo, risk_class=risk_line)
