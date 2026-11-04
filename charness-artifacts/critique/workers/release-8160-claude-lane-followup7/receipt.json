@@ -1,0 +1,82 @@
+{
+  "attempt_id": "release-8160-claude-lane-followup7",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup7/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-11-04T22:02:14Z",
+  "model_application_state": "unverified-by-provider",
+  "output_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup7/result.json",
+  "output_fresh": true,
+  "output_sha256": "87b34bdc122fddd4ab86c13406da37b747f83e56bb1f205145a20eaa785bb907",
+  "output_size": 2356,
+  "packet_identity": "582f92d40db7c3216cd60f4965d60bab84711aadcd91bace50d305593588e43d",
+  "parent_receipt_identity": "parent-819c18604370898a546ab2d4c951aa83b3621258e4abc97b",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup7/review-prompt.md",
+  "prompt_sha256": "27ea4121b31c588100a577b98445f6007a6af38d0a002dad8206d8cfa5ac8745",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "requested_model": "gpt-6-luna",
+  "requested_reasoning_effort": "xhigh",
+  "reviewed_input_identity": "cb9ac6a05cac45cade5b5bcad7bf11a3c184ad9abeca136b7891d454963b563f",
+  "reviewer_tier": "high-leverage",
+  "run_id": "run-release-8160-claude-lane-followup7",
+  "schema_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup7/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "Recheck R-001 and R-002. R-001: notes and docs now count home .env* files among the masks. R-002: configure_claude_environment may copy a stored OAuth token into the lane env, but task_run_execution.py wraps every Claude invocation in task_run_claude_auth.claude_auth_proxy, which pops the real token into the parent-side proxy and gives the child a per-invocation placeholder; notes and docs now say so.",
+  "started_at": "2026-11-04T21:59:53Z",
+  "status": "succeeded",
+  "stderr_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup7/backend.stderr",
+  "stdout_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup7/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "unsupported_reviewer_fields": [
+    "service_tier=priority",
+    "fork_turns=none"
+  ],
+  "workspace": "/home/hwidong/codes/charness"
+}

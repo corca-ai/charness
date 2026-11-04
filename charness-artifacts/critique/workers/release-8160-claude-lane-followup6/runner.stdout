@@ -1,0 +1,71 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Recheck R-001: the notes and docs now say the home masks are a named list
+  of directories and files (including ~/.aws), so only a credential file outside those
+  directories and files stays readable.'
+attempt_id: release-8160-claude-lane-followup6
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 8c412ebf4884e3d5904084791c23c5eb62b93aad35bb878a16fbfb4a403398e1
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-0bb0254a036d3adf16ee3d8e5ceb8df1/receipt.json
+ledger_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-0bb0254a036d3adf16ee3d8e5ceb8df1/delivery.json
+producer_run_id: run-release-8160-claude-lane-followup6
+producer_binding:
+  output_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-0bb0254a036d3adf16ee3d8e5ceb8df1/result.json
+  receipt_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-0bb0254a036d3adf16ee3d8e5ceb8df1/receipt.json
+  producer_run_id: run-release-8160-claude-lane-followup6
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: dc6f5a941fa746d985cd89de4668d1fc3d546b4e391a184be4c9517d135220f6
+receipt_output_sha256: dc6f5a941fa746d985cd89de4668d1fc3d546b4e391a184be4c9517d135220f6
+packet_identity: 429df0155a62664945f3f75c89874dbf7435793aedceca27c51b0eac70aeea3e
+reviewed_input_identity: 76886d5b8cb77ec17a1aec1d833dac0c9b012ee490d35f1b039dfd8fb207bd89
+parent_receipt_identity: parent-568006029c5ae703f5c185050adfae6214ac5cd82b0bbd37
+provenance:
+  scope: 'Recheck R-001: the notes and docs now say the home masks are a named list
+    of directories and files (including ~/.aws), so only a credential file outside
+    those directories and files stays readable.'
+  packet_identity: 429df0155a62664945f3f75c89874dbf7435793aedceca27c51b0eac70aeea3e
+  reviewed_input_identity: 76886d5b8cb77ec17a1aec1d833dac0c9b012ee490d35f1b039dfd8fb207bd89
+  parent_receipt_identity: parent-568006029c5ae703f5c185050adfae6214ac5cd82b0bbd37
+  expected_targets_sha256: null
+  attempt_id: release-8160-claude-lane-followup6
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 8c412ebf4884e3d5904084791c23c5eb62b93aad35bb878a16fbfb4a403398e1
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

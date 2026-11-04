@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8160-claude-lane-followup6",
+      "scope": "Recheck R-001: the notes and docs now say the home masks are a named list of directories and files (including ~/.aws), so only a credential file outside those directories and files stays readable.",
+      "packet_identity": "429df0155a62664945f3f75c89874dbf7435793aedceca27c51b0eac70aeea3e",
+      "parent_receipt_identity": "parent-568006029c5ae703f5c185050adfae6214ac5cd82b0bbd37",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-11-04T21:59:04Z",
+      "history": [
+        {
+          "event_id": "8476b3807e3746af98b6c689205a3e28",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-11-04T21:56:53Z",
+          "attempt_id": "release-8160-claude-lane-followup6",
+          "scope": "Recheck R-001: the notes and docs now say the home masks are a named list of directories and files (including ~/.aws), so only a credential file outside those directories and files stays readable.",
+          "packet_identity": "429df0155a62664945f3f75c89874dbf7435793aedceca27c51b0eac70aeea3e",
+          "parent_receipt_identity": "parent-568006029c5ae703f5c185050adfae6214ac5cd82b0bbd37",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "cfdbfa80f1244e7ab0a654270970639d",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-11-04T21:56:53Z",
+          "attempt_id": "release-8160-claude-lane-followup6",
+          "scope": "Recheck R-001: the notes and docs now say the home masks are a named list of directories and files (including ~/.aws), so only a credential file outside those directories and files stays readable.",
+          "packet_identity": "429df0155a62664945f3f75c89874dbf7435793aedceca27c51b0eac70aeea3e",
+          "parent_receipt_identity": "parent-568006029c5ae703f5c185050adfae6214ac5cd82b0bbd37",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "85a207a1af5a40d2a6eaa0036b727dfc",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-11-04T21:59:04Z",
+          "attempt_id": "release-8160-claude-lane-followup6",
+          "scope": "Recheck R-001: the notes and docs now say the home masks are a named list of directories and files (including ~/.aws), so only a credential file outside those directories and files stays readable.",
+          "packet_identity": "429df0155a62664945f3f75c89874dbf7435793aedceca27c51b0eac70aeea3e",
+          "parent_receipt_identity": "parent-568006029c5ae703f5c185050adfae6214ac5cd82b0bbd37",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "dc6f5a941fa746d985cd89de4668d1fc3d546b4e391a184be4c9517d135220f6"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "76886d5b8cb77ec17a1aec1d833dac0c9b012ee490d35f1b039dfd8fb207bd89",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "8c412ebf4884e3d5904084791c23c5eb62b93aad35bb878a16fbfb4a403398e1",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup6/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup6/receipt.json",
+      "producer_run_id": "run-release-8160-claude-lane-followup6",
+      "findings_identity": "dc6f5a941fa746d985cd89de4668d1fc3d546b4e391a184be4c9517d135220f6"
+    }
+  ]
+}

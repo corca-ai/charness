@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8160-claude-lane-followup5",
+      "scope": "Rebind after the first v8.16.0 claims round: the notes now state the Codex writable_roots change under Security with its migration and why the release stays minor, name the masked daemon socket paths exactly with other sockets tracked in #889, narrow the bubblewrap test and OSError wording; docs/claude-task-executor.md updates its verified date, links the evidence record and the bubblewrap test statement. No code changed.",
+      "packet_identity": "4cb3cc2a030d2b203b0c547bb5a86080e575c9c7969346261b563ef4887643da",
+      "parent_receipt_identity": "parent-61ed3fdf0f07da400c50eda41ea409712d9a8cf1ed42fb78",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-11-04T21:56:24Z",
+      "history": [
+        {
+          "event_id": "3a0632c674a6470a902655f30419efff",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-11-04T21:54:14Z",
+          "attempt_id": "release-8160-claude-lane-followup5",
+          "scope": "Rebind after the first v8.16.0 claims round: the notes now state the Codex writable_roots change under Security with its migration and why the release stays minor, name the masked daemon socket paths exactly with other sockets tracked in #889, narrow the bubblewrap test and OSError wording; docs/claude-task-executor.md updates its verified date, links the evidence record and the bubblewrap test statement. No code changed.",
+          "packet_identity": "4cb3cc2a030d2b203b0c547bb5a86080e575c9c7969346261b563ef4887643da",
+          "parent_receipt_identity": "parent-61ed3fdf0f07da400c50eda41ea409712d9a8cf1ed42fb78",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "6440a401f5d543dca41c99aa3f03fb44",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-11-04T21:54:14Z",
+          "attempt_id": "release-8160-claude-lane-followup5",
+          "scope": "Rebind after the first v8.16.0 claims round: the notes now state the Codex writable_roots change under Security with its migration and why the release stays minor, name the masked daemon socket paths exactly with other sockets tracked in #889, narrow the bubblewrap test and OSError wording; docs/claude-task-executor.md updates its verified date, links the evidence record and the bubblewrap test statement. No code changed.",
+          "packet_identity": "4cb3cc2a030d2b203b0c547bb5a86080e575c9c7969346261b563ef4887643da",
+          "parent_receipt_identity": "parent-61ed3fdf0f07da400c50eda41ea409712d9a8cf1ed42fb78",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "801e4878726d444aa6acddc14acddfc9",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-11-04T21:56:24Z",
+          "attempt_id": "release-8160-claude-lane-followup5",
+          "scope": "Rebind after the first v8.16.0 claims round: the notes now state the Codex writable_roots change under Security with its migration and why the release stays minor, name the masked daemon socket paths exactly with other sockets tracked in #889, narrow the bubblewrap test and OSError wording; docs/claude-task-executor.md updates its verified date, links the evidence record and the bubblewrap test statement. No code changed.",
+          "packet_identity": "4cb3cc2a030d2b203b0c547bb5a86080e575c9c7969346261b563ef4887643da",
+          "parent_receipt_identity": "parent-61ed3fdf0f07da400c50eda41ea409712d9a8cf1ed42fb78",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "d840c868187c11c0e715b4250137ec0623ffa00265aee87c5497e93c3429cb03"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "9d65a1de8c4fda263c0d34c3772bebbb41e1df4be9d1861a3afa76f78db63a12",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "87913b0345d4847dc4112252c77eb79935484aa45dece0c6801a3da44b094545",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup5/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup5/receipt.json",
+      "producer_run_id": "run-release-8160-claude-lane-followup5",
+      "findings_identity": "d840c868187c11c0e715b4250137ec0623ffa00265aee87c5497e93c3429cb03"
+    }
+  ]
+}

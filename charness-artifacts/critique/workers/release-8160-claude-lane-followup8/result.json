@@ -1,0 +1,28 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Recheck R-003 against sandbox_prefix and check other claims in the selected notes and docs against the supplied code.",
+  "verdict": "pass",
+  "target_observations": null,
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "R-003: other host Unix sockets may be unreachable under /run/user/<uid> or under /tmp paths the sandbox does not restore.",
+      "bin": "resolved",
+      "disposition": "The notes and docs now qualify reachability for both cases. sandbox_prefix masks /run/user/<uid>, replaces /tmp, then restores read-only visibility for temporary roots containing the worktree, runtime, Git object source, or grants; it restores writable mounts for the worktree, runtime, and grants. The qualifier matches that boundary."
+    },
+    {
+      "concern": "The docs say host temporary files remain unwritable.",
+      "bin": "not a separate blocker",
+      "disposition": "Read in context with the preceding sentence, this describes host temporary files outside the restored roots and their writable descendants. The docs identify those exceptions."
+    }
+  ],
+  "next_move": "No further change is indicated by this bounded static review.",
+  "non_claims": [
+    "This review assessed the identity-bound inline payload only; no tests or sandbox behavior were run.",
+    "Release-note claims outside the selected task-run code were not assessed."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "d8a9a5669db4b27a3fca675a55330deb48cd86e7cc1a9b07ad3967dfc09d9c1f",
+  "reviewed_input_identity_sha256": "9ebda95c7eb0428635d5975ea53eefeed1b8b1a06eb0972b335913d461d01077"
+}

@@ -1,0 +1,41 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Do the changed notes and docs sentences match the selected code exactly?",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R-001",
+      "severity": "medium",
+      "summary": "The claim that a credential file outside the named file list stays readable is too broad.",
+      "evidence": [
+        "The release notes and docs/claude-task-executor.md say a credential file outside the list stays readable.",
+        "In task_run_claude_sandbox.py, sandbox_prefix masks each existing _SECRET_DIRECTORIES entry with a tmpfs, including ~/.aws and ~/.config, as well as separately masking _SECRET_FILES.",
+        "Thus a credential such as ~/.aws/credentials can be masked when ~/.aws exists even though that filename is not in _SECRET_FILES."
+      ],
+      "action": "Qualify the readability claim to account for whole masked directories, or say that paths outside both the named files and masked directories remain readable."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Codex writable_roots override, its --add-dir grants, and the migration wording",
+      "bin": "supported",
+      "disposition": "task_run_runtime.py sets sandbox_workspace_write.writable_roots=[]; task_run_lane_runner.py supplies the Git directories, runtime, existing .agents directory, and explicit grants. The migration directs launchers to use --grant-writable."
+    },
+    {
+      "concern": "Daemon socket masks and the narrowed OSError handling",
+      "bin": "supported",
+      "disposition": "The five named socket paths and the current user's /run/user directory are handled in sandbox_prefix; observe_completion catches OSError only."
+    },
+    {
+      "concern": "Real-lane bubblewrap test coverage and CI execution",
+      "bin": "insufficient-evidence",
+      "disposition": "The selected inputs show generated sandbox arguments, but do not include test sources or CI configuration to verify test coverage or execution."
+    }
+  ],
+  "next_move": "Correct the credential readability wording, then review the revised claim against the selected code.",
+  "non_claims": [
+    "Static review of the supplied semantic inputs only; no tests or sandbox behavior were independently run.",
+    "Test coverage and CI execution claims were not verified because their sources were not among the selected inputs."
+  ]
+}

@@ -1,0 +1,76 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Recheck R-001 and R-002. R-001: notes and docs now count home .env* files
+  among the masks. R-002: configure_claude_environment may copy a stored OAuth token
+  into the lane env, but task_run_execution.py wraps every Claude invocation in task_run_claude_auth.claude_auth_proxy,
+  which pops the real token into the parent-side proxy and gives the child a per-invocation
+  placeholder; notes and docs now say so.'
+attempt_id: release-8160-claude-lane-followup7
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 27ea4121b31c588100a577b98445f6007a6af38d0a002dad8206d8cfa5ac8745
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-da2913ecb21c01b74a404acaf88cbc73/receipt.json
+ledger_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-da2913ecb21c01b74a404acaf88cbc73/delivery.json
+producer_run_id: run-release-8160-claude-lane-followup7
+producer_binding:
+  output_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-da2913ecb21c01b74a404acaf88cbc73/result.json
+  receipt_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-da2913ecb21c01b74a404acaf88cbc73/receipt.json
+  producer_run_id: run-release-8160-claude-lane-followup7
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: 87b34bdc122fddd4ab86c13406da37b747f83e56bb1f205145a20eaa785bb907
+receipt_output_sha256: 87b34bdc122fddd4ab86c13406da37b747f83e56bb1f205145a20eaa785bb907
+packet_identity: 582f92d40db7c3216cd60f4965d60bab84711aadcd91bace50d305593588e43d
+reviewed_input_identity: cb9ac6a05cac45cade5b5bcad7bf11a3c184ad9abeca136b7891d454963b563f
+parent_receipt_identity: parent-819c18604370898a546ab2d4c951aa83b3621258e4abc97b
+provenance:
+  scope: 'Recheck R-001 and R-002. R-001: notes and docs now count home .env* files
+    among the masks. R-002: configure_claude_environment may copy a stored OAuth token
+    into the lane env, but task_run_execution.py wraps every Claude invocation in
+    task_run_claude_auth.claude_auth_proxy, which pops the real token into the parent-side
+    proxy and gives the child a per-invocation placeholder; notes and docs now say
+    so.'
+  packet_identity: 582f92d40db7c3216cd60f4965d60bab84711aadcd91bace50d305593588e43d
+  reviewed_input_identity: cb9ac6a05cac45cade5b5bcad7bf11a3c184ad9abeca136b7891d454963b563f
+  parent_receipt_identity: parent-819c18604370898a546ab2d4c951aa83b3621258e4abc97b
+  expected_targets_sha256: null
+  attempt_id: release-8160-claude-lane-followup7
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 27ea4121b31c588100a577b98445f6007a6af38d0a002dad8206d8cfa5ac8745
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

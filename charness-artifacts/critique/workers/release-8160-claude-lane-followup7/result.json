@@ -1,0 +1,39 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Recheck R-001 and R-002 against the code, and check other changed notes and documentation claims against the selected code.",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R-003",
+      "severity": "medium",
+      "summary": "The socket reachability claims are broader than the sandbox boundary.",
+      "evidence": [
+        "The release notes say a daemon on “any other socket path” and other host Unix sockets stay reachable; the docs similarly say other host Unix sockets stay reachable.",
+        "In `sandbox_prefix`, the sandbox replaces `/tmp` with a private tmpfs and masks the entire `/run/user/<uid>` directory. Host sockets located under either path are therefore not reachable, even when they are not among the listed daemon socket paths."
+      ],
+      "action": "Qualify the reachability claims to exclude sockets under `/run/user/<uid>` and the replaced `/tmp`, as well as the explicitly masked daemon paths."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "R-001: the home readability claim omits home `.env*` masks.",
+      "bin": "resolved",
+      "disposition": "The notes and docs now include home `.env*` files in the masks; `_credential_files` adds top-level home `.env*` files and `sandbox_prefix` masks them."
+    },
+    {
+      "concern": "R-002: the OAuth fallback places a real token in the configured environment.",
+      "bin": "resolved",
+      "disposition": "`_run_executor_invocation` wraps each Claude invocation in `claude_auth_proxy`; the proxy removes real auth variables from the child environment and supplies a per-invocation placeholder."
+    }
+  ],
+  "next_move": "Qualify the socket reachability sentences, then recheck those claims against the sandbox mounts.",
+  "non_claims": [
+    "Static review of the identity-bound inline input; no tests or sandbox behavior were run.",
+    "Unrelated release-note claims outside the selected task-run code were not assessed."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "582f92d40db7c3216cd60f4965d60bab84711aadcd91bace50d305593588e43d",
+  "reviewed_input_identity_sha256": "cb9ac6a05cac45cade5b5bcad7bf11a3c184ad9abeca136b7891d454963b563f"
+}

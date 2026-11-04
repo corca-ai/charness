@@ -1,0 +1,65 @@
+{
+  "kind": "charness.semantic_input_carrier.v1",
+  "entries": [
+    {
+      "path": "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8160-claude-lane-followup5/semantic-input/0000-content.bin",
+      "content_sha256": "1989fec1256ee5b4e430fd988decf02c945e25be67599084d66b40d45713fab7",
+      "carrier_sha256": "5dfd78c9bdb012f4f2a82e1b4428b36bde268a6bd4dc539f60331f210c3677f8",
+      "source": "working-tree:charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+      "size_bytes": 9243,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "docs/claude-task-executor.md",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8160-claude-lane-followup5/semantic-input/0001-content.bin",
+      "content_sha256": "1b2a38fea769bcdd3757989080e980ef4e30116d3debbc68c609c5abebfdb6dc",
+      "carrier_sha256": "19b3773d000ecc4acab32872d055f2f114289e5c9e0ec95e7899e91209dba878",
+      "source": "working-tree:docs/claude-task-executor.md",
+      "size_bytes": 4918,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/task_run/task_run_claude_sandbox.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8160-claude-lane-followup5/semantic-input/0002-content.bin",
+      "content_sha256": "a57ea1edad8aac7644874cd5b9ea6402e7525084bca3a8e2457a9df054db8db1",
+      "carrier_sha256": "73186a56f9b13942a2401fb68f2b374eb3db7d4ee3557e23579bb1c50e9c5cb5",
+      "source": "working-tree:scripts/task_run/task_run_claude_sandbox.py",
+      "size_bytes": 21590,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/task_run/task_run_lane_runner.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8160-claude-lane-followup5/semantic-input/0003-content.bin",
+      "content_sha256": "5f192aadb5d6924eb74bccc2cadb1f5d2156389df8332cf9582cc553c02f55fe",
+      "carrier_sha256": "f7fa4d92f82d0cb87ac0d5dd43f774fd98a46cbb980c3b8714f7d387b448eafb",
+      "source": "working-tree:scripts/task_run/task_run_lane_runner.py",
+      "size_bytes": 18393,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/task_run/task_run_progress.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8160-claude-lane-followup5/semantic-input/0004-content.bin",
+      "content_sha256": "7424ce7d14d701e46e2df32e49e7b826ef167426d7621455f028c96e4aed33c5",
+      "carrier_sha256": "6dc793e456cd5b7690efc84aa8f80163d1cb985ac3979b08f7825163e6b48662",
+      "source": "working-tree:scripts/task_run/task_run_progress.py",
+      "size_bytes": 24331,
+      "prompt_encoding": "utf-8"
+    },
+    {
+      "path": "scripts/task_run/task_run_runtime.py",
+      "disposition": "present",
+      "carrier_path": "charness-artifacts/critique/workers/release-8160-claude-lane-followup5/semantic-input/0005-content.bin",
+      "content_sha256": "b4684321aef384ac92f9c50f30f5044b0a49a8dd0c89afa1e0c1a0953a66e2f9",
+      "carrier_sha256": "6f81a459a72c5d3838a8fb7260c45a17f9a763fcbbc78a524ed0e3d646fc7887",
+      "source": "working-tree:scripts/task_run/task_run_runtime.py",
+      "size_bytes": 17220,
+      "prompt_encoding": "utf-8"
+    }
+  ]
+}

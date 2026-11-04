@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8160-claude-lane-followup8",
+      "scope": "Recheck R-003: notes and docs now say other host Unix sockets stay reachable unless under /run/user/<uid> or under /tmp outside the temporary trees the sandbox restores for the lane.",
+      "packet_identity": "d8a9a5669db4b27a3fca675a55330deb48cd86e7cc1a9b07ad3967dfc09d9c1f",
+      "parent_receipt_identity": "parent-c281f766682b19a368a9870118b4f495f4ecc9dbf82b2f0b",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-11-04T22:06:39Z",
+      "history": [
+        {
+          "event_id": "f43cdccf93724296a464b58164ecbb6f",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-11-04T22:02:57Z",
+          "attempt_id": "release-8160-claude-lane-followup8",
+          "scope": "Recheck R-003: notes and docs now say other host Unix sockets stay reachable unless under /run/user/<uid> or under /tmp outside the temporary trees the sandbox restores for the lane.",
+          "packet_identity": "d8a9a5669db4b27a3fca675a55330deb48cd86e7cc1a9b07ad3967dfc09d9c1f",
+          "parent_receipt_identity": "parent-c281f766682b19a368a9870118b4f495f4ecc9dbf82b2f0b",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "410b61fbbbca4aee96579dbb51ff97a4",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-11-04T22:02:57Z",
+          "attempt_id": "release-8160-claude-lane-followup8",
+          "scope": "Recheck R-003: notes and docs now say other host Unix sockets stay reachable unless under /run/user/<uid> or under /tmp outside the temporary trees the sandbox restores for the lane.",
+          "packet_identity": "d8a9a5669db4b27a3fca675a55330deb48cd86e7cc1a9b07ad3967dfc09d9c1f",
+          "parent_receipt_identity": "parent-c281f766682b19a368a9870118b4f495f4ecc9dbf82b2f0b",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "640e5f4af82c4c1f8e9ad605fd1fee68",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-11-04T22:06:39Z",
+          "attempt_id": "release-8160-claude-lane-followup8",
+          "scope": "Recheck R-003: notes and docs now say other host Unix sockets stay reachable unless under /run/user/<uid> or under /tmp outside the temporary trees the sandbox restores for the lane.",
+          "packet_identity": "d8a9a5669db4b27a3fca675a55330deb48cd86e7cc1a9b07ad3967dfc09d9c1f",
+          "parent_receipt_identity": "parent-c281f766682b19a368a9870118b4f495f4ecc9dbf82b2f0b",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "d6bd603a1e60cea97b58e00a4f68ef55277330c4e51ded9f27f6c2e961745895"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "9ebda95c7eb0428635d5975ea53eefeed1b8b1a06eb0972b335913d461d01077",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "31f0e113c50f5dd94410a061e892c7ebc31c20d8bb9e8cf2b840f8b1a0e815e4",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup8/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup8/receipt.json",
+      "producer_run_id": "run-release-8160-claude-lane-followup8",
+      "findings_identity": "d6bd603a1e60cea97b58e00a4f68ef55277330c4e51ded9f27f6c2e961745895"
+    }
+  ]
+}

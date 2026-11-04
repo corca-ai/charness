@@ -1,0 +1,51 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Recheck R-001 and compare other changed note and documentation claims against the selected code.",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R-001",
+      "severity": "medium",
+      "summary": "The revised readability claim still misses a separate home-file mask: known home `.env*` files are masked even when they are outside the named directories and files.",
+      "evidence": [
+        "The release notes and docs say a credential file outside the named directories and files stays readable.",
+        "In `task_run_claude_sandbox.py`, `sandbox_prefix` also masks every file found by `_credential_files(worktree)`. That helper additionally adds files matching `Path.home().glob(\".env*\")`, so a home credential such as `~/.env.production` is masked despite being outside `_SECRET_DIRECTORIES` and `_SECRET_FILES`.",
+        "The docs later acknowledge masks for known `.env*` files, which conflicts with the unqualified readability claim."
+      ],
+      "action": "Qualify the claim to account for separately masked home `.env*` files, or include that exception in the stated mask list."
+    },
+    {
+      "id": "R-002",
+      "severity": "high",
+      "summary": "The claim that real provider credentials stay in a parent-side proxy conflicts with the selected code’s OAuth-token fallback into the child environment.",
+      "evidence": [
+        "The release notes say provider credentials stay in a parent-side proxy; the docs say the child receives an invocation token.",
+        "In `configure_claude_environment`, when none of `ANTHROPIC_API_KEY`, `CLAUDE_CODE_OAUTH_TOKEN`, or `ANTHROPIC_AUTH_TOKEN` is set, the code reads `~/.claude/.credentials.json` and assigns its `claudeAiOauth.accessToken` directly to `configured[\"CLAUDE_CODE_OAUTH_TOKEN\"]`.",
+        "That fallback places the stored OAuth access token in the environment returned for the child, rather than keeping it solely in the proxy."
+      ],
+      "action": "Reconcile the documentation with this fallback, or change the implementation so the child receives only a proxy invocation token."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Other reviewed sandbox-boundary statements",
+      "bin": "no additional concrete mismatch identified",
+      "disposition": "The supplied code supports the reviewed claims about the named directory/file masks, daemon socket paths, user runtime directory, network namespace flags, and the progress completion OSError handling."
+    },
+    {
+      "concern": "Release-note test coverage and proxy implementation details",
+      "bin": "outside selected evidence",
+      "disposition": "No test files or proxy implementation source were supplied, so those claims were not independently verified."
+    }
+  ],
+  "next_move": "Correct the `.env*` readability exception and resolve the OAuth-token fallback claim, then recheck the revised sentences against the code.",
+  "non_claims": [
+    "Static review of the identity-checked semantic payload only; no tests or sandbox behavior were run.",
+    "The proxy implementation and test files were not among the selected inputs."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "429df0155a62664945f3f75c89874dbf7435793aedceca27c51b0eac70aeea3e",
+  "reviewed_input_identity_sha256": "76886d5b8cb77ec17a1aec1d833dac0c9b012ee490d35f1b039dfd8fb207bd89"
+}
