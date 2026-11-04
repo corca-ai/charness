@@ -1,0 +1,76 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Minto claims and Weinberg layer",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "windows-cmd-quoting",
+      "severity": "high",
+      "summary": "The Windows command builder uses Windows argv quoting, then passes the result through cmd.exe with shell=True. That does not escape cmd.exe metacharacters, so valid paths or arguments containing characters such as & or % can be split or expanded. The note's claim that commands are quoted for cmd.exe overstates what the code does.",
+      "evidence": [
+        "skills/shared/scripts/reviewer_process.py: shell_command_line uses subprocess.list2cmdline for Windows, and run_bounded_process passes the resulting string to run_monitored_phase with shell=True.",
+        "tests/test_reviewer_process_shell_line.py: the Windows case covers paths with spaces only; it does not exercise cmd.exe metacharacters."
+      ],
+      "action": "Avoid cmd.exe parsing for this invocation, or add cmd.exe-specific escaping and tests for metacharacters before claiming this path is portable."
+    },
+    {
+      "id": "risk-unknown-with-forced-class",
+      "severity": "medium",
+      "summary": "The note says any unknown Risk Class still routes to repair. The declaration helper recovers recognized classes after a parse error, and marks the risk scope established when one of those classes forces an interrupt. For example, external-seam, bogus is not covered by the unknown-class tests and does not follow the helper's general repair signal.",
+      "evidence": [
+        "skills/public/debug/scripts/debug_artifact_declarations.py: _recovered_risk_classes preserves allowed classes; risk_scope_established permits a parse error when forced is true.",
+        "tests/test_debug_risk_class_prose.py: unknown-class cases cover none, bogus and prose-first values, but not a forced class combined with an unknown class."
+      ],
+      "action": "Add a mixed known-forced and unknown-class case that pins the intended planner behavior, then qualify the note or adjust the planner and helper to match it."
+    },
+    {
+      "id": "unverified-release-note-claims",
+      "severity": "defer",
+      "summary": "Several substantial notes claims have no corresponding implementation or test in the supplied semantic input: Claude executor sandbox and grant behavior, command duration and live status observation, Go cache overrides, and Codex writable-root filtering. The supplied lane environment and progress files establish only part of those behaviors.",
+      "evidence": [
+        "The supplied sources include scripts/worktree/worktree_exec_lib.py and lane progress modules, but no Claude executor, task status command, or lane environment builder for the Go cache and writable-root claims.",
+        "No supplied test exercises command-duration events or task status --commands against a running lane."
+      ],
+      "action": "Include the owning implementation and behavior tests in the review evidence, or defer approval of those note claims until they are independently verified."
+    },
+    {
+      "id": "windows-lock-test-coverage",
+      "severity": "medium",
+      "summary": "The note says unit tests cover the Windows portability paths, but the supplied tests do not exercise the msvcrt byte-range lock fallback on this Linux-only CI. The Windows chmod test covers a different branch and is explicitly skipped on Windows.",
+      "evidence": [
+        "scripts/runtime_scratch.py: the Windows locking fallback is created when importing fcntl fails.",
+        "tests/test_runtime_scratch.py: test_windows_branch_chmods_files_before_unlink exercises chmod behavior; it does not force or test the msvcrt lock fallback and is marked skipif os.name == \"nt\".",
+        "The notes disclose Linux-only CI and no Windows-host run, but still say unit tests cover these paths."
+      ],
+      "action": "Narrow the test-coverage claim or add a focused test that forces and checks the lock fallback."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "A new subject may overwrite another subject's valid prior record.",
+      "bin": "supported",
+      "disposition": "The debug planner test routes the new subject to a separate create-new path, records the foreign path as refused, and verifies that the owning subject still continues its record."
+    },
+    {
+      "concern": "Final drained output may be missed by lane progress observation.",
+      "bin": "resolved",
+      "disposition": "observe_completion polls after output capture; the completion test verifies phases from output written without an intervening poll."
+    },
+    {
+      "concern": "The release notes imply a Windows-host run.",
+      "bin": "resolved",
+      "disposition": "The notes explicitly state that CI runs only on Linux and make no Windows-host run claim."
+    }
+  ],
+  "next_move": "Fix or qualify the cmd.exe quoting claim, pin the mixed unknown-risk case, and supply evidence for the deferred lane claims before treating the notes as release-ready.",
+  "non_claims": [
+    "This review does not claim that the release was run on Windows.",
+    "The supplied input does not include validate_debug_artifact.py, so its strictness claim is not independently verified here.",
+    "The packet has no structured prepared_targets, so no per-target observations are made."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "36653a6733dc65a54f6170501d603358bd71c6246a666f4b94f7537c5e1d662c",
+  "reviewed_input_identity_sha256": "801153337b2daf6287e9c12aedaddd6759122fd9e78328fd3df30a7954a28b8b"
+}

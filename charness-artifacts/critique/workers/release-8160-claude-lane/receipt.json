@@ -1,0 +1,82 @@
+{
+  "attempt_id": "release-8160-claude-lane",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/release-8160-claude-lane/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-11-04T20:32:33Z",
+  "model_application_state": "unverified-by-provider",
+  "output_file": "charness-artifacts/critique/workers/release-8160-claude-lane/result.json",
+  "output_fresh": true,
+  "output_sha256": "01149c86360833ccd81af6ad7dc363d52130394dae5f1a0b34e9a9c3165001e2",
+  "output_size": 6009,
+  "packet_identity": "0e81c7573ad9f9f1b57ec6a72b373b9018ac393ceb8707ca7f91f5a48659f0ec",
+  "parent_receipt_identity": "parent-f31ef2808f22ca4c3dc2105ff0fe167fc6b8d004481f1591",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/release-8160-claude-lane/review-prompt.md",
+  "prompt_sha256": "4cf3b28e12b21dfde1ed0f132564e344456ef4415a916ef3b3fed181faa61d8c",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "requested_model": "gpt-6-luna",
+  "requested_reasoning_effort": "xhigh",
+  "reviewed_input_identity": "6954404e7e7699bd558350186afc0b8c4681bcd6a50b2d090d073499395c5f2f",
+  "reviewer_tier": "high-leverage",
+  "run_id": "run-release-8160-claude-lane",
+  "schema_file": "charness-artifacts/critique/workers/release-8160-claude-lane/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "Release critique for charness v8.16.0 (minor), part 1 of 2: the Claude task-run executor and the task-run CLI/runtime changes since tag v8.15.0, plus the v8.16.0 notes. Files are the current tree; git diff v8.15.0..HEAD shows what changed.",
+  "started_at": "2026-11-04T20:26:37Z",
+  "status": "succeeded",
+  "stderr_file": "charness-artifacts/critique/workers/release-8160-claude-lane/backend.stderr",
+  "stdout_file": "charness-artifacts/critique/workers/release-8160-claude-lane/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "unsupported_reviewer_fields": [
+    "service_tier=priority",
+    "fork_turns=none"
+  ],
+  "workspace": "/home/hwidong/codes/charness"
+}

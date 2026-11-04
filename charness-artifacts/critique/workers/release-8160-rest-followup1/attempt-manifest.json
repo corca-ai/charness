@@ -1,0 +1,250 @@
+{
+  "approval_eligible": false,
+  "attempt_id": "release-8160-rest-followup1",
+  "delivery_state": "findings-received",
+  "file_integrity": {
+    "backend.stderr": {
+      "bytes": 156729,
+      "path": "charness-artifacts/critique/workers/release-8160-rest-followup1/backend.stderr",
+      "sha256": "c703c3a45c081328586a5e82fa49988418cb4acf4433ee505f998ba375ce57bb"
+    },
+    "backend.stdout": {
+      "bytes": 3152,
+      "path": "charness-artifacts/critique/workers/release-8160-rest-followup1/backend.stdout",
+      "sha256": "dbbfeaaa4bfe43d2f2053aa85463bdbaf41766f9080efb8a94ac24306b7c2e99"
+    },
+    "bounded-review-result.schema.json": {
+      "bytes": 3640,
+      "path": "charness-artifacts/critique/workers/release-8160-rest-followup1/bounded-review-result.schema.json",
+      "sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304"
+    },
+    "capability.json": {
+      "bytes": 944,
+      "path": "charness-artifacts/critique/workers/release-8160-rest-followup1/capability.json",
+      "sha256": "44c43f4816b5c84c4504894210b76ba5a410e715d47d5d262ccd9ad8930ebb62"
+    },
+    "delivery.json": {
+      "bytes": 4439,
+      "path": "charness-artifacts/critique/workers/release-8160-rest-followup1/delivery.json",
+      "sha256": "d106b68cd142ae80d0fcd70ab69f28c4d40de6ff487fe649194ae99a36466879"
+    },
+    "lifecycle.yaml": {
+      "bytes": 13154,
+      "path": "charness-artifacts/critique/workers/release-8160-rest-followup1/lifecycle.yaml",
+      "sha256": "dda50a9107d7fc4e8f5bea9ee2e67c46d2a7a232b6ab0a3b84a1e9883a288ddf"
+    },
+    "receipt.json": {
+      "bytes": 3588,
+      "path": "charness-artifacts/critique/workers/release-8160-rest-followup1/receipt.json",
+      "sha256": "107d2929306676bd63947e4ab6820e953fa61e7889b72f7fcb1e8a6f93f0cd31"
+    },
+    "result.json": {
+      "bytes": 3476,
+      "path": "charness-artifacts/critique/workers/release-8160-rest-followup1/result.json",
+      "sha256": "a0fd058b1c262333e323c35e109dfdfc5211e7bf80d77446d0cceba9326e8cd6"
+    },
+    "review-prompt.md": {
+      "bytes": 152723,
+      "path": "charness-artifacts/critique/workers/release-8160-rest-followup1/review-prompt.md",
+      "sha256": "bc245b1d5d3da338f5a159f0a6861010598cd6ab7c1843d48451954195fdcf85"
+    },
+    "run-plan.json": {
+      "bytes": 114675,
+      "path": "charness-artifacts/critique/workers/release-8160-rest-followup1/run-plan.json",
+      "sha256": "6e038d473f06e46c6f0581a81a8138f2688b744b208a81d81f997cf26f9cbb79"
+    },
+    "runner.stderr": {
+      "bytes": 1283,
+      "path": "charness-artifacts/critique/workers/release-8160-rest-followup1/runner.stderr",
+      "sha256": "9c57295c622e50679c7fd4fb082d94fed9355005c4e931f8c389e3e6a346a4c6"
+    },
+    "runner.stdout": {
+      "bytes": 3990,
+      "path": "charness-artifacts/critique/workers/release-8160-rest-followup1/runner.stdout",
+      "sha256": "f166d9f476f43b587e2e2b7672f6fe16d4daca20fb58c4978206062ee277f1ae"
+    },
+    "semantic-input/0000-content.bin": {
+      "bytes": 7929,
+      "path": "charness-artifacts/critique/workers/release-8160-rest-followup1/semantic-input/0000-content.bin",
+      "sha256": "ec85bacf6dbe2eb11f74d6b12c6948900947d2eda3cd1ff720d3fc4528703eb2"
+    },
+    "semantic-input/0001-content.bin": {
+      "bytes": 21464,
+      "path": "charness-artifacts/critique/workers/release-8160-rest-followup1/semantic-input/0001-content.bin",
+      "sha256": "d7e19827eb4d509ed1556c3010e4dc7397734358e382c0dbf5ca89fd649003f9"
+    },
+    "semantic-input/0002-content.bin": {
+      "bytes": 7407,
+      "path": "charness-artifacts/critique/workers/release-8160-rest-followup1/semantic-input/0002-content.bin",
+      "sha256": "e4433b5e8a983bc834156baa148de3e4a26e3b7a2c5a70f051c2df8fd6fd26e2"
+    },
+    "semantic-input/0003-content.bin": {
+      "bytes": 3798,
+      "path": "charness-artifacts/critique/workers/release-8160-rest-followup1/semantic-input/0003-content.bin",
+      "sha256": "7d0f6d3e48439c85abfa156615d0939ab6f4defe6f3596f113d5f8abfe79e43e"
+    },
+    "semantic-input/0004-content.bin": {
+      "bytes": 33710,
+      "path": "charness-artifacts/critique/workers/release-8160-rest-followup1/semantic-input/0004-content.bin",
+      "sha256": "a98206ddf225a29936b4c7763f1c03795491a7b348417c3a09aeda187380f4a0"
+    },
+    "semantic-input/0005-content.bin": {
+      "bytes": 20552,
+      "path": "charness-artifacts/critique/workers/release-8160-rest-followup1/semantic-input/0005-content.bin",
+      "sha256": "41b329f22547c7038917ba15573711e1fdf58d2956aa2756cdceb0c282753c11"
+    },
+    "semantic-input/0006-content.bin": {
+      "bytes": 3811,
+      "path": "charness-artifacts/critique/workers/release-8160-rest-followup1/semantic-input/0006-content.bin",
+      "sha256": "047d110ad6e2d5081a0cb283abd6c12948f1022f5874d0e6182ccc886ddb56ce"
+    },
+    "semantic-input/0007-content.bin": {
+      "bytes": 4150,
+      "path": "charness-artifacts/critique/workers/release-8160-rest-followup1/semantic-input/0007-content.bin",
+      "sha256": "c085677e1a88c48a55f2791de310cb1067b0d1eefbc853bb4038a239873444c1"
+    },
+    "semantic-input/manifest.json": {
+      "bytes": 4477,
+      "path": "charness-artifacts/critique/workers/release-8160-rest-followup1/semantic-input/manifest.json",
+      "sha256": "e4f1f41a2bc49533356e70538a3f76310f452058b920ec5a874d6102aa54db00"
+    },
+    "worker-report.yaml": {
+      "bytes": 3754,
+      "path": "charness-artifacts/critique/workers/release-8160-rest-followup1/worker-report.yaml",
+      "sha256": "903cdfd44688dccdf0fc894c4288ec136ee9d856d575f7b5b7dc639348e6c1d3"
+    }
+  },
+  "files": {
+    "backend.stderr": "charness-artifacts/critique/workers/release-8160-rest-followup1/backend.stderr",
+    "backend.stdout": "charness-artifacts/critique/workers/release-8160-rest-followup1/backend.stdout",
+    "bounded-review-result.schema.json": "charness-artifacts/critique/workers/release-8160-rest-followup1/bounded-review-result.schema.json",
+    "capability.json": "charness-artifacts/critique/workers/release-8160-rest-followup1/capability.json",
+    "delivery.json": "charness-artifacts/critique/workers/release-8160-rest-followup1/delivery.json",
+    "lifecycle.yaml": "charness-artifacts/critique/workers/release-8160-rest-followup1/lifecycle.yaml",
+    "receipt.json": "charness-artifacts/critique/workers/release-8160-rest-followup1/receipt.json",
+    "result.json": "charness-artifacts/critique/workers/release-8160-rest-followup1/result.json",
+    "review-prompt.md": "charness-artifacts/critique/workers/release-8160-rest-followup1/review-prompt.md",
+    "run-plan.json": "charness-artifacts/critique/workers/release-8160-rest-followup1/run-plan.json",
+    "runner.stderr": "charness-artifacts/critique/workers/release-8160-rest-followup1/runner.stderr",
+    "runner.stdout": "charness-artifacts/critique/workers/release-8160-rest-followup1/runner.stdout",
+    "semantic-input/0000-content.bin": "charness-artifacts/critique/workers/release-8160-rest-followup1/semantic-input/0000-content.bin",
+    "semantic-input/0001-content.bin": "charness-artifacts/critique/workers/release-8160-rest-followup1/semantic-input/0001-content.bin",
+    "semantic-input/0002-content.bin": "charness-artifacts/critique/workers/release-8160-rest-followup1/semantic-input/0002-content.bin",
+    "semantic-input/0003-content.bin": "charness-artifacts/critique/workers/release-8160-rest-followup1/semantic-input/0003-content.bin",
+    "semantic-input/0004-content.bin": "charness-artifacts/critique/workers/release-8160-rest-followup1/semantic-input/0004-content.bin",
+    "semantic-input/0005-content.bin": "charness-artifacts/critique/workers/release-8160-rest-followup1/semantic-input/0005-content.bin",
+    "semantic-input/0006-content.bin": "charness-artifacts/critique/workers/release-8160-rest-followup1/semantic-input/0006-content.bin",
+    "semantic-input/0007-content.bin": "charness-artifacts/critique/workers/release-8160-rest-followup1/semantic-input/0007-content.bin",
+    "semantic-input/manifest.json": "charness-artifacts/critique/workers/release-8160-rest-followup1/semantic-input/manifest.json",
+    "worker-report.yaml": "charness-artifacts/critique/workers/release-8160-rest-followup1/worker-report.yaml"
+  },
+  "identity_binding": "consumer-required",
+  "identity_check": {
+    "approval": {
+      "matches": false,
+      "reason": "final lifecycle carrier is not terminal approval evidence",
+      "status": "mismatch"
+    },
+    "checks": {
+      "packet_identity": {
+        "actual": "801bc917c58f460c0e8e5650c5f8324636c49995930cb112bf2a2cfbb035504c",
+        "expected": "801bc917c58f460c0e8e5650c5f8324636c49995930cb112bf2a2cfbb035504c",
+        "matches": true,
+        "provenance": "801bc917c58f460c0e8e5650c5f8324636c49995930cb112bf2a2cfbb035504c"
+      },
+      "parent_receipt_identity": {
+        "actual": "parent-9cabf0a101bdc0bcfe9fac213bd479cb91222b5aca6b79be",
+        "expected": "parent-9cabf0a101bdc0bcfe9fac213bd479cb91222b5aca6b79be",
+        "matches": true,
+        "provenance": "parent-9cabf0a101bdc0bcfe9fac213bd479cb91222b5aca6b79be"
+      },
+      "reviewed_input_identity": {
+        "actual": "40982770650b7bce8001276aabfa2fc2042481ccc71dd673facb713e82050148",
+        "expected": "40982770650b7bce8001276aabfa2fc2042481ccc71dd673facb713e82050148",
+        "matches": true,
+        "provenance": "40982770650b7bce8001276aabfa2fc2042481ccc71dd673facb713e82050148"
+      }
+    },
+    "matches": true,
+    "reason": null,
+    "status": "matched"
+  },
+  "logs": {
+    "backend.stderr": {
+      "bytes": 156729,
+      "path": "charness-artifacts/critique/workers/release-8160-rest-followup1/backend.stderr",
+      "retained_bytes": 156729,
+      "sha256": "c703c3a45c081328586a5e82fa49988418cb4acf4433ee505f998ba375ce57bb",
+      "source": "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-8180c9b26cc589bf704897e3f988a7b6/backend.stderr",
+      "truncated": false
+    },
+    "backend.stdout": {
+      "bytes": 3152,
+      "path": "charness-artifacts/critique/workers/release-8160-rest-followup1/backend.stdout",
+      "retained_bytes": 3152,
+      "sha256": "dbbfeaaa4bfe43d2f2053aa85463bdbaf41766f9080efb8a94ac24306b7c2e99",
+      "source": "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-8180c9b26cc589bf704897e3f988a7b6/backend.stdout",
+      "truncated": false
+    },
+    "runner.stderr": {
+      "bytes": 1283,
+      "path": "charness-artifacts/critique/workers/release-8160-rest-followup1/runner.stderr",
+      "retained_bytes": 1283,
+      "sha256": "9c57295c622e50679c7fd4fb082d94fed9355005c4e931f8c389e3e6a346a4c6",
+      "source": "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-8180c9b26cc589bf704897e3f988a7b6/runner.stderr",
+      "truncated": false
+    },
+    "runner.stdout": {
+      "bytes": 3990,
+      "path": "charness-artifacts/critique/workers/release-8160-rest-followup1/runner.stdout",
+      "retained_bytes": 3990,
+      "sha256": "f166d9f476f43b587e2e2b7672f6fe16d4daca20fb58c4978206062ee277f1ae",
+      "source": "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-8180c9b26cc589bf704897e3f988a7b6/runner.stdout",
+      "truncated": false
+    }
+  },
+  "packet_identity": "801bc917c58f460c0e8e5650c5f8324636c49995930cb112bf2a2cfbb035504c",
+  "partial_result": null,
+  "partial_result_unavailable": {
+    "reason": "no identity-matching bounded-review object was found in the bounded log windows",
+    "scan_limit_bytes": 67108864,
+    "sources": [
+      {
+        "bytes": 3990,
+        "key": "runner.stdout",
+        "path": "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-8180c9b26cc589bf704897e3f988a7b6/runner.stdout",
+        "scanned_bytes": 3990,
+        "windowed": false
+      },
+      {
+        "bytes": 1283,
+        "key": "runner.stderr",
+        "path": "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-8180c9b26cc589bf704897e3f988a7b6/runner.stderr",
+        "scanned_bytes": 1283,
+        "windowed": false
+      },
+      {
+        "bytes": 3152,
+        "key": "backend.stdout",
+        "path": "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-8180c9b26cc589bf704897e3f988a7b6/backend.stdout",
+        "scanned_bytes": 3152,
+        "windowed": false
+      },
+      {
+        "bytes": 156729,
+        "key": "backend.stderr",
+        "path": "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-8180c9b26cc589bf704897e3f988a7b6/backend.stderr",
+        "scanned_bytes": 156729,
+        "windowed": false
+      }
+    ],
+    "status": "unavailable"
+  },
+  "reason": "typed reviewer verdict is not pass: 'block'",
+  "recovery_validation": null,
+  "reusable": true,
+  "review_verdict": "block",
+  "reviewed_input_identity": "40982770650b7bce8001276aabfa2fc2042481ccc71dd673facb713e82050148",
+  "schema_version": "charness.reviewer_attempt_manifest.v1",
+  "use_class": "diagnostic-retryable"
+}

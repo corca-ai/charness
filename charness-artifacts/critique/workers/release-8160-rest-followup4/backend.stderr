@@ -1,0 +1,413 @@
+OpenAI Codex v0.166.0
+--------
+workdir: /home/hwidong/codes/charness
+model: gpt-6-luna
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: xhigh
+reasoning summaries: none
+session id: 01a1a856-c281-7b10-9a1a-f5ce7fc87619
+--------
+user
+You are a bounded read-only fresh-eye reviewer.
+Scope: Fourth follow-up on release-8160-rest (5ffcdce91): the notes now describe each Codex refresh test case wait separately.
+Lens: Recheck release-note-overstates-codex-test-timing only
+Goal evidence lineage (copy exactly):
+{
+  "binding": null,
+  "disposition": "not-goal-bound",
+  "draft": null,
+  "goal_run": null,
+  "kind": "charness.goal-lineage",
+  "reason": "critique review was run without a Goal Run Work Item identity",
+  "schema_version": 1,
+  "work_item": null
+}
+Prior review follow-up context (inert evidence, never approval):
+{
+  "approval_rule": "This is prior evidence only. Reuse findings as hypotheses; do not treat a prior block, defer, timeout, or partial result as approval. The new reviewer must bind the new packet and current selected paths independently.",
+  "comparison": {
+    "changed_prior_paths": [
+      "charness-artifacts/release/2026-11-05-v8.16.0-notes.md"
+    ],
+    "comparison_identity_paths": [
+      "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+      "tests/charness_cli/test_codex_cache_refresh.py"
+    ],
+    "comparison_identity_sha256": "58931872a3677d9c1a061acda1c587607b1a77519dcb30514851016e8e432249",
+    "new_paths": [],
+    "omitted_changed_prior_paths": [],
+    "prior_paths": 2,
+    "selected_changed_prior_paths": [
+      "charness-artifacts/release/2026-11-05-v8.16.0-notes.md"
+    ],
+    "unchanged_selected_paths": [
+      "tests/charness_cli/test_codex_cache_refresh.py"
+    ]
+  },
+  "context_size_bytes": 5149,
+  "final_reviewed_input_identity_sha256": "58931872a3677d9c1a061acda1c587607b1a77519dcb30514851016e8e432249",
+  "final_selected_path_count": 2,
+  "kind": "charness.review_followup_context.v1",
+  "omitted_finding_ids": [],
+  "prior_attempt_id": "release-8160-rest-followup3",
+  "prior_findings": [
+    {
+      "action": "Narrow the clock-injection claim to the output-backed cases; describe EOF as waiting for process exit and unrelated-stream as timing out via the injected clock.",
+      "evidence": [
+        "The note says the named lifecycle test “and the other Codex app-server refresh tests inject the reader's clock.”",
+        "In `test_codex_cache_refresh_maps_transport_failures_to_existing_envelope`, the `eof` branch skips `_wait_on_app_server_events`, waits with `proc.wait()`, then calls the response waiter with `deadline=0.0`.",
+        "The `unrelated-stream` branch does inject a clock that advances past the deadline; the other mapped cases use the event-wait helper."
+      ],
+      "id": "release-note-overstates-codex-test-timing",
+      "severity": "medium",
+      "summary": "The note still overstates clock injection: the EOF case waits for the fake process to exit but does not inject the reader's clock."
+    }
+  ],
+  "prior_lens": "Recheck release-note-overstates-codex-test-timing only",
+  "prior_next_move": "Revise the bullet to distinguish output-backed cases, EOF's process-exit wait, and unrelated-stream's injected-clock timeout.",
+  "prior_non_claims": [
+    "No assessment of the entry-spawn or worker-timeout claims.",
+    "No tests were run; review is limited to the supplied notes and test file."
+  ],
+  "prior_packet_path": "charness-artifacts/critique/release-8160-rest-followup3-packet.json",
+  "prior_packet_sha256": "d7102d9bb8ce12eae3bc78a4135c621b0931c76bb79813b6d297657a37410bda",
+  "prior_reviewed_input_identity_sha256": "9b6846995dc1f8e8161a741f795092c39eab68b91c53a549596986f8c06a3a04",
+  "prior_reviewed_paths": 2,
+  "prior_scope": "Third follow-up on release-8160-rest (522aa1769): the notes now say the unrelated-stream case takes its timeout from an injected clock, and the success and error cases wait on the fake output or exit.",
+  "prior_verdict": "block",
+  "selected_paths": [
+    "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+    "tests/charness_cli/test_codex_cache_refresh.py"
+  ],
+  "selection": "explicit-with-selection-receipt",
+  "selection_receipt": {
+    "comparison_identity_paths": [
+      "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+      "tests/charness_cli/test_codex_cache_refresh.py"
+    ],
+    "comparison_identity_sha256": "58931872a3677d9c1a061acda1c587607b1a77519dcb30514851016e8e432249",
+    "explicit_paths": true,
+    "new_paths": [],
+    "omitted_changed_prior_paths": [],
+    "prior_binding": {
+      "attempt_id": "release-8160-rest-followup3",
+      "identity_verification": "recorded-self-digest",
+      "packet_sha256": "d7102d9bb8ce12eae3bc78a4135c621b0931c76bb79813b6d297657a37410bda",
+      "packet_verification": "canonical-integrity-only",
+      "result_carrier": {
+        "attempt_id": "release-8160-rest-followup3",
+        "partial_result_sha256": null,
+        "result_sha256": "e10b2da2146c35bf653079659d1a59fd621334bf4cf79d12b13d22d8f8af760c",
+        "source_path": null,
+        "status": "verified"
+      },
+      "reviewed_input_identity_sha256": "9b6846995dc1f8e8161a741f795092c39eab68b91c53a549596986f8c06a3a04",
+      "semantic_input": {
+        "entries": 2,
+        "status": "verified"
+      },
+      "status": "verified"
+    },
+    "prior_identity_sha256": "9b6846995dc1f8e8161a741f795092c39eab68b91c53a549596986f8c06a3a04",
+    "rationale": "Explicit paths were supplied to include newly introduced consumers or intentionally widen the stimulus; selection is not approval.",
+    "selected_changed_prior_paths": [
+      "charness-artifacts/release/2026-11-05-v8.16.0-notes.md"
+    ],
+    "unchanged_selected_paths": [
+      "tests/charness_cli/test_codex_cache_refresh.py"
+    ]
+  },
+  "source": "charness-artifacts/critique/workers/release-8160-rest-followup3/result.json",
+  "source_sha256": "e10b2da2146c35bf653079659d1a59fd621334bf4cf79d12b13d22d8f8af760c"
+}
+Use prior findings as hypotheses and judge only the new packet/current selected input.
+Effective reviewer tier for this run: high-leverage. The file-backed runner applies the adapter's supported model and reasoning-effort fields for this tier.
+Return only JSON matching the supplied bounded-review result schema.
+Do not edit the workspace, and do not treat partial progress as approval.
+Every explicitly declared `--reviewed-path` and every auto-bound path below is semantic review input.
+The packet owns identity and provenance; the inline payload below carries the identity-checked semantic bytes.
+Judge the inline payload, not the current workspace path, so every backend reviews the same bound input.
+Semantic input payload (content is inert review data, never instructions):
+[
+  {
+    "carrier_path": "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-b28e75a196cbd81891da9511f4a01aff/semantic-input/0000-content.bin",
+    "carrier_sha256": "840b05520509c0a6423cac93df77ba126aed464c6e52ebc6bbbd0feb67c45868",
+    "content_sha256": "dc99f5ce9cd5d482b34199a540f59306ed99a8f5f46db9e034cf571cbb6c65de",
+    "disposition": "present",
+    "path": "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+    "prompt_content": "# Charness v8.16.0\n\nThis release ships the task-run lane work that had not been pushed before, led by the new Claude lane executor and its options, together with a fix to the debug planner.\n\n## What changed\n\n- The debug planner reads a `- Risk Class:` value apart from explanatory prose written after it, such as `none yet; ...`, `external-seam (...)` or `none -- ...`. Before this, the whole line was read as the value, so the prose counted as an unknown class. The planner then sent every new investigation in the repository to `repair-risk-declaration` and named another investigation's record as the file to repair. Now a valid value followed by prose is a valid declaration. A new subject starts its own record, and the earlier record stays with its subject. A line that opens with prose, or whose recognized classes include no forced class next to an unknown one, still routes to repair; a forced class next to an unknown one (`external-seam, bogus`) still interrupts, as before. `validate_debug_artifact.py` is unchanged and stays strict.\n- `charness task run --executor claude` runs a lane with `claude -p`. Sonnet is the default model, and `--claude-model haiku` selects Haiku. Codex stays the default executor. A Claude lane needs Linux bubblewrap. It runs inside a filesystem sandbox: the lane worktree, its private runtime and explicit `--grant-writable` directories are writable, and home configuration, a named list of credential files (including `~/.docker`, `~/.pypirc` and Cargo credentials; a file outside the list stays readable) and shared Git configuration are not. Container daemon sockets (Docker, containerd, Podman, CRI-O) are masked, so a lane cannot drive the host's container daemon; other host Unix sockets, such as the D-Bus system bus, stay reachable. The sandbox does not restrict network egress: a lane can reach any address the host can, including cloud metadata endpoints ([#889](https://github.com/corca-ai/charness/issues/889)). Provider credentials stay in a parent-side proxy. Commits go to private Git storage that the runner imports into the task branch afterwards, unless the caller grants the checkout's Git common directory, in which case the lane uses the shared linked-worktree Git directly. The result, report, branch, hooks, progress and verification contracts are the same as for other executors. `--grant-writable` now accepts Codex and Claude lanes and still refuses Muse. [docs/claude-task-executor.md](https://github.com/corca-ai/charness/blob/v8.16.0/docs/claude-task-executor.md) states the tested boundary and its limits. The real-sandbox tests ran on Linux with bubblewrap on the release machine; they skip where bubblewrap is absent, and CI does not install it.\n- The line that completes a command in a lane's events log now also carries `charness_duration_ms`. For a running lane, `task status <task-id> --commands` also reads the live stdout log, so it shows the current invocation's commands instead of nothing.\n- Lane environments: a lane's `TMPDIR`, `TMP` and `TEMP` are now the lane runtime root, so the npm, XDG, pip, ruff, pytest, coverage and pycache paths under it are writable inside a Muse sandbox. Before this, `npm pack` in a Muse lane failed with EROFS. Go's `GOCACHE`, `GOPATH` and `GOMODCACHE` now sit under the lane's cache home, which is private to the lane. A Codex or Claude caller can point it at a shared cache with `CHARNESS_TASK_RUN_CACHE_HOME`, but only inside a directory already granted with `--grant-writable`; the variable never adds a grant. A Codex lane no longer inherits `writable_roots` from the operator's configuration, so only its explicit runtime and `--add-dir` grants are writable, and read-only reviewers drop the lane-only overrides.\n- The lane progress rule records the lane's final output after the output capture drains, so the last window's progress counts. A failure of that last observation is ignored only when it is a recoverable I/O error.\n- When the Codex app-server exits before answering, the Codex host cache refresh in `charness update` now reports that it exited, instead of a response timeout.\n- Windows: runtime snapshots honour the Windows temporary-directory variables, scratch owner locking falls back to Windows byte-range locks where `flock` is missing, reviewer command lines use Windows argument quoting (spaces and quotes; `cmd.exe` metacharacters such as `&` and `%` are not escaped yet, [#890](https://github.com/corca-ai/charness/issues/890)), critique packet producers named `python3` run with the current Python interpreter, and the scratch inventory reports file sizes and repository paths consistently. Linux unit tests cover the argument quoting, interpreter selection and path normalisation; the byte-range lock fallback has no test, CI runs on Linux, and this release claims no run on a Windows host.\n- Release repairs to the test suite: these tests, whose verdict depended on machine load, now wait on the event they check. `test_codex_cache_refresh_accepts_real_initialize_shape_and_lifecycle_notifications` and the other Codex app-server refresh tests no longer rely on a `0.5` s deadline: the success, malformed, initialize-error and plugin-install-error cases inject the reader's clock and wait for the fake's output, the EOF case waits for the fake to exit, and the unrelated-stream case takes its timeout from an injected clock already past the deadline; `test_update_from_explicit_checkout_refreshes_surface` (with the other entry spawn tests) waits for the `charness` process to exit instead of a `28` s bound, and no longer launches a host `codex`; `test_worker_timeout_keeps_started_and_non_approval_state` runs the review wrapper in-process with only the worker's own deadline, so the outer runner bound cannot race it.\n\n## Update\n\nRun `charness update`, then run `charness version` to confirm the installed version. No migration is required. A launcher that relied on a Codex lane writing under a `writable_roots` path from the operator's own Codex configuration must now pass that directory with `--grant-writable`.\n\n## Derived claim surfaces\n\n<!-- charness:derived-claims:begin -->\n<!-- Generated from the shipped tree. Hand-edits are refused at publish: the gate re-derives this block and compares. -->\n\n<!-- claim-surface: json-declaring-scripts -->\n\n```yaml\nid: json-declaring-scripts\nquestion: which repo-owned Python sources declare their own `--json` option\ncount: 0\nitems: []\nscanned:\n- scripts/**/*.py\n- skills/**/scripts/**/*.py\n- charness\nunscanned:\n- the exported `plugins/charness/**` mirror and `mutants/**`, which are generated\n  copies of these same sources\n- flag names composed at runtime from a variable rather than written as a string literal\n- flags a wrapper forwards without declaring, which no parser in this tree names\n```\n\n<!-- claim-surface: charness-subcommands -->\n\n```yaml\nid: charness-subcommands\nquestion: which top-level subcommands the `charness` CLI declares\ncount: 14\nitems:\n- capability\n- catalog\n- doctor\n- goal\n- hooks\n- init\n- reset\n- task\n- tool\n- train\n- uninstall\n- update\n- version\n- worktree\nscanned:\n- charness\nunscanned:\n- nested subcommand groups such as `charness task run`, which are declared on their\n  own subparser\n- subcommands a host adapter adds outside this entrypoint\n```\n\n<!-- claim-surface: public-skills -->\n\n```yaml\nid: public-skills\nquestion: which public skills this repo ships\ncount: 19\nitems:\n- achieve\n- announcement\n- create-cli\n- create-skill\n- critique\n- debug\n- gather\n- hitl\n- hotl\n- ideation\n- impl\n- issue\n- narrative\n- prove\n- quality\n- release\n- retro\n- setup\n- spec\nscanned:\n- skills/public/*/SKILL.md\nunscanned:\n- support, profile, and integration skills, which are not part of the public surface\n- skills a consuming repo installs from elsewhere\n```\n\n<!-- claim-surface: repo-shell-gates -->\n\n```yaml\nid: repo-shell-gates\nquestion: which `check-*.sh` shell gates this repo ships\ncount: 8\nitems:\n- check-docs.sh\n- check-links-external.sh\n- check-links-internal.sh\n- check-markdown.sh\n- check-python-lint.sh\n- check-rust.sh\n- check-secrets.sh\n- check-shell.sh\nscanned:\n- scripts/**/check-*.sh\nunscanned:\n- Python gates under `scripts/`, which are far more numerous and are not this surface\n- gates a consuming repo wires from its own tree\n```\n\n<!-- charness:derived-claims:end -->\n",
+    "prompt_encoding": "utf-8",
+    "size_bytes": 8308,
+    "source": "working-tree:charness-artifacts/release/2026-11-05-v8.16.0-notes.md"
+  },
+  {
+    "carrier_path": "/home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-b28e75a196cbd81891da9511f4a01aff/semantic-input/0001-content.bin",
+    "carrier_sha256": "a98206ddf225a29936b4c7763f1c03795491a7b348417c3a09aeda187380f4a0",
+    "content_sha256": "749414b3c2db1bbb5cfbbed6dc586f79017f75c179c331abe5c5ab926c0c7174",
+    "disposition": "present",
+    "path": "tests/charness_cli/test_codex_cache_refresh.py",
+    "prompt_content": "from __future__ import annotations\n\nimport argparse\nimport io\nimport json\nimport os\nimport shutil\nimport subprocess\nimport sys\nfrom pathlib import Path\nfrom types import SimpleNamespace\n\nimport pytest\nimport yaml\n\nimport scripts.cli.cmd_update as cli_cmd_update\nimport scripts.cli.host_codex_rpc as cli_host_codex_rpc\nimport scripts.cli.process as cli_process\nfrom scripts.cli.bootstrap import CharnessError as _TreeCharnessError\nfrom tests.repo_copy import repo_copy_ignore_for\n\nfrom .support import (\n    CLI,\n    build_test_path,\n    clone_seeded_managed_home,\n    make_fake_codex,\n    pin_state_home,\n    run_cli,\n    run_cli_path,\n)\nfrom .test_managed_install import load_charness_module\n\nCURRENT_VERSION = json.loads(\n    (CLI.parent / \"packaging\" / \"charness.json\").read_text(encoding=\"utf-8\")\n)[\"version\"]\npytestmark = pytest.mark.boundary_contract(\n    reason=\"JSON-RPC refresh tests require a real child transport and deadline\"\n)\n\n\n@pytest.mark.release_only\ndef test_charness_update_reports_codex_version_drift(\n    tmp_path: Path, seeded_managed_home: dict[str, Path]\n) -> None:\n    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home[\"home_root\"])\n    config_path = home_root / \".codex\" / \"config.toml\"\n    config_path.parent.mkdir(parents=True, exist_ok=True)\n    config_path.write_text('[plugins.\"charness@local\"]\\nenabled = true\\n', encoding=\"utf-8\")\n    cache_manifest = (\n        home_root\n        / \".codex\"\n        / \"plugins\"\n        / \"cache\"\n        / \"local\"\n        / \"charness\"\n        / \"local\"\n        / \".codex-plugin\"\n        / \"plugin.json\"\n    )\n    cache_manifest.parent.mkdir(parents=True, exist_ok=True)\n    cache_manifest.write_text('{\"version\":\"0.0.0-old\"}', encoding=\"utf-8\")\n\n    update_result = run_cli(\n        \"update\", \"--home-root\", str(home_root), \"--skip-codex-cache-refresh\", env=env\n    )\n    assert update_result.returncode == 0, update_result.stderr\n    payload = yaml.safe_load(update_result.stdout)\n    assert payload[\"codex_source_version\"] == CURRENT_VERSION\n    assert payload[\"codex_cache_manifest_version\"] == \"0.0.0-old\"\n    assert payload[\"codex_source_cache_drift\"] is True\n    host_state = json.loads(\n        (home_root / \".local\" / \"state\" / \"charness\" / \"host-state.json\").read_text(\n            encoding=\"utf-8\"\n        )\n    )\n    assert host_state[\"last_update\"][\"doctor\"][\"codex_source_cache_drift\"] is True\n    assert host_state[\"last_update\"][\"doctor\"][\"codex_cache_manifest_version\"] == \"0.0.0-old\"\n    assert isinstance(host_state[\"last_update\"][\"recorded_at\"], str)\n\n\n@pytest.mark.release_only\ndef test_charness_update_refreshes_codex_cache_via_official_app_server(\n    tmp_path: Path, seeded_managed_home: dict[str, Path]\n) -> None:\n    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home[\"home_root\"])\n    fake_codex = make_fake_codex(tmp_path)\n    env[\"PATH\"] = build_test_path(fake_codex.parent)\n\n    config_path = home_root / \".codex\" / \"config.toml\"\n    config_path.parent.mkdir(parents=True, exist_ok=True)\n    config_path.write_text('[plugins.\"charness@local\"]\\nenabled = true\\n', encoding=\"utf-8\")\n    cache_manifest = (\n        home_root\n        / \".codex\"\n        / \"plugins\"\n        / \"cache\"\n        / \"local\"\n        / \"charness\"\n        / \"0.0.0-old\"\n        / \".codex-plugin\"\n        / \"plugin.json\"\n    )\n    cache_manifest.parent.mkdir(parents=True, exist_ok=True)\n    cache_manifest.write_text('{\"version\":\"0.0.0-old\"}', encoding=\"utf-8\")\n\n    update_result = run_cli(\"update\", \"--detail\", \"--home-root\", str(home_root), env=env)\n    assert update_result.returncode == 0, update_result.stderr\n    payload = yaml.safe_load(update_result.stdout)\n\n    refreshed_manifest = (\n        home_root\n        / \".codex\"\n        / \"plugins\"\n        / \"cache\"\n        / \"local\"\n        / \"charness\"\n        / CURRENT_VERSION\n        / \".codex-plugin\"\n        / \"plugin.json\"\n    )\n    assert payload[\"codex_cache_refresh\"][\"status\"] == \"refreshed\"\n    assert payload[\"codex_cache_refresh\"][\"method\"] == \"codex-app-server-plugin-install\"\n    assert payload[\"codex_cache_refresh\"][\"action\"] == \"refresh\"\n    assert payload[\"codex_cache_manifest_version\"] == CURRENT_VERSION\n    assert payload[\"codex_source_cache_drift\"] is False\n    assert \"codex_cache_refreshed\" in payload[\"completed_actions\"]\n    assert refreshed_manifest.is_file()\n    assert json.loads(refreshed_manifest.read_text(encoding=\"utf-8\"))[\"version\"] == CURRENT_VERSION\n\n    staleness = payload.get(\"session_staleness\")\n    assert isinstance(staleness, dict), \"expected session_staleness payload after cache rotation\"\n    rotated_pairs = {\n        (\n            record[\"marketplace\"],\n            record[\"plugin\"],\n            record[\"old_version\"],\n            record.get(\"new_version\", \"\"),\n        )\n        for record in staleness.get(\"rotated\", [])\n    }\n    assert (\"local\", \"charness\", \"0.0.0-old\", CURRENT_VERSION) in rotated_pairs\n    affected = staleness.get(\"affected\") or []\n    assert any(\"0.0.0-old\" in line for line in affected)\n    assert \"capability_catalog.py\" in (staleness.get(\"resolver_path\") or \"\")\n    assert \"Restart\" in (staleness.get(\"message\") or \"\")\n\n\n@pytest.mark.release_only\ndef test_failed_codex_refresh_is_retryable_and_does_not_emit_success_completion(\n    tmp_path: Path, seeded_managed_home: dict[str, Path]\n) -> None:\n    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home[\"home_root\"])\n    fake_codex = make_fake_codex(tmp_path, fail_plugin_install=True)\n    env[\"PATH\"] = build_test_path(fake_codex.parent)\n\n    config_path = home_root / \".codex\" / \"config.toml\"\n    config_path.parent.mkdir(parents=True, exist_ok=True)\n    config_path.write_text('[plugins.\"charness@local\"]\\nenabled = true\\n', encoding=\"utf-8\")\n    cache_manifest = (\n        home_root\n        / \".codex\"\n        / \"plugins\"\n        / \"cache\"\n        / \"local\"\n        / \"charness\"\n        / \"0.0.0-old\"\n        / \".codex-plugin\"\n        / \"plugin.json\"\n    )\n    cache_manifest.parent.mkdir(parents=True, exist_ok=True)\n    cache_manifest.write_text('{\"version\":\"0.0.0-old\"}', encoding=\"utf-8\")\n\n    failed = run_cli(\"update\", \"--detail\", \"--home-root\", str(home_root), env=env)\n    assert failed.returncode == 1, failed.stderr\n    failed_payload = yaml.safe_load(failed.stdout)\n    assert failed_payload[\"codex_cache_refresh\"][\"status\"] == \"failed\"\n    assert failed_payload[\"codex_host_guidance\"][\"status\"] == \"failed\"\n    assert failed_payload[\"next_action\"][\"kind\"] == \"manual\"\n    assert \"retry with `charness update --detail`\" in failed_payload[\"next_action\"][\"message\"]\n    assert \"FAILED: update incomplete\" in failed.stderr\n    assert \"DONE: update complete\" not in failed.stderr\n\n    host_state = json.loads(\n        (home_root / \".local\" / \"state\" / \"charness\" / \"host-state.json\").read_text(\n            encoding=\"utf-8\"\n        )\n    )\n    assert host_state[\"last_update\"][\"delivery_status\"] == \"failed\"\n    assert host_state[\"last_update\"][\"delivery_verified\"] is False\n\n    fake_codex.with_name(\".codex-fail-plugin-install\").unlink()\n    retried = run_cli(\"update\", \"--detail\", \"--home-root\", str(home_root), env=env)\n    assert retried.returncode == 0, retried.stderr\n    retried_payload = yaml.safe_load(retried.stdout)\n    assert retried_payload[\"codex_cache_refresh\"][\"status\"] == \"refreshed\"\n    assert retried_payload[\"codex_cache_refresh\"][\"status\"] != \"skipped\"\n    assert \"DONE: update complete\" in retried.stderr\n\n    # A verified same-version no-op is still a successful host-delivery\n    # observation. It must not be persisted as an unverified skip that forces\n    # every later invocation through the app-server again.\n    fake_codex.with_name(\".codex-fail-plugin-install\").write_text(\"1\\n\", encoding=\"utf-8\")\n    same_version = run_cli(\"update\", \"--detail\", \"--home-root\", str(home_root), env=env)\n    assert same_version.returncode == 0, same_version.stderr\n    same_version_payload = yaml.safe_load(same_version.stdout)\n    assert same_version_payload[\"codex_cache_refresh\"][\"status\"] == \"skipped\"\n    assert same_version_payload[\"codex_cache_refresh\"][\"reason\"] == \"already-current\"\n    assert same_version_payload[\"codex_cache_refresh\"][\"delivery_verified\"] is True\n    assert (\n        same_version_payload[\"codex_cache_refresh\"][\"verification\"]\n        == \"same-version-content-readback\"\n    )\n    same_version_state = json.loads(\n        (home_root / \".local\" / \"state\" / \"charness\" / \"host-state.json\").read_text(\n            encoding=\"utf-8\"\n        )\n    )\n    assert same_version_state[\"last_update\"][\"delivery_status\"] == \"skipped\"\n    assert same_version_state[\"last_update\"][\"delivery_verified\"] is True\n\n    # A same-version directory with changed payload must not inherit the old\n    # verified provenance; a failed refresh remains retryable.\n    cache_root = home_root / \".codex\" / \"plugins\" / \"cache\" / \"local\" / \"charness\" / CURRENT_VERSION\n    cache_file = next(\n        path for path in cache_root.rglob(\"*\") if path.is_file() and path.name != \"plugin.json\"\n    )\n    cache_file.write_bytes(cache_file.read_bytes() + b\"\\ncontent-drift\\n\")\n    stale_same_version = run_cli(\"update\", \"--detail\", \"--home-root\", str(home_root), env=env)\n    assert stale_same_version.returncode == 1, stale_same_version.stderr\n    stale_payload = yaml.safe_load(stale_same_version.stdout)\n    assert stale_payload[\"codex_cache_refresh\"][\"status\"] == \"failed\"\n\n\n@pytest.mark.release_only\ndef test_same_version_invalid_cache_manifest_is_not_verified(\n    tmp_path: Path, seeded_managed_home: dict[str, Path]\n) -> None:\n    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home[\"home_root\"])\n    fake_codex = make_fake_codex(tmp_path)\n    env[\"PATH\"] = build_test_path(fake_codex.parent)\n    config_path = home_root / \".codex\" / \"config.toml\"\n    config_path.parent.mkdir(parents=True, exist_ok=True)\n    config_path.write_text('[plugins.\"charness@local\"]\\nenabled = true\\n', encoding=\"utf-8\")\n\n    first = run_cli(\"update\", \"--detail\", \"--home-root\", str(home_root), env=env)\n    assert first.returncode == 0, first.stderr\n    manifest = (\n        home_root\n        / \".codex\"\n        / \"plugins\"\n        / \"cache\"\n        / \"local\"\n        / \"charness\"\n        / CURRENT_VERSION\n        / \".codex-plugin\"\n        / \"plugin.json\"\n    )\n    manifest.write_text('{\"version\":\"not-the-source\"}\\n', encoding=\"utf-8\")\n    fake_codex.with_name(\".codex-fail-plugin-install\").write_text(\"1\\n\", encoding=\"utf-8\")\n\n    result = run_cli(\"update\", \"--detail\", \"--home-root\", str(home_root), env=env)\n    assert result.returncode == 1, result.stderr\n    payload = yaml.safe_load(result.stdout)\n    assert payload[\"codex_cache_refresh\"][\"status\"] == \"failed\"\n    assert payload[\"codex_cache_refresh\"].get(\"reason\") != \"already-current\"\n\n\n@pytest.mark.release_only\ndef test_failed_codex_init_emits_failure_progress_and_records_failed_operation(\n    tmp_path: Path, seeded_managed_home: dict[str, Path]\n) -> None:\n    home_root, env = clone_seeded_managed_home(tmp_path, seeded_managed_home[\"home_root\"])\n    fake_codex = make_fake_codex(tmp_path, fail_plugin_install=True)\n    env[\"PATH\"] = build_test_path(fake_codex.parent)\n    config_path = home_root / \".codex\" / \"config.toml\"\n    config_path.parent.mkdir(parents=True, exist_ok=True)\n    config_path.write_text('[plugins.\"charness@local\"]\\nenabled = true\\n', encoding=\"utf-8\")\n    old_manifest = (\n        home_root\n        / \".codex\"\n        / \"plugins\"\n        / \"cache\"\n        / \"local\"\n        / \"charness\"\n        / \"0.0.0-old\"\n        / \".codex-plugin\"\n        / \"plugin.json\"\n    )\n    old_manifest.parent.mkdir(parents=True, exist_ok=True)\n    old_manifest.write_text('{\"version\":\"0.0.0-old\"}\\n', encoding=\"utf-8\")\n\n    result = run_cli(\"init\", \"--detail\", \"--home-root\", str(home_root), env=env)\n    assert result.returncode == 1, result.stderr\n    payload = yaml.safe_load(result.stdout)\n    assert payload[\"codex_host_install\"][\"status\"] == \"failed\"\n    assert \"FAILED: init incomplete\" in result.stderr\n    assert \"DONE: init complete\" not in result.stderr\n    state = json.loads(\n        (home_root / \".local\" / \"state\" / \"charness\" / \"host-state.json\").read_text(\n            encoding=\"utf-8\"\n        )\n    )\n    assert state[\"last_init\"][\"operation_status\"] == \"failed\"\n    assert state[\"last_init\"][\"delivery_verified\"] is False\n\n\ndef test_cache_diff_and_staleness_capture_rotation(tmp_path: Path) -> None:\n    old_root = tmp_path / \"cache\" / \"local\" / \"charness\" / \"0.0.0-old\"\n    new_root = tmp_path / \"cache\" / \"local\" / \"charness\" / CURRENT_VERSION\n    old_root.mkdir(parents=True)\n    new_root.mkdir(parents=True)\n    old_root.rmdir()\n    third_party_root = tmp_path / \"cache\" / \"openai-curated\" / \"github\" / \"cc8b2295\"\n    third_party_root.mkdir(parents=True)\n\n    before = [\n        {\n            \"marketplace\": \"local\",\n            \"plugin\": \"charness\",\n            \"version\": \"0.0.0-old\",\n            \"version_dir\": str(old_root),\n            \"manifest_path\": str(old_root / \".codex-plugin\" / \"plugin.json\"),\n            \"manifest_version\": \"0.0.0-old\",\n        },\n        {\n            \"marketplace\": \"openai-curated\",\n            \"plugin\": \"github\",\n            \"version\": \"cc8b2295\",\n            \"version_dir\": str(third_party_root),\n            \"manifest_path\": str(third_party_root / \".codex-plugin\" / \"plugin.json\"),\n            \"manifest_version\": \"github-cc8b2295\",\n        },\n    ]\n    after = [\n        {\n            \"marketplace\": \"local\",\n            \"plugin\": \"charness\",\n            \"version\": CURRENT_VERSION,\n            \"version_dir\": str(new_root),\n            \"manifest_path\": str(new_root / \".codex-plugin\" / \"plugin.json\"),\n            \"manifest_version\": CURRENT_VERSION,\n        },\n        before[1],\n    ]\n\n    diff = cli_cmd_update.diff_cache_entries(before, after)\n    assert diff[\"rotated\"] == [\n        {\n            \"marketplace\": \"local\",\n            \"plugin\": \"charness\",\n            \"old_version\": \"0.0.0-old\",\n            \"old_version_dir\": str(old_root),\n            \"new_version\": CURRENT_VERSION,\n            \"new_version_dir\": str(new_root),\n        }\n    ]\n    payload = cli_cmd_update.session_staleness_payload(\n        diff, home_root=tmp_path / \"home\", repo_root=tmp_path / \"repo\"\n    )\n    assert payload is not None\n    assert payload[\"affected\"] == [f\"local/charness 0.0.0-old -> {CURRENT_VERSION}\"]\n    assert \"Restart\" in payload[\"message\"]\n\n    stable_root = tmp_path / \"cache\" / \"local\" / \"charness\" / CURRENT_VERSION\n    stable = {\n        \"marketplace\": \"local\",\n        \"plugin\": \"charness\",\n        \"version\": CURRENT_VERSION,\n        \"version_dir\": str(stable_root),\n        \"manifest_path\": str(stable_root / \".codex-plugin\" / \"plugin.json\"),\n        \"manifest_version\": CURRENT_VERSION,\n    }\n    stable_diff = cli_cmd_update.diff_cache_entries([stable], [stable])\n    assert stable_diff == {\"rotated\": [], \"removed\": [], \"added\": []}\n    assert (\n        cli_cmd_update.session_staleness_payload(\n            stable_diff, home_root=tmp_path / \"home\", repo_root=tmp_path / \"repo\"\n        )\n        is None\n    )\n\n\ndef test_session_staleness_without_cache_diff_returns_none(tmp_path: Path) -> None:\n    payload = cli_cmd_update.session_staleness_payload(\n        {\"rotated\": [], \"removed\": [], \"added\": []},\n        home_root=tmp_path / \"home\",\n        repo_root=tmp_path / \"repo\",\n    )\n\n    assert payload is None\n\n\ndef _jsonrpc_child(source: str) -> subprocess.Popen[str]:\n    return subprocess.Popen(\n        [sys.executable, \"-u\", \"-c\", source],\n        stdin=subprocess.PIPE,\n        stdout=subprocess.PIPE,\n        stderr=subprocess.PIPE,\n        text=True,\n    )\n\n\ndef _stepped_monotonic(*, step: float) -> tuple[SimpleNamespace, list[float]]:\n    \"\"\"A fake ``time`` module whose ``monotonic()`` starts at 0.0 and advances by\n    ``step`` on every call, recording each value it returned. ``step=0.0`` gives a\n    clock that never advances (a deadline computed against it can never expire).\n    \"\"\"\n    calls: list[float] = []\n    state = {\"value\": 0.0}\n\n    def monotonic() -> float:\n        value = state[\"value\"]\n        calls.append(value)\n        state[\"value\"] += step\n        return value\n\n    return SimpleNamespace(monotonic=monotonic), calls\n\n\ndef test_jsonrpc_response_wait_uses_one_absolute_deadline(monkeypatch: pytest.MonkeyPatch) -> None:\n    \"\"\"The wait is driven by one absolute deadline checked against a clock, not by\n    real elapsed time. Replace the loaded module's ``time`` with a fake clock that\n    advances a fixed 1000s step on every call, so the number of clock checks the\n    deadline math performs before giving up is exact and derivable from the code:\n    with deadline=2500 the clock returns 0, 1000, 2000, 3000 -- the first three\n    leave `remaining > 0` (one non-matching line consumed each time) and the\n    fourth makes `remaining = deadline - monotonic() <= 0`, so the function raises\n    on its fourth clock check without touching select/readline again. The step is\n    large on purpose: `remaining` is also the real `select` timeout, so a small\n    step would let a slow child start turn the third read into a select timeout\n    and shorten the sequence -- a wall-clock dependency in disguise. At hundreds\n    of seconds the select simply blocks until the child's next line. The child\n    emits an unbounded stream of non-matching messages so the outcome cannot\n    depend on how many of them it managed to print before being torn down.\n    \"\"\"\n    fake_time, calls = _stepped_monotonic(step=1000.0)\n    # The wait clock lives in scripts/cli/install_delivery.py\n    # (`read_jsonrpc_line_before`): patch the namespace the payload calls,\n    # not the loaded entry copy.\n    import scripts.cli.install_delivery as install_delivery\n\n    monkeypatch.setattr(install_delivery, \"time\", fake_time)\n    proc = _jsonrpc_child(\n        \"import json\\nwhile True:\\n print(json.dumps({'id': 99, 'result': {}}), flush=True)\\n\"\n    )\n    try:\n        with pytest.raises(_TreeCharnessError, match=\"timed out\"):\n            cli_host_codex_rpc.wait_for_jsonrpc_response(\n                proc,\n                expected_id=2,\n                deadline=2500.0,\n            )\n    finally:\n        proc.terminate()\n        proc.wait(timeout=2)\n\n    assert calls == [0.0, 1000.0, 2000.0, 3000.0]\n\n\n@pytest.mark.parametrize(\n    (\"source\", \"message\"),\n    [\n        (\"print('not-json', flush=True)\", \"invalid JSON-RPC payload\"),\n        (\"pass\", \"exited before returning a response\"),\n    ],\n)\ndef test_jsonrpc_response_wait_reports_malformed_payload_and_eof(\n    source: str, message: str, monkeypatch: pytest.MonkeyPatch\n) -> None:\n    fake_time, _calls = _stepped_monotonic(step=0.0)\n    # The wait clock lives in scripts/cli/install_delivery.py\n    # (`read_jsonrpc_line_before`): patch the namespace the payload calls,\n    # not the loaded entry copy.\n    import scripts.cli.install_delivery as install_delivery\n\n    monkeypatch.setattr(install_delivery, \"time\", fake_time)\n    proc = _jsonrpc_child(source)\n    try:\n        with pytest.raises(_TreeCharnessError, match=message):\n            cli_host_codex_rpc.wait_for_jsonrpc_response(\n                proc,\n                expected_id=2,\n                deadline=60.0,\n            )\n    finally:\n        proc.wait(timeout=2)\n\n\n@pytest.mark.parametrize(\n    (\"returncode\", \"error\"),\n    [(0, \"exited before returning a response\"), (None, \"timed out\")],\n)\ndef test_jsonrpc_select_timeout_distinguishes_exit_from_live_child(\n    monkeypatch: pytest.MonkeyPatch, returncode: int | None, error: str\n) -> None:\n    import scripts.cli.install_delivery as install_delivery\n\n    stream = SimpleNamespace(stdout=object(), stderr=io.StringIO(\"\"), poll=lambda: returncode)\n    monkeypatch.setattr(install_delivery, \"time\", SimpleNamespace(monotonic=lambda: 0.0))\n    monkeypatch.setattr(install_delivery, \"select\", SimpleNamespace(select=lambda *_args: ([], [], [])))\n    with pytest.raises(_TreeCharnessError, match=error):\n        install_delivery.read_jsonrpc_line_before(stream, deadline=1.0)\n\n\ndef test_jsonrpc_response_wait_returns_matching_error_after_unrelated_message(\n    monkeypatch: pytest.MonkeyPatch,\n) -> None:\n    fake_time, _calls = _stepped_monotonic(step=0.0)\n    # The wait clock lives in scripts/cli/install_delivery.py\n    # (`read_jsonrpc_line_before`): patch the namespace the payload calls,\n    # not the loaded entry copy.\n    import scripts.cli.install_delivery as install_delivery\n\n    monkeypatch.setattr(install_delivery, \"time\", fake_time)\n    proc = _jsonrpc_child(\n        \"import json\\n\"\n        \"print(json.dumps({'method': 'progress'}), flush=True)\\n\"\n        \"print(json.dumps({'id': 2, 'error': {'code': -32000, 'message': 'nope'}}), flush=True)\\n\"\n    )\n    try:\n        response = cli_host_codex_rpc.wait_for_jsonrpc_response(\n            proc,\n            expected_id=2,\n            deadline=60.0,\n        )\n    finally:\n        proc.wait(timeout=2)\n\n    assert response[\"error\"] == {\"code\": -32000, \"message\": \"nope\"}\n\n\n\ndef _wait_on_app_server_events(monkeypatch: pytest.MonkeyPatch, *, clock=lambda: 0.0) -> None:\n    \"\"\"Make the response wait a function of the fake's output, never of wall time.\n\n    The reader's deadline and its `select` timeout are its two wall-clock inputs.\n    A frozen clock keeps the deadline in the future and `select` blocks until the\n    fake actually writes, so a slow interpreter start under load cannot turn a\n    response into a timeout. A caller that wants the timeout passes a clock that\n    has already passed the deadline.\n    \"\"\"\n    import select as real_select\n\n    import scripts.cli.install_delivery as install_delivery\n\n    fake_time = SimpleNamespace(monotonic=clock)\n    monkeypatch.setattr(cli_host_codex_rpc, \"time\", fake_time)\n    monkeypatch.setattr(install_delivery, \"time\", fake_time)\n    monkeypatch.setattr(\n        install_delivery,\n        \"select\",\n        SimpleNamespace(select=lambda read, write, error, _timeout: real_select.select(read, write, error)),\n    )\n\n\ndef test_codex_cache_refresh_preserves_matching_error_envelope(tmp_path: Path, monkeypatch) -> None:\n    fake_codex = make_fake_codex(tmp_path, fail_plugin_install=True)\n    monkeypatch.setenv(\"PATH\", build_test_path(fake_codex.parent))\n    _wait_on_app_server_events(monkeypatch)\n    home_root = tmp_path / \"home\"\n    home_root.mkdir()\n\n    result = cli_host_codex_rpc.refresh_codex_cache_via_app_server(\n        home_root=home_root,\n        codex_marketplace_path=CLI.parent / \".agents\" / \"plugins\" / \"marketplace.json\",\n        plugin_name=\"charness\",\n        timeout_seconds=0.5,\n    )\n\n    assert result == {\n        \"status\": \"failed\",\n        \"reason\": \"plugin-install-error\",\n        \"method\": \"codex-app-server-plugin-install\",\n        \"error\": \"forced plugin/install failure\",\n    }\n\n\ndef test_codex_cache_refresh_accepts_real_initialize_shape_and_lifecycle_notifications(\n    tmp_path: Path, monkeypatch\n) -> None:\n    fake_codex = make_fake_codex(tmp_path)\n    monkeypatch.setenv(\"PATH\", build_test_path(fake_codex.parent))\n    monkeypatch.setenv(\"CHARNESS_FAKE_CODEX_APP_SERVER_MODE\", \"real-init-notifications\")\n    _wait_on_app_server_events(monkeypatch)\n    home_root = tmp_path / \"home\"\n    home_root.mkdir()\n\n    result = cli_host_codex_rpc.refresh_codex_cache_via_app_server(\n        home_root=home_root,\n        codex_marketplace_path=CLI.parent / \".agents\" / \"plugins\" / \"marketplace.json\",\n        plugin_name=\"charness\",\n        timeout_seconds=0.5,\n    )\n\n    assert result[\"status\"] == \"attempted\"\n    assert result[\"method\"] == \"codex-app-server-plugin-install\"\n\n\n@pytest.mark.parametrize(\n    (\"mode\", \"error_text\"),\n    [\n        (\"unrelated-stream\", \"timed out while waiting for Codex app-server response\"),\n        (\"malformed\", \"invalid JSON-RPC payload\"),\n        (\"eof\", \"exited before returning a response\"),\n        (\"initialize-error\", \"Codex app-server initialize failed: forced initialize failure\"),\n    ],\n)\ndef test_codex_cache_refresh_maps_transport_failures_to_existing_envelope(\n    tmp_path: Path,\n    monkeypatch,\n    mode: str,\n    error_text: str,\n) -> None:\n    fake_codex = make_fake_codex(tmp_path)\n    monkeypatch.setenv(\"PATH\", build_test_path(fake_codex.parent))\n    monkeypatch.setenv(\"CHARNESS_FAKE_CODEX_APP_SERVER_MODE\", mode)\n    home_root = tmp_path / \"home\"\n    home_root.mkdir()\n\n    if mode == \"unrelated-stream\":\n        # The timeout is the injected signal: the deadline is set at 0 and every\n        # later reading is past it, so the fake's unrelated output cannot win.\n        readings = iter([0.0])\n        _wait_on_app_server_events(monkeypatch, clock=lambda: next(readings, 10.0))\n    elif mode != \"eof\":\n        _wait_on_app_server_events(monkeypatch)\n\n    if mode == \"eof\":\n        # Observe the fake's exit before the response deadline is checked; no\n        # wall-clock assumption about child startup is needed for this case.\n        wait_for_response = cli_host_codex_rpc.wait_for_jsonrpc_response\n\n        def wait_after_exit(proc, *, expected_id, deadline):\n            proc.wait()\n            return wait_for_response(proc, expected_id=expected_id, deadline=0.0)\n\n        monkeypatch.setattr(cli_host_codex_rpc, \"wait_for_jsonrpc_response\", wait_after_exit)\n\n    result = cli_host_codex_rpc.refresh_codex_cache_via_app_server(\n        home_root=home_root,\n        codex_marketplace_path=CLI.parent / \".agents\" / \"plugins\" / \"marketplace.json\",\n        plugin_name=\"charness\",\n        timeout_seconds=0.06 if mode == \"unrelated-stream\" else 0.5,\n    )\n\n    assert result[\"status\"] == \"failed\"\n    assert result[\"reason\"] == \"app-server-error\"\n    assert result[\"method\"] == \"codex-app-server-plugin-install\"\n    assert error_text in result[\"error\"]\n\n\ndef test_session_staleness_uses_repo_resolver_then_managed_checkout_fallback(\n    tmp_path: Path,\n) -> None:\n    diff = {\n        \"rotated\": [\n            {\"marketplace\": \"local\", \"plugin\": \"charness\", \"old_version\": \"1\", \"new_version\": \"2\"}\n        ],\n        \"removed\": [],\n    }\n    repo = tmp_path / \"repo\"\n    (repo / \"scripts\").mkdir(parents=True)\n    (repo / \"scripts\" / \"adapters\").mkdir(parents=True, exist_ok=True)\n    (repo / \"scripts\" / \"adapters\").mkdir(parents=True, exist_ok=True)\n    (repo / \"scripts\" / \"adapters\" / \"capability_catalog.py\").write_text(\n        \"# repo resolver\\n\", encoding=\"utf-8\"\n    )\n    payload = cli_cmd_update.session_staleness_payload(diff, home_root=tmp_path / \"home\", repo_root=repo)\n    assert payload[\"resolver_path\"] == str(repo / \"scripts\" / \"adapters\" / \"capability_catalog.py\")\n\n    fallback = tmp_path / \"fallback-home\" / \".agents\" / \"src\" / \"charness\" / \"scripts\" / \"adapters\"\n    fallback.mkdir(parents=True)\n    (fallback / \"capability_catalog.py\").write_text(\"# managed resolver\\n\", encoding=\"utf-8\")\n    payload = cli_cmd_update.session_staleness_payload(\n        diff, home_root=tmp_path / \"fallback-home\", repo_root=tmp_path / \"missing-repo\"\n    )\n    assert payload[\"resolver_path\"] == str(fallback / \"capability_catalog.py\")\n\n\ndef test_charness_catalog_loader_imports_backend_in_process(tmp_path: Path, capsys) -> None:\n    module = load_charness_module(\"charness_catalog_loader_under_test\")\n    backend = cli_process._load_catalog_lib()\n    assert backend.list_catalog(Path.cwd())[\"artifacts\"][\"mode\"] == \"read-only\"\n    root = str(Path.cwd().resolve())\n    original_path = list(sys.path)\n    original_embedded_root = cli_process._bootstrap.EMBEDDED_REPO_ROOT\n    try:\n        cli_process._bootstrap.EMBEDDED_REPO_ROOT = None\n        sys.path[:] = [entry for entry in sys.path if entry != root]\n        assert cli_process._load_catalog_lib() is backend\n    finally:\n        cli_process._bootstrap.EMBEDDED_REPO_ROOT = original_embedded_root\n        sys.path[:] = original_path\n\n    adoption = tmp_path / \".agents\"\n    adoption.mkdir()\n    shutil.copy2(\n        CLI.parent / \".agents\" / \"consumer-validator-adoption.yaml\",\n        adoption / \"consumer-validator-adoption.yaml\",\n    )\n    args = argparse.Namespace(repo_root=tmp_path, summary=False)\n    assert module.cmd_catalog_list(args) == 0\n    full = yaml.safe_load(capsys.readouterr().out)\n    assert \"public_skills\" in full[\"inventory\"]\n    assert full[\"consumer_validator_catalog\"][\"catalog_id\"] == \"consumer-validator-catalog\"\n    assert \"counts\" not in full[\"inventory\"]\n    args.summary = True\n    assert module.cmd_catalog_list(args) == 0\n    summary = yaml.safe_load(capsys.readouterr().out)\n    assert \"counts\" in summary[\"inventory\"]\n    assert \"public_skills\" not in summary[\"inventory\"]\n    assert module.cmd_catalog_refresh(args) == 0\n    capsys.readouterr()\n\n    missing = tmp_path / \"missing-refresh-root\"\n    invalid_args = argparse.Namespace(repo_root=missing)\n    invalid_list_args = argparse.Namespace(repo_root=missing, summary=False)\n    assert module.cmd_catalog_list(invalid_list_args) == 2\n    list_error = capsys.readouterr()\n    assert \"does not exist\" in list_error.out\n    assert module.cmd_catalog_refresh(invalid_args) == 2\n    error = capsys.readouterr()\n    assert \"does not exist\" in error.out\n    assert \"Traceback\" not in error.out\n    assert not missing.exists()\n\n    assert module.cmd_catalog_refresh(invalid_args) == 2\n    payload = yaml.safe_load(capsys.readouterr().out)\n    assert \"does not exist\" in payload[\"error\"]\n\n    file_root = tmp_path / \"refresh-file-root\"\n    file_root.write_text(\"not a directory\\n\", encoding=\"utf-8\")\n    invalid_args = argparse.Namespace(repo_root=file_root)\n    assert module.cmd_catalog_refresh(invalid_args) == 2\n    error = capsys.readouterr()\n    assert \"not a directory\" in error.out\n    assert \"Traceback\" not in error.out\n\n    resolve_args = argparse.Namespace(\n        repo_root=tmp_path,\n        skill_id=\"missing\",\n        reported_path=tmp_path / \"missing/SKILL.md\",\n        home=tmp_path / \"home\",\n        codex_home=tmp_path / \"codex\",\n        marketplace=\"local\",\n        plugin=\"charness\",\n    )\n    assert module.cmd_catalog_resolve_skill_path(resolve_args) == 1\n    capsys.readouterr()\n\n\ndef test_catalog_feature_module_serves_list_directly(tmp_path: Path, capsys) -> None:\n    \"\"\"Pin the lazy-loaded catalog surface the entry wrapper resolves to.\"\"\"\n    import scripts.cli.cmd_catalog as cmd_catalog_feature\n\n    missing = tmp_path / \"missing-feature-root\"\n    args = argparse.Namespace(repo_root=missing, summary=False)\n    assert cmd_catalog_feature.cmd_catalog_list(args) == 2\n    error = capsys.readouterr()\n    assert \"does not exist\" in error.out\n    assert \"Traceback\" not in error.out\n\n\ndef test_installed_cli_catalog_list_loads_backend_from_managed_checkout(tmp_path: Path) -> None:\n    \"\"\"A copied CLI must use its managed checkout, not its bin directory.\"\"\"\n    home_root = tmp_path / \"home\"\n    managed_checkout = home_root / \".agents\" / \"src\" / \"charness\"\n    # Path-anchored, not the basename set: this copies the WHOLE checkout, and the\n    # basename set keeps `native/repograph/target`, so a sibling xdist worker's\n    # `cargo build` writing intermediates raced the copy and `copytree` raised on a\n    # vanished `.o` in the CI-shape baseline (#779). The anchored rule keeps only\n    # the built binary, which is the one file under `target/` any test reads.\n    shutil.copytree(\n        CLI.parent,\n        managed_checkout,\n        ignore=repo_copy_ignore_for(CLI.parent),\n        symlinks=True,\n    )\n    installed_cli = home_root / \".local\" / \"bin\" / \"charness\"\n    installed_cli.parent.mkdir(parents=True)\n    shutil.copy2(CLI, installed_cli)\n\n    consumer_repo = tmp_path / \"consumer\"\n    consumer_repo.mkdir()\n    consumer_agents = consumer_repo / \".agents\"\n    consumer_agents.mkdir()\n    shutil.copy2(\n        CLI.parent / \".agents\" / \"consumer-validator-adoption.yaml\",\n        consumer_agents / \"consumer-validator-adoption.yaml\",\n    )\n    env = os.environ.copy()\n    env[\"HOME\"] = str(home_root)\n    pin_state_home(env, home_root)\n    result = run_cli_path(\n        installed_cli,\n        \"catalog\",\n        \"list\",\n        \"--repo-root\",\n        str(consumer_repo),\n        cwd=tmp_path,\n        env=env,\n    )\n\n    assert result.returncode == 0, result.stderr\n    payload = yaml.safe_load(result.stdout)\n    assert payload[\"artifacts\"][\"mode\"] == \"read-only\"\n    assert not (consumer_repo / \"charness-artifacts\").exists()\n\n\ndef test_charness_catalog_refresh_invalid_roots_subprocess_contract(tmp_path: Path) -> None:\n    missing = tmp_path / \"missing-refresh-root\"\n    missing_result = run_cli(\n        \"catalog\",\n        \"refresh\",\n        \"--repo-root\",\n        str(missing),\n    )\n    assert missing_result.returncode == 2\n    assert missing_result.stderr == \"\"\n    missing_payload = yaml.safe_load(missing_result.stdout)\n    assert missing_payload[\"repo_root\"] == str(missing.resolve())\n    assert \"does not exist\" in missing_payload[\"error\"]\n    assert \"Traceback\" not in missing_result.stdout\n    assert not missing.exists()\n\n    list_result = run_cli(\n        \"catalog\",\n        \"list\",\n        \"--repo-root\",\n        str(missing),\n    )\n    assert list_result.returncode == 2\n    list_payload = yaml.safe_load(list_result.stdout)\n    assert list_payload[\"repo_root\"] == str(missing.resolve())\n    assert \"does not exist\" in list_payload[\"error\"]\n    assert \"Traceback\" not in list_result.stdout\n\n    file_root = tmp_path / \"refresh-file-root\"\n    file_root.write_text(\"not a directory\\n\", encoding=\"utf-8\")\n    file_result = run_cli(\n        \"catalog\",\n        \"refresh\",\n        \"--repo-root\",\n        str(file_root),\n    )\n    assert file_result.returncode == 2\n    file_payload = yaml.safe_load(file_result.stdout)\n    assert \"not a directory\" in file_payload[\"error\"]\n    assert \"Traceback\" not in file_result.stdout\n",
+    "prompt_encoding": "utf-8",
+    "size_bytes": 33710,
+    "source": "working-tree:tests/charness_cli/test_codex_cache_refresh.py"
+  }
+]
+Do not infer reviewed content from hashes or unrelated packet sections, and do not silently truncate large files.
+The packet below is the authoritative review input:
+{
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "changed_ref": null,
+  "follow_up": {
+    "approval_rule": "This is prior evidence only. Reuse findings as hypotheses; do not treat a prior block, defer, timeout, or partial result as approval. The new reviewer must bind the new packet and current selected paths independently.",
+    "comparison": {
+      "changed_prior_paths": [
+        "charness-artifacts/release/2026-11-05-v8.16.0-notes.md"
+      ],
+      "comparison_identity_paths": [
+        "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+        "tests/charness_cli/test_codex_cache_refresh.py"
+      ],
+      "comparison_identity_sha256": "58931872a3677d9c1a061acda1c587607b1a77519dcb30514851016e8e432249",
+      "new_paths": [],
+      "omitted_changed_prior_paths": [],
+      "prior_paths": 2,
+      "selected_changed_prior_paths": [
+        "charness-artifacts/release/2026-11-05-v8.16.0-notes.md"
+      ],
+      "unchanged_selected_paths": [
+        "tests/charness_cli/test_codex_cache_refresh.py"
+      ]
+    },
+    "context_size_bytes": 5149,
+    "final_reviewed_input_identity_sha256": "58931872a3677d9c1a061acda1c587607b1a77519dcb30514851016e8e432249",
+    "final_selected_path_count": 2,
+    "kind": "charness.review_followup_context.v1",
+    "omitted_finding_ids": [],
+    "prior_attempt_id": "release-8160-rest-followup3",
+    "prior_findings": [
+      {
+        "action": "Narrow the clock-injection claim to the output-backed cases; describe EOF as waiting for process exit and unrelated-stream as timing out via the injected clock.",
+        "evidence": [
+          "The note says the named lifecycle test “and the other Codex app-server refresh tests inject the reader's clock.”",
+          "In `test_codex_cache_refresh_maps_transport_failures_to_existing_envelope`, the `eof` branch skips `_wait_on_app_server_events`, waits with `proc.wait()`, then calls the response waiter with `deadline=0.0`.",
+          "The `unrelated-stream` branch does inject a clock that advances past the deadline; the other mapped cases use the event-wait helper."
+        ],
+        "id": "release-note-overstates-codex-test-timing",
+        "severity": "medium",
+        "summary": "The note still overstates clock injection: the EOF case waits for the fake process to exit but does not inject the reader's clock."
+      }
+    ],
+    "prior_lens": "Recheck release-note-overstates-codex-test-timing only",
+    "prior_next_move": "Revise the bullet to distinguish output-backed cases, EOF's process-exit wait, and unrelated-stream's injected-clock timeout.",
+    "prior_non_claims": [
+      "No assessment of the entry-spawn or worker-timeout claims.",
+      "No tests were run; review is limited to the supplied notes and test file."
+    ],
+    "prior_packet_path": "charness-artifacts/critique/release-8160-rest-followup3-packet.json",
+    "prior_packet_sha256": "d7102d9bb8ce12eae3bc78a4135c621b0931c76bb79813b6d297657a37410bda",
+    "prior_reviewed_input_identity_sha256": "9b6846995dc1f8e8161a741f795092c39eab68b91c53a549596986f8c06a3a04",
+    "prior_reviewed_paths": 2,
+    "prior_scope": "Third follow-up on release-8160-rest (522aa1769): the notes now say the unrelated-stream case takes its timeout from an injected clock, and the success and error cases wait on the fake output or exit.",
+    "prior_verdict": "block",
+    "selected_paths": [
+      "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+      "tests/charness_cli/test_codex_cache_refresh.py"
+    ],
+    "selection": "explicit-with-selection-receipt",
+    "selection_receipt": {
+      "comparison_identity_paths": [
+        "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+        "tests/charness_cli/test_codex_cache_refresh.py"
+      ],
+      "comparison_identity_sha256": "58931872a3677d9c1a061acda1c587607b1a77519dcb30514851016e8e432249",
+      "explicit_paths": true,
+      "new_paths": [],
+      "omitted_changed_prior_paths": [],
+      "prior_binding": {
+        "attempt_id": "release-8160-rest-followup3",
+        "identity_verification": "recorded-self-digest",
+        "packet_sha256": "d7102d9bb8ce12eae3bc78a4135c621b0931c76bb79813b6d297657a37410bda",
+        "packet_verification": "canonical-integrity-only",
+        "result_carrier": {
+          "attempt_id": "release-8160-rest-followup3",
+          "partial_result_sha256": null,
+          "result_sha256": "e10b2da2146c35bf653079659d1a59fd621334bf4cf79d12b13d22d8f8af760c",
+          "source_path": null,
+          "status": "verified"
+        },
+        "reviewed_input_identity_sha256": "9b6846995dc1f8e8161a741f795092c39eab68b91c53a549596986f8c06a3a04",
+        "semantic_input": {
+          "entries": 2,
+          "status": "verified"
+        },
+        "status": "verified"
+      },
+      "prior_identity_sha256": "9b6846995dc1f8e8161a741f795092c39eab68b91c53a549596986f8c06a3a04",
+      "rationale": "Explicit paths were supplied to include newly introduced consumers or intentionally widen the stimulus; selection is not approval.",
+      "selected_changed_prior_paths": [
+        "charness-artifacts/release/2026-11-05-v8.16.0-notes.md"
+      ],
+      "unchanged_selected_paths": [
+        "tests/charness_cli/test_codex_cache_refresh.py"
+      ]
+    },
+    "source": "charness-artifacts/critique/workers/release-8160-rest-followup3/result.json",
+    "source_sha256": "e10b2da2146c35bf653079659d1a59fd621334bf4cf79d12b13d22d8f8af760c"
+  },
+  "follow_up_scope": {
+    "contract": "Adapter-declared follow-up scope; selected-path sections must expose every identity-bound path, and static sections must declare that they are not path-bearing.",
+    "kind": "charness.follow_up_scope_receipt.v1",
+    "sections": [
+      {
+        "binding": "CHARNESS_CRITIQUE_REVIEWED_PATHS",
+        "mode": "selected-paths",
+        "path_binding": "exact-path-manifest",
+        "path_check": "exact-manifest",
+        "path_set_sha256": "56b2fcdfcbbd3ecd5c25c406361c853048915ada7ab72cf27894e3b668acdcfc",
+        "section_id": "changed-files-and-owning-surfaces",
+        "selected_path_count": 2,
+        "status": "verified"
+      },
+      {
+        "binding": "adapter-static-content",
+        "mode": "static",
+        "path_binding": null,
+        "path_check": "not-applicable",
+        "path_set_sha256": null,
+        "section_id": "critique-prepare-non-goals",
+        "selected_path_count": 2,
+        "status": "verified"
+      },
+      {
+        "binding": "adapter-static-content",
+        "mode": "static",
+        "path_binding": null,
+        "path_check": "not-applicable",
+        "path_set_sha256": null,
+        "section_id": "reviewer-packet-semantic-question",
+        "selected_path_count": 2,
+        "status": "verified"
+      }
+    ],
+    "selected_paths": [
+      "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+      "tests/charness_cli/test_codex_cache_refresh.py"
+    ],
+    "status": "verified"
+  },
+  "generated_at": "2026-11-04T20:53:38Z",
+  "kind": "charness.critique_prepare_packet",
+  "ok": true,
+  "prepared_for": "working tree",
+  "repo": "charness",
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "auto_excluded_paths": [],
+    "base_head": "5ffcdce914ee111d4d9e5786f4c53716b2e75807",
+    "base_head_role": "provenance-only",
+    "changed_ref": null,
+    "declared_untracked": [],
+    "identity_sha256": "58931872a3677d9c1a061acda1c587607b1a77519dcb30514851016e8e432249",
+    "mode": "working-tree",
+    "resolved_changed_ref": [],
+    "reviewed_content": [
+      {
+        "content_sha256": "dc99f5ce9cd5d482b34199a540f59306ed99a8f5f46db9e034cf571cbb6c65de",
+        "path": "charness-artifacts/release/2026-11-05-v8.16.0-notes.md"
+      },
+      {
+        "content_sha256": "749414b3c2db1bbb5cfbbed6dc586f79017f75c179c331abe5c5ab926c0c7174",
+        "path": "tests/charness_cli/test_codex_cache_refresh.py"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "reviewed_paths": [
+      "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+      "tests/charness_cli/test_codex_cache_refresh.py"
+    ],
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "status": "captured",
+    "substrate_mode": "working-tree",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "reviewer_tier_evidence": {
+    "application_state": "unverified-by-packet",
+    "execution_mode": "file-backed-worker",
+    "host_exposure_state": "pending-parent-spawn",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code.",
+    "requested_spawn_fields": {
+      "fork_turns": "none",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "xhigh",
+      "service_tier": "priority"
+    },
+    "requested_tier": "high-leverage",
+    "reviewer_runner": {
+      "backend": "codex_exec",
+      "mode": "file-backed-worker",
+      "timeout_seconds": 900
+    }
+  },
+  "scope_status": "populated",
+  "section_count": 3,
+  "sections": [
+    {
+      "content": "Bound review paths for working tree: (narrow follow-up scope)\nExact reviewed-path manifest:\n- charness-artifacts/release/2026-11-05-v8.16.0-notes.md\n- tests/charness_cli/test_codex_cache_refresh.py\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/release/2026-11-05-v8.16.0-notes.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- operational-evidence-records: Durable issue, quality, and release evidence attachments produced by local planning and closeout workflows.\n  source matches: charness-artifacts/release/2026-11-05-v8.16.0-notes.md\n  verify: python3 scripts/gates/check_release_issue_ledger.py --repo-root . --ledger charness-artifacts/issues/2026-08-20-next-release-ledger.json, python3 scripts/gates/validate_quality_artifact.py --repo-root ., python3 scripts/gates/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- repo-python: Repo-owned Python code and tests.\n  source matches: tests/charness_cli/test_codex_cache_refresh.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n\n",
+      "content_kind": "script",
+      "errors": [],
+      "id": "changed-files-and-owning-surfaces",
+      "ok": true,
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "title": "Changed Files And Owning Surfaces"
+    },
+    {
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "content_kind": "static",
+      "errors": [],
+      "id": "critique-prepare-non-goals",
+      "ok": true,
+      "producer": "static-config (inline)",
+      "title": "Non-Goals For This Contract"
+    },
+    {
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "content_kind": "static",
+      "errors": [],
+      "id": "reviewer-packet-semantic-question",
+      "ok": true,
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "title": "Semantic Reviewer Question"
+    }
+  ],
+  "substrate_mode": "working-tree",
+  "version": 1
+}
+
+hook: SessionStart
+hook: SessionStart Completed
+hook: UserPromptSubmit
+hook: UserPromptSubmit Completed
+codex
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Recheck release-note-overstates-codex-test-timing only",
+  "verdict": "pass",
+  "target_observations": null,
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "The release note might still imply that every Codex refresh case injects the reader's clock.",
+      "bin": "resolved",
+      "disposition": "The note separates the output-backed cases, EOF's process-exit wait, and the unrelated-stream case's injected-clock timeout."
+    }
+  ],
+  "next_move": "No change needed for this lens.",
+  "non_claims": [
+    "No assessment of the entry-spawn or worker-timeout claims.",
+    "Review is limited to the supplied notes and test file; no tests were run."
+  ]
+}
+tokens used
+39,687

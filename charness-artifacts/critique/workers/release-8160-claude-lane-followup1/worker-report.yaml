@@ -1,0 +1,71 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Follow-up on release-8160-claude-lane F-001..F-005: ~/.docker and daemon-socket
+  masks added (51d2453f2), network egress documented as a known limit with issue #889,
+  bubblewrap CI skip documented, --effort/--grant-writable help updated.'
+attempt_id: release-8160-claude-lane-followup1
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 3a41cb8713a2348d903d119aa03664d8ec1dcac725443aed1cd2026dc97ebb84
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: charness-artifacts/critique/workers/release-8160-claude-lane-followup1/receipt.json
+ledger_path: charness-artifacts/critique/workers/release-8160-claude-lane-followup1/delivery.json
+producer_run_id: run-release-8160-claude-lane-followup1
+producer_binding:
+  output_file: charness-artifacts/critique/workers/release-8160-claude-lane-followup1/result.json
+  receipt_file: charness-artifacts/critique/workers/release-8160-claude-lane-followup1/receipt.json
+  producer_run_id: run-release-8160-claude-lane-followup1
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: 2a52171f988059ffcfa5ee2d44b13d6c646f77471e41e49cb17ca6014c0d6562
+receipt_output_sha256: 2a52171f988059ffcfa5ee2d44b13d6c646f77471e41e49cb17ca6014c0d6562
+packet_identity: a9b9b65c522f5d76482ddda0ed0f9cb9ddee259cf16e4ca1070718a201b2b640
+reviewed_input_identity: 778de6f15d22d4f9da70feb547c89f004cda4454c53a0836ed2a6d76626a53a0
+parent_receipt_identity: parent-ddb5a16d34818275e1e333c7b26937b1306e1177e0c6d125
+provenance:
+  scope: 'Follow-up on release-8160-claude-lane F-001..F-005: ~/.docker and daemon-socket
+    masks added (51d2453f2), network egress documented as a known limit with issue
+    #889, bubblewrap CI skip documented, --effort/--grant-writable help updated.'
+  packet_identity: a9b9b65c522f5d76482ddda0ed0f9cb9ddee259cf16e4ca1070718a201b2b640
+  reviewed_input_identity: 778de6f15d22d4f9da70feb547c89f004cda4454c53a0836ed2a6d76626a53a0
+  parent_receipt_identity: parent-ddb5a16d34818275e1e333c7b26937b1306e1177e0c6d125
+  expected_targets_sha256: null
+  attempt_id: release-8160-claude-lane-followup1
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 3a41cb8713a2348d903d119aa03664d8ec1dcac725443aed1cd2026dc97ebb84
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

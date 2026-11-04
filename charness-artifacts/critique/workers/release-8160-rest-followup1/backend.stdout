@@ -1,0 +1,50 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Fresh-eye follow-up: claim-to-code alignment and timing-test failure behavior",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "risk-forced-unknown-test-gap",
+      "severity": "medium",
+      "summary": "The note’s `external-seam, bogus` behavior matches the helper, but the selected tests still do not cover that mixed case.",
+      "evidence": [
+        "debug_artifact_declarations.py recovers allowed classes after a parse error and sets `requires_interrupt` when a recovered class is forced.",
+        "test_debug_risk_class_prose.py tests unknown values such as `none, bogus`, but has no forced-class-plus-unknown case."
+      ],
+      "action": "Add a test for `external-seam, bogus` that asserts the interrupt and planner outcome, or qualify the note to identify this behavior as untested."
+    },
+    {
+      "id": "event-driven-tests-unbounded-on-missing-event",
+      "severity": "medium",
+      "summary": "Some timing repairs can wait indefinitely instead of failing when the expected event never arrives.",
+      "evidence": [
+        "test_codex_cache_refresh.py freezes the reader clock and replaces `select` with a call that omits its timeout; a missing pipe event therefore has no test-level deadline.",
+        "test_semantic_review_worker_timeout.py removes the outer runner timeout while the fake backend sleeps for 3600 seconds; if the worker timeout path breaks, the test can remain running until that sleep ends."
+      ],
+      "action": "Keep verdicts event-driven while adding a separate bounded failure path, such as a controllable timeout signal or a test watchdog that cannot decide the behavior under test."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "cmd.exe metacharacter handling",
+      "bin": "resolved by qualification",
+      "disposition": "The note now says Windows argument quoting covers spaces and quotes but does not escape cmd.exe metacharacters; that matches the supplied command builder’s use of list2cmdline with shell=True."
+    },
+    {
+      "concern": "Windows byte-range lock coverage",
+      "bin": "qualified in notes",
+      "disposition": "The note explicitly says the fallback is untested and disclaims a Windows-host run. The supplied implementation shows the msvcrt fallback; the selected input does not include test or CI configuration to independently verify the coverage statements."
+    },
+    {
+      "concern": "Worker timeout still uses elapsed time",
+      "bin": "intentional and disclosed",
+      "disposition": "The worker-timeout test still relies on its one-second worker deadline. The note explicitly says only that deadline remains, so it does not claim the test is wholly independent of wall time."
+    }
+  ],
+  "next_move": "Add the mixed forced-plus-unknown risk test and give the event-driven timing tests a bounded failure path that does not restore load-sensitive verdict deadlines.",
+  "non_claims": [
+    "No Windows-host execution was verified.",
+    "The packet contains no structured prepared_targets, so no per-target observations are made."
+  ]
+}

@@ -1,0 +1,75 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Second follow-up on release-8160-claude-lane: ~/.pypirc and Cargo credentials
+  added to the masks (31a94834b); the docs and notes now state that home masks are
+  a named list and that host Unix sockets other than container daemons and /run/user/<uid>
+  stay reachable, tracked with network egress in issue #889; docs/cli-reference.md
+  now included.'
+attempt_id: release-8160-claude-lane-followup2
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 0d97278d74f044040775936810daea3fba2f5c58cadf7f589832bc9a5874523f
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-bc63a27af10a477c6ddfcc5144dd2105/receipt.json
+ledger_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-bc63a27af10a477c6ddfcc5144dd2105/delivery.json
+producer_run_id: run-release-8160-claude-lane-followup2
+producer_binding:
+  output_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-bc63a27af10a477c6ddfcc5144dd2105/result.json
+  receipt_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-bc63a27af10a477c6ddfcc5144dd2105/receipt.json
+  producer_run_id: run-release-8160-claude-lane-followup2
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: 2de08657349e7192ca71ec580441642c237f98342e670f382750b9bb0ba8dd5f
+receipt_output_sha256: 2de08657349e7192ca71ec580441642c237f98342e670f382750b9bb0ba8dd5f
+packet_identity: c2d28755266293e341b566cd7dd5ebc4d24a60224c0e4794ee89b5de960d7184
+reviewed_input_identity: c322b6d6ff58dfab66cb7c3806698e9dd654f21fb86cc0b8cadaafc69ac95946
+parent_receipt_identity: parent-b336d2de482545ee223a5d0c4ed8a7bd278bcd630f024d7c
+provenance:
+  scope: 'Second follow-up on release-8160-claude-lane: ~/.pypirc and Cargo credentials
+    added to the masks (31a94834b); the docs and notes now state that home masks are
+    a named list and that host Unix sockets other than container daemons and /run/user/<uid>
+    stay reachable, tracked with network egress in issue #889; docs/cli-reference.md
+    now included.'
+  packet_identity: c2d28755266293e341b566cd7dd5ebc4d24a60224c0e4794ee89b5de960d7184
+  reviewed_input_identity: c322b6d6ff58dfab66cb7c3806698e9dd654f21fb86cc0b8cadaafc69ac95946
+  parent_receipt_identity: parent-b336d2de482545ee223a5d0c4ed8a7bd278bcd630f024d7c
+  expected_targets_sha256: null
+  attempt_id: release-8160-claude-lane-followup2
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 0d97278d74f044040775936810daea3fba2f5c58cadf7f589832bc9a5874523f
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

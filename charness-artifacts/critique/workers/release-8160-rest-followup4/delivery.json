@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8160-rest-followup4",
+      "scope": "Fourth follow-up on release-8160-rest (5ffcdce91): the notes now describe each Codex refresh test case wait separately.",
+      "packet_identity": "b634d5d19dd2498b2b88500dd0767810d45ccd402a6c1a812f2495e2b7bccc0b",
+      "parent_receipt_identity": "parent-3414f01f2e788d159c066e3d14c62ae170608be513c2cbe2",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-11-04T20:54:08Z",
+      "history": [
+        {
+          "event_id": "905e1bbacf83435b9e3f40d409f4b13e",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-11-04T20:53:39Z",
+          "attempt_id": "release-8160-rest-followup4",
+          "scope": "Fourth follow-up on release-8160-rest (5ffcdce91): the notes now describe each Codex refresh test case wait separately.",
+          "packet_identity": "b634d5d19dd2498b2b88500dd0767810d45ccd402a6c1a812f2495e2b7bccc0b",
+          "parent_receipt_identity": "parent-3414f01f2e788d159c066e3d14c62ae170608be513c2cbe2",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "bebd42a54d11459db11886f60141cded",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-11-04T20:53:39Z",
+          "attempt_id": "release-8160-rest-followup4",
+          "scope": "Fourth follow-up on release-8160-rest (5ffcdce91): the notes now describe each Codex refresh test case wait separately.",
+          "packet_identity": "b634d5d19dd2498b2b88500dd0767810d45ccd402a6c1a812f2495e2b7bccc0b",
+          "parent_receipt_identity": "parent-3414f01f2e788d159c066e3d14c62ae170608be513c2cbe2",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "7f855718134142e8b4359614efc6bf08",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-11-04T20:54:08Z",
+          "attempt_id": "release-8160-rest-followup4",
+          "scope": "Fourth follow-up on release-8160-rest (5ffcdce91): the notes now describe each Codex refresh test case wait separately.",
+          "packet_identity": "b634d5d19dd2498b2b88500dd0767810d45ccd402a6c1a812f2495e2b7bccc0b",
+          "parent_receipt_identity": "parent-3414f01f2e788d159c066e3d14c62ae170608be513c2cbe2",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "f7c79f163e929c9b31f4b15021b9dd52faf8310498dd0dcb7955cd4ad0bba929"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "58931872a3677d9c1a061acda1c587607b1a77519dcb30514851016e8e432249",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "819f8ab0d5597735a217daab122169ed4c9e5f1c2ae93488444a34508495e385",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8160-rest-followup4/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8160-rest-followup4/receipt.json",
+      "producer_run_id": "run-release-8160-rest-followup4",
+      "findings_identity": "f7c79f163e929c9b31f4b15021b9dd52faf8310498dd0dcb7955cd4ad0bba929"
+    }
+  ]
+}

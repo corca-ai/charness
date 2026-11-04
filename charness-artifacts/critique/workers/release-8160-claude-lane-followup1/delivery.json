@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8160-claude-lane-followup1",
+      "scope": "Follow-up on release-8160-claude-lane F-001..F-005: ~/.docker and daemon-socket masks added (51d2453f2), network egress documented as a known limit with issue #889, bubblewrap CI skip documented, --effort/--grant-writable help updated.",
+      "packet_identity": "a9b9b65c522f5d76482ddda0ed0f9cb9ddee259cf16e4ca1070718a201b2b640",
+      "parent_receipt_identity": "parent-ddb5a16d34818275e1e333c7b26937b1306e1177e0c6d125",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-11-04T20:45:03Z",
+      "history": [
+        {
+          "event_id": "c818a7d1300145958ac6168e762dfa4f",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-11-04T20:41:17Z",
+          "attempt_id": "release-8160-claude-lane-followup1",
+          "scope": "Follow-up on release-8160-claude-lane F-001..F-005: ~/.docker and daemon-socket masks added (51d2453f2), network egress documented as a known limit with issue #889, bubblewrap CI skip documented, --effort/--grant-writable help updated.",
+          "packet_identity": "a9b9b65c522f5d76482ddda0ed0f9cb9ddee259cf16e4ca1070718a201b2b640",
+          "parent_receipt_identity": "parent-ddb5a16d34818275e1e333c7b26937b1306e1177e0c6d125",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "0f82ec38e6c84dd79224b104b09d70a1",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-11-04T20:41:17Z",
+          "attempt_id": "release-8160-claude-lane-followup1",
+          "scope": "Follow-up on release-8160-claude-lane F-001..F-005: ~/.docker and daemon-socket masks added (51d2453f2), network egress documented as a known limit with issue #889, bubblewrap CI skip documented, --effort/--grant-writable help updated.",
+          "packet_identity": "a9b9b65c522f5d76482ddda0ed0f9cb9ddee259cf16e4ca1070718a201b2b640",
+          "parent_receipt_identity": "parent-ddb5a16d34818275e1e333c7b26937b1306e1177e0c6d125",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "31c59d23198042e09fbb3314f8413635",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-11-04T20:45:03Z",
+          "attempt_id": "release-8160-claude-lane-followup1",
+          "scope": "Follow-up on release-8160-claude-lane F-001..F-005: ~/.docker and daemon-socket masks added (51d2453f2), network egress documented as a known limit with issue #889, bubblewrap CI skip documented, --effort/--grant-writable help updated.",
+          "packet_identity": "a9b9b65c522f5d76482ddda0ed0f9cb9ddee259cf16e4ca1070718a201b2b640",
+          "parent_receipt_identity": "parent-ddb5a16d34818275e1e333c7b26937b1306e1177e0c6d125",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "2a52171f988059ffcfa5ee2d44b13d6c646f77471e41e49cb17ca6014c0d6562"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "778de6f15d22d4f9da70feb547c89f004cda4454c53a0836ed2a6d76626a53a0",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "3a41cb8713a2348d903d119aa03664d8ec1dcac725443aed1cd2026dc97ebb84",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup1/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup1/receipt.json",
+      "producer_run_id": "run-release-8160-claude-lane-followup1",
+      "findings_identity": "2a52171f988059ffcfa5ee2d44b13d6c646f77471e41e49cb17ca6014c0d6562"
+    }
+  ]
+}

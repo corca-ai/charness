@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8160-claude-lane-followup4",
+      "scope": "Fourth follow-up on release-8160-claude-lane F-006 (5ffcdce91): docs now state the workspace scan does not follow symlinked directories.",
+      "packet_identity": "e7d03d5d25da34116cf4798cceb577d3a57e466816c3c61f2207d40f09ca1882",
+      "parent_receipt_identity": "parent-31edd68f42ccb117bcc6edd116dedf58ffb693b59938f1f6",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-11-04T20:54:25Z",
+      "history": [
+        {
+          "event_id": "19ae0834834d4a93bae5938e84cc4d9c",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-11-04T20:53:39Z",
+          "attempt_id": "release-8160-claude-lane-followup4",
+          "scope": "Fourth follow-up on release-8160-claude-lane F-006 (5ffcdce91): docs now state the workspace scan does not follow symlinked directories.",
+          "packet_identity": "e7d03d5d25da34116cf4798cceb577d3a57e466816c3c61f2207d40f09ca1882",
+          "parent_receipt_identity": "parent-31edd68f42ccb117bcc6edd116dedf58ffb693b59938f1f6",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "d79b16ada8b1432d9261bc128fe3722c",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-11-04T20:53:39Z",
+          "attempt_id": "release-8160-claude-lane-followup4",
+          "scope": "Fourth follow-up on release-8160-claude-lane F-006 (5ffcdce91): docs now state the workspace scan does not follow symlinked directories.",
+          "packet_identity": "e7d03d5d25da34116cf4798cceb577d3a57e466816c3c61f2207d40f09ca1882",
+          "parent_receipt_identity": "parent-31edd68f42ccb117bcc6edd116dedf58ffb693b59938f1f6",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "df8e9c13be724c058da167979d08f1cb",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-11-04T20:54:25Z",
+          "attempt_id": "release-8160-claude-lane-followup4",
+          "scope": "Fourth follow-up on release-8160-claude-lane F-006 (5ffcdce91): docs now state the workspace scan does not follow symlinked directories.",
+          "packet_identity": "e7d03d5d25da34116cf4798cceb577d3a57e466816c3c61f2207d40f09ca1882",
+          "parent_receipt_identity": "parent-31edd68f42ccb117bcc6edd116dedf58ffb693b59938f1f6",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "70d3da668e3fd2f5a6c6cbe71896bcec426112052575726482a9d189a3cc0e45"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "776b7a6bf137a1b96c7b25d36d9c560f4b4099f26dd25aa64a1f7a6200057f0d",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "f77630387833dd3529ea869e220c736b78c653e4ff3cb03bc0f6ab2e6fbbc8f9",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup4/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup4/receipt.json",
+      "producer_run_id": "run-release-8160-claude-lane-followup4",
+      "findings_identity": "70d3da668e3fd2f5a6c6cbe71896bcec426112052575726482a9d189a3cc0e45"
+    }
+  ]
+}

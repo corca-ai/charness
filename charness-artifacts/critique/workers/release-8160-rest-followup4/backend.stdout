@@ -1,0 +1,19 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Recheck release-note-overstates-codex-test-timing only",
+  "verdict": "pass",
+  "target_observations": null,
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "The release note might still imply that every Codex refresh case injects the reader's clock.",
+      "bin": "resolved",
+      "disposition": "The note separates the output-backed cases, EOF's process-exit wait, and the unrelated-stream case's injected-clock timeout."
+    }
+  ],
+  "next_move": "No change needed for this lens.",
+  "non_claims": [
+    "No assessment of the entry-spawn or worker-timeout claims.",
+    "Review is limited to the supplied notes and test file; no tests were run."
+  ]
+}

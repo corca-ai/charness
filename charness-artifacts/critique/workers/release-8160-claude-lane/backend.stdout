@@ -1,0 +1,85 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Gawande operational and boundary safety",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "F-001",
+      "severity": "high",
+      "summary": "The Claude sandbox does not restrict network access, so the fixed-upstream auth proxy does not prevent direct access to host or cloud credential services.",
+      "evidence": [
+        "scripts/task_run/task_run_claude_sandbox.py builds bwrap with --unshare-pid, --unshare-ipc, and --unshare-uts, but no network namespace or egress restriction.",
+        "scripts/task_run/task_run_claude_auth.py forwards authenticated proxy requests to api.anthropic.com; nothing in the sandbox forces other child traffic through that proxy.",
+        "On hosts exposing credential-bearing metadata or internal services, an arbitrary Claude subprocess can attempt direct requests to them."
+      ],
+      "action": "Enforce an egress boundary that permits the authenticated Anthropic proxy while blocking direct access to metadata and other host or network services. Add an arbitrary-subprocess boundary test before claiming provider credentials are isolated."
+    },
+    {
+      "id": "F-002",
+      "severity": "high",
+      "summary": "The home credential masks omit common Docker credentials, leaving them readable inside the sandbox when present.",
+      "evidence": [
+        "scripts/task_run/task_run_claude_sandbox.py mounts the host root read-only and masks only the listed _SECRET_DIRECTORIES and _SECRET_FILES.",
+        "Those lists omit ~/.docker and ~/.docker/config.json, which can contain registry authentication data.",
+        "The worktree credential scan does not cover this host-home path."
+      ],
+      "action": "Mask Docker credential state and audit other known host credential locations, or deny home reads by default. Add a sandbox test that proves a synthetic credential at the host path cannot be read."
+    },
+    {
+      "id": "F-003",
+      "severity": "high",
+      "summary": "Host daemon sockets remain visible, allowing a lane with socket access to request host-side actions outside the filesystem grants.",
+      "evidence": [
+        "scripts/task_run/task_run_claude_sandbox.py masks only /run/user/<uid> while preserving the rest of the root filesystem with --ro-bind / /.",
+        "Sockets such as /run/docker.sock or /var/run/docker.sock are not masked; read-only mounting does not prevent connecting to a socket.",
+        "Where the lane retains permission to use such a socket, a daemon can perform writes on its behalf beyond the lane worktree, runtime, and explicit grants."
+      ],
+      "action": "Hide host control sockets from the sandbox, including container and other daemon APIs, and add a boundary test that confirms they cannot be reached."
+    },
+    {
+      "id": "F-004",
+      "severity": "medium",
+      "summary": "The real bubblewrap boundary tests can skip, and the packet does not establish that release CI runs them with bubblewrap installed.",
+      "evidence": [
+        "tests/charness_cli/test_task_run_claude_sandbox.py skips its OS-boundary tests when shutil.which(\"bwrap\") is false.",
+        "The release notes say CI runs only on Linux, but the supplied packet does not show that CI provisions bubblewrap or records these tests as executed."
+      ],
+      "action": "Make the release CI job require bubblewrap and fail if it is missing; record that the OS-boundary tests ran rather than skipped."
+    },
+    {
+      "id": "F-005",
+      "severity": "low",
+      "summary": "The task-run CLI help and generated CLI reference underdescribe Claude support and writable grants.",
+      "evidence": [
+        "The charness --effort help lists Codex and Muse effort sets, and --grant-writable says a Codex lane may write.",
+        "docs/cli-reference.md reproduces those descriptions.",
+        "The v8.16.0 notes state that Claude lanes accept --grant-writable and that Claude is a supported executor."
+      ],
+      "action": "Update the parser help to describe Claude’s supported effort and grant behavior, then regenerate docs/cli-reference.md."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Codex lanes no longer inherit operator-configured writable_roots.",
+      "bin": "Documented compatibility change",
+      "disposition": "The release notes identify the break and instruct launchers to use --grant-writable; retain that migration guidance."
+    },
+    {
+      "concern": "Private Git import may lose or corrupt task-branch commits.",
+      "bin": "Partially covered",
+      "disposition": "The supplied sandbox tests exercise a private commit roundtrip and branch identity checks, but they do not compensate for the separate network, credential-file, and host-socket boundary gaps."
+    },
+    {
+      "concern": "Claude sandbox boundary evidence on CI.",
+      "bin": "Insufficient evidence",
+      "disposition": "The tests are meaningful when run, but their conditional skip means Linux CI alone does not establish execution."
+    }
+  ],
+  "next_move": "Close the three host-boundary paths, require the bubblewrap tests to run in release CI, update CLI help and its generated reference, then rerun the bounded review.",
+  "non_claims": [
+    "This review is limited to the supplied inline semantic bytes; it does not establish the exact delta from v8.15.0 because no patch bytes were included.",
+    "The metadata-service risk depends on the host exposing such a service; the sandbox currently does not block attempts to reach it.",
+    "No claim is made that all possible credential locations or host IPC endpoints were exhaustively enumerated."
+  ]
+}

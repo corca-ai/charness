@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8160-rest-followup1",
+      "scope": "Follow-up on release-8160-rest: notes reworded for the forced-class Risk Class case, cmd.exe quoting limits (issue #890) and the untested Windows lock fallback; three load-dependent tests made event-driven (7d5435040).",
+      "packet_identity": "801bc917c58f460c0e8e5650c5f8324636c49995930cb112bf2a2cfbb035504c",
+      "parent_receipt_identity": "parent-9cabf0a101bdc0bcfe9fac213bd479cb91222b5aca6b79be",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-11-04T20:44:35Z",
+      "history": [
+        {
+          "event_id": "e49fccd5d0604f7193cc1ab95a2524b6",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-11-04T20:41:18Z",
+          "attempt_id": "release-8160-rest-followup1",
+          "scope": "Follow-up on release-8160-rest: notes reworded for the forced-class Risk Class case, cmd.exe quoting limits (issue #890) and the untested Windows lock fallback; three load-dependent tests made event-driven (7d5435040).",
+          "packet_identity": "801bc917c58f460c0e8e5650c5f8324636c49995930cb112bf2a2cfbb035504c",
+          "parent_receipt_identity": "parent-9cabf0a101bdc0bcfe9fac213bd479cb91222b5aca6b79be",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "eb51ab485d9b4e2c907ae3a99326f781",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-11-04T20:41:18Z",
+          "attempt_id": "release-8160-rest-followup1",
+          "scope": "Follow-up on release-8160-rest: notes reworded for the forced-class Risk Class case, cmd.exe quoting limits (issue #890) and the untested Windows lock fallback; three load-dependent tests made event-driven (7d5435040).",
+          "packet_identity": "801bc917c58f460c0e8e5650c5f8324636c49995930cb112bf2a2cfbb035504c",
+          "parent_receipt_identity": "parent-9cabf0a101bdc0bcfe9fac213bd479cb91222b5aca6b79be",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "0fb564fa8788424b82687143ca1c4917",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-11-04T20:44:35Z",
+          "attempt_id": "release-8160-rest-followup1",
+          "scope": "Follow-up on release-8160-rest: notes reworded for the forced-class Risk Class case, cmd.exe quoting limits (issue #890) and the untested Windows lock fallback; three load-dependent tests made event-driven (7d5435040).",
+          "packet_identity": "801bc917c58f460c0e8e5650c5f8324636c49995930cb112bf2a2cfbb035504c",
+          "parent_receipt_identity": "parent-9cabf0a101bdc0bcfe9fac213bd479cb91222b5aca6b79be",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "a0fd058b1c262333e323c35e109dfdfc5211e7bf80d77446d0cceba9326e8cd6"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "40982770650b7bce8001276aabfa2fc2042481ccc71dd673facb713e82050148",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "70ac287aed1fa306a4b9965ccb2ddc46b45a3ba8e3eea5ab57992e29aab5c661",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8160-rest-followup1/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8160-rest-followup1/receipt.json",
+      "producer_run_id": "run-release-8160-rest-followup1",
+      "findings_identity": "a0fd058b1c262333e323c35e109dfdfc5211e7bf80d77446d0cceba9326e8cd6"
+    }
+  ]
+}

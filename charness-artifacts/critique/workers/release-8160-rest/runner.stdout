@@ -1,0 +1,73 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Release critique for charness v8.16.0 (minor), part 2 of 2: the debug planner
+  Risk Class fix, lane environment and progress-observation changes, Windows portability
+  repairs, release-gate test repairs, and the v8.16.0 notes. Files are the current
+  tree; git diff v8.15.0..HEAD shows what changed.'
+attempt_id: release-8160-rest
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 1c5e1f1d9a925ab572fde831405c827cd4c747daf9b34c8f51fe80d210ed03bc
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-30f1a349efaff8139807f9b38a55911c/receipt.json
+ledger_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-30f1a349efaff8139807f9b38a55911c/delivery.json
+producer_run_id: run-release-8160-rest
+producer_binding:
+  output_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-30f1a349efaff8139807f9b38a55911c/result.json
+  receipt_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-30f1a349efaff8139807f9b38a55911c/receipt.json
+  producer_run_id: run-release-8160-rest
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: 1931350500ab745326172db255eac7fc1c3027161de6eb2d309875ed0ca42d8f
+receipt_output_sha256: 1931350500ab745326172db255eac7fc1c3027161de6eb2d309875ed0ca42d8f
+packet_identity: 36653a6733dc65a54f6170501d603358bd71c6246a666f4b94f7537c5e1d662c
+reviewed_input_identity: 801153337b2daf6287e9c12aedaddd6759122fd9e78328fd3df30a7954a28b8b
+parent_receipt_identity: parent-78f5dd7e43f1c8cf69c55f6ecb1227a8f4e46da063a92c7f
+provenance:
+  scope: 'Release critique for charness v8.16.0 (minor), part 2 of 2: the debug planner
+    Risk Class fix, lane environment and progress-observation changes, Windows portability
+    repairs, release-gate test repairs, and the v8.16.0 notes. Files are the current
+    tree; git diff v8.15.0..HEAD shows what changed.'
+  packet_identity: 36653a6733dc65a54f6170501d603358bd71c6246a666f4b94f7537c5e1d662c
+  reviewed_input_identity: 801153337b2daf6287e9c12aedaddd6759122fd9e78328fd3df30a7954a28b8b
+  parent_receipt_identity: parent-78f5dd7e43f1c8cf69c55f6ecb1227a8f4e46da063a92c7f
+  expected_targets_sha256: null
+  attempt_id: release-8160-rest
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 1c5e1f1d9a925ab572fde831405c827cd4c747daf9b34c8f51fe80d210ed03bc
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

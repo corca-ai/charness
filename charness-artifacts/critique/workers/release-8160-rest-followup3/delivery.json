@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8160-rest-followup3",
+      "scope": "Third follow-up on release-8160-rest (522aa1769): the notes now say the unrelated-stream case takes its timeout from an injected clock, and the success and error cases wait on the fake output or exit.",
+      "packet_identity": "d7102d9bb8ce12eae3bc78a4135c621b0931c76bb79813b6d297657a37410bda",
+      "parent_receipt_identity": "parent-7873b6abf674095556894d7a18062a7958760b1e938ecf05",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-11-04T20:52:10Z",
+      "history": [
+        {
+          "event_id": "a8b5fec4d07c41b2a75b1d618fa63b73",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-11-04T20:51:15Z",
+          "attempt_id": "release-8160-rest-followup3",
+          "scope": "Third follow-up on release-8160-rest (522aa1769): the notes now say the unrelated-stream case takes its timeout from an injected clock, and the success and error cases wait on the fake output or exit.",
+          "packet_identity": "d7102d9bb8ce12eae3bc78a4135c621b0931c76bb79813b6d297657a37410bda",
+          "parent_receipt_identity": "parent-7873b6abf674095556894d7a18062a7958760b1e938ecf05",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "4e0ce190262246578dbfc6675ddff5b1",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-11-04T20:51:15Z",
+          "attempt_id": "release-8160-rest-followup3",
+          "scope": "Third follow-up on release-8160-rest (522aa1769): the notes now say the unrelated-stream case takes its timeout from an injected clock, and the success and error cases wait on the fake output or exit.",
+          "packet_identity": "d7102d9bb8ce12eae3bc78a4135c621b0931c76bb79813b6d297657a37410bda",
+          "parent_receipt_identity": "parent-7873b6abf674095556894d7a18062a7958760b1e938ecf05",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "68f243764e704189b31aeba85e7c957d",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-11-04T20:52:10Z",
+          "attempt_id": "release-8160-rest-followup3",
+          "scope": "Third follow-up on release-8160-rest (522aa1769): the notes now say the unrelated-stream case takes its timeout from an injected clock, and the success and error cases wait on the fake output or exit.",
+          "packet_identity": "d7102d9bb8ce12eae3bc78a4135c621b0931c76bb79813b6d297657a37410bda",
+          "parent_receipt_identity": "parent-7873b6abf674095556894d7a18062a7958760b1e938ecf05",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "e10b2da2146c35bf653079659d1a59fd621334bf4cf79d12b13d22d8f8af760c"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "9b6846995dc1f8e8161a741f795092c39eab68b91c53a549596986f8c06a3a04",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "2194f94aa4a3f751acabb267d8b5fa4ea530a625289b703c28425a44aa88d8d1",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8160-rest-followup3/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8160-rest-followup3/receipt.json",
+      "producer_run_id": "run-release-8160-rest-followup3",
+      "findings_identity": "e10b2da2146c35bf653079659d1a59fd621334bf4cf79d12b13d22d8f8af760c"
+    }
+  ]
+}

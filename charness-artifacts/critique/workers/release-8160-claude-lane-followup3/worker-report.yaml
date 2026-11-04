@@ -1,0 +1,71 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Third follow-up on release-8160-claude-lane F-006..F-008 (522aa1769): workspace-scan
+  skips stated in docs; real-lane tests for ~/.pypirc, Cargo and ~/.docker/config.json
+  masks; the socket comment narrowed.'
+attempt_id: release-8160-claude-lane-followup3
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: c22bf20e4d25667b3269f51b160a10b75b5737a5d89ae7857fe269c93f6e41fe
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: charness-artifacts/critique/workers/release-8160-claude-lane-followup3/receipt.json
+ledger_path: charness-artifacts/critique/workers/release-8160-claude-lane-followup3/delivery.json
+producer_run_id: run-release-8160-claude-lane-followup3
+producer_binding:
+  output_file: charness-artifacts/critique/workers/release-8160-claude-lane-followup3/result.json
+  receipt_file: charness-artifacts/critique/workers/release-8160-claude-lane-followup3/receipt.json
+  producer_run_id: run-release-8160-claude-lane-followup3
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: 18bc47ab98f7647fe5fbf591d20e76385a1f7247ce7743a72104a0e37659e45b
+receipt_output_sha256: 18bc47ab98f7647fe5fbf591d20e76385a1f7247ce7743a72104a0e37659e45b
+packet_identity: d0d2d8fd8768268f82a0d97113d151f253b65e2baa229d9249d27c857a438dce
+reviewed_input_identity: e77ebb60dae5d3cc387bd048e3f080e0d20039b56fa62758db5a753febbe47ce
+parent_receipt_identity: parent-deb5c06760ed3f0270802290235da65c6d61d0f64c79ce5c
+provenance:
+  scope: 'Third follow-up on release-8160-claude-lane F-006..F-008 (522aa1769): workspace-scan
+    skips stated in docs; real-lane tests for ~/.pypirc, Cargo and ~/.docker/config.json
+    masks; the socket comment narrowed.'
+  packet_identity: d0d2d8fd8768268f82a0d97113d151f253b65e2baa229d9249d27c857a438dce
+  reviewed_input_identity: e77ebb60dae5d3cc387bd048e3f080e0d20039b56fa62758db5a753febbe47ce
+  parent_receipt_identity: parent-deb5c06760ed3f0270802290235da65c6d61d0f64c79ce5c
+  expected_targets_sha256: null
+  attempt_id: release-8160-claude-lane-followup3
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: c22bf20e4d25667b3269f51b160a10b75b5737a5d89ae7857fe269c93f6e41fe
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

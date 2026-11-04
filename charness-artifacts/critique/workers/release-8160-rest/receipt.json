@@ -1,0 +1,82 @@
+{
+  "attempt_id": "release-8160-rest",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/release-8160-rest/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-11-04T20:30:37Z",
+  "model_application_state": "unverified-by-provider",
+  "output_file": "charness-artifacts/critique/workers/release-8160-rest/result.json",
+  "output_fresh": true,
+  "output_sha256": "1931350500ab745326172db255eac7fc1c3027161de6eb2d309875ed0ca42d8f",
+  "output_size": 5725,
+  "packet_identity": "36653a6733dc65a54f6170501d603358bd71c6246a666f4b94f7537c5e1d662c",
+  "parent_receipt_identity": "parent-78f5dd7e43f1c8cf69c55f6ecb1227a8f4e46da063a92c7f",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/release-8160-rest/review-prompt.md",
+  "prompt_sha256": "1c5e1f1d9a925ab572fde831405c827cd4c747daf9b34c8f51fe80d210ed03bc",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "requested_model": "gpt-6-luna",
+  "requested_reasoning_effort": "xhigh",
+  "reviewed_input_identity": "801153337b2daf6287e9c12aedaddd6759122fd9e78328fd3df30a7954a28b8b",
+  "reviewer_tier": "high-leverage",
+  "run_id": "run-release-8160-rest",
+  "schema_file": "charness-artifacts/critique/workers/release-8160-rest/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "Release critique for charness v8.16.0 (minor), part 2 of 2: the debug planner Risk Class fix, lane environment and progress-observation changes, Windows portability repairs, release-gate test repairs, and the v8.16.0 notes. Files are the current tree; git diff v8.15.0..HEAD shows what changed.",
+  "started_at": "2026-11-04T20:26:40Z",
+  "status": "succeeded",
+  "stderr_file": "charness-artifacts/critique/workers/release-8160-rest/backend.stderr",
+  "stdout_file": "charness-artifacts/critique/workers/release-8160-rest/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "unsupported_reviewer_fields": [
+    "service_tier=priority",
+    "fork_turns=none"
+  ],
+  "workspace": "/home/hwidong/codes/charness"
+}

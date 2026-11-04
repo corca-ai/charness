@@ -1,0 +1,402 @@
+schema_version: charness.reviewer_lifecycle.v1
+status: runner-completed
+execution_state: terminal
+lifecycle_state: terminal
+reviewer_started: true
+delivery_state: findings-received
+verdict_state: block
+review_verdict: block
+classification: unclassified
+approval_eligible: false
+output:
+  state: terminal
+  approval_eligible: false
+  schema_version: charness.reviewer_worker_report.v1
+  findings_identity: 1931350500ab745326172db255eac7fc1c3027161de6eb2d309875ed0ca42d8f
+  partial_artifacts:
+  - reason: no identity-matching bounded-review object was found in the bounded log
+      windows
+    scan_limit_bytes: 67108864
+    sources:
+    - bytes: 4108
+      key: runner.stdout
+      path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-30f1a349efaff8139807f9b38a55911c/runner.stdout
+      scanned_bytes: 4108
+      windowed: false
+    - bytes: 1448
+      key: runner.stderr
+      path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-30f1a349efaff8139807f9b38a55911c/runner.stderr
+      scanned_bytes: 1448
+      windowed: false
+    - bytes: 5401
+      key: backend.stdout
+      path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-30f1a349efaff8139807f9b38a55911c/backend.stdout
+      scanned_bytes: 5401
+      windowed: false
+    - bytes: 498131
+      key: backend.stderr
+      path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-30f1a349efaff8139807f9b38a55911c/backend.stderr
+      scanned_bytes: 498131
+      windowed: false
+    status: unavailable
+output_state: terminal
+failure_identity: f20453d0fc3f630569f4514736a52437b7cc4fb63cd75badefa28c2dcf77e89c
+next_move: inspect the delivered findings; this is a reviewer block, not a runner
+  failure
+runner_returncode: 1
+runner_status: runner-completed
+boundary_mode: read-only-worker
+boundary_ok: true
+boundary_reason: null
+paths:
+  packet: charness-artifacts/critique/release-8160-rest-packet.json
+  schema: charness-artifacts/critique/workers/release-8160-rest/bounded-review-result.schema.json
+  capability: charness-artifacts/critique/workers/release-8160-rest/capability.json
+  prompt: charness-artifacts/critique/workers/release-8160-rest/review-prompt.md
+  plan: charness-artifacts/critique/workers/release-8160-rest/run-plan.json
+  ledger: charness-artifacts/critique/workers/release-8160-rest/delivery.json
+  output: charness-artifacts/critique/workers/release-8160-rest/result.json
+  receipt: charness-artifacts/critique/workers/release-8160-rest/receipt.json
+  report: charness-artifacts/critique/workers/release-8160-rest/worker-report.yaml
+  runner_stdout: charness-artifacts/critique/workers/release-8160-rest/runner.stdout
+  runner_stderr: charness-artifacts/critique/workers/release-8160-rest/runner.stderr
+  backend_stdout: charness-artifacts/critique/workers/release-8160-rest/backend.stdout
+  backend_stderr: charness-artifacts/critique/workers/release-8160-rest/backend.stderr
+  summary: charness-artifacts/critique/workers/release-8160-rest/lifecycle.yaml
+  semantic-input/0000-content.bin: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0000-content.bin
+  semantic-input/0001-content.bin: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0001-content.bin
+  semantic-input/0002-content.bin: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0002-content.bin
+  semantic-input/0003-content.bin: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0003-content.bin
+  semantic-input/0004-content.bin: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0004-content.bin
+  semantic-input/0005-content.bin: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0005-content.bin
+  semantic-input/0006-content.bin: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0006-content.bin
+  semantic-input/0007-content.bin: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0007-content.bin
+  semantic-input/0008-content.bin: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0008-content.bin
+  semantic-input/0009-content.bin: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0009-content.bin
+  semantic-input/0010-content.bin: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0010-content.bin
+  semantic-input/0011-content.bin: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0011-content.bin
+  semantic-input/0012-content.bin: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0012-content.bin
+  semantic-input/0013-content.bin: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0013-content.bin
+  semantic-input/0014-content.bin: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0014-content.bin
+  semantic-input/0015-content.bin: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0015-content.bin
+  semantic-input/0016-content.bin: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0016-content.bin
+  semantic-input/0017-content.bin: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0017-content.bin
+  semantic-input/0018-content.bin: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0018-content.bin
+  semantic-input/0019-content.bin: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0019-content.bin
+  semantic-input/0020-content.bin: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0020-content.bin
+  semantic-input/0021-content.bin: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0021-content.bin
+  semantic-input/0022-content.bin: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0022-content.bin
+  semantic-input/0023-content.bin: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0023-content.bin
+  semantic-input/0024-content.bin: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0024-content.bin
+  semantic-input/0025-content.bin: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0025-content.bin
+  semantic-input/0026-content.bin: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0026-content.bin
+  semantic-input/manifest.json: charness-artifacts/critique/workers/release-8160-rest/semantic-input/manifest.json
+  review-prompt.md: charness-artifacts/critique/workers/release-8160-rest/review-prompt.md
+  run-plan.json: charness-artifacts/critique/workers/release-8160-rest/run-plan.json
+  bounded-review-result.schema.json: charness-artifacts/critique/workers/release-8160-rest/bounded-review-result.schema.json
+  capability.json: charness-artifacts/critique/workers/release-8160-rest/capability.json
+  receipt.json: charness-artifacts/critique/workers/release-8160-rest/receipt.json
+  delivery.json: charness-artifacts/critique/workers/release-8160-rest/delivery.json
+  result.json: charness-artifacts/critique/workers/release-8160-rest/result.json
+  runner.stdout: charness-artifacts/critique/workers/release-8160-rest/runner.stdout
+  runner.stderr: charness-artifacts/critique/workers/release-8160-rest/runner.stderr
+  backend.stdout: charness-artifacts/critique/workers/release-8160-rest/backend.stdout
+  backend.stderr: charness-artifacts/critique/workers/release-8160-rest/backend.stderr
+  worker-report.yaml: charness-artifacts/critique/workers/release-8160-rest/worker-report.yaml
+  attempt-manifest.json: charness-artifacts/critique/workers/release-8160-rest/attempt-manifest.json
+  durable_report: charness-artifacts/critique/workers/release-8160-rest/worker-report.yaml
+identities:
+  attempt_id: release-8160-rest
+  scope: 'Release critique for charness v8.16.0 (minor), part 2 of 2: the debug planner
+    Risk Class fix, lane environment and progress-observation changes, Windows portability
+    repairs, release-gate test repairs, and the v8.16.0 notes. Files are the current
+    tree; git diff v8.15.0..HEAD shows what changed.'
+  packet_identity: 36653a6733dc65a54f6170501d603358bd71c6246a666f4b94f7537c5e1d662c
+  reviewed_input_identity: 801153337b2daf6287e9c12aedaddd6759122fd9e78328fd3df30a7954a28b8b
+  parent_receipt_identity: parent-78f5dd7e43f1c8cf69c55f6ecb1227a8f4e46da063a92c7f
+  findings_identity: 1931350500ab745326172db255eac7fc1c3027161de6eb2d309875ed0ca42d8f
+ok: true
+carrier_ok: true
+packet_verification:
+  ok: true
+  status: current
+  reason: current
+  reason_code: current
+  expected_kind: charness.critique_prepare_packet
+  packet_path: charness-artifacts/critique/release-8160-rest-packet.json
+  packet_sha256: 36653a6733dc65a54f6170501d603358bd71c6246a666f4b94f7537c5e1d662c
+  identity_sha256: 801153337b2daf6287e9c12aedaddd6759122fd9e78328fd3df30a7954a28b8b
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+backend: codex_exec
+timeout_seconds: 900
+scope: 'Release critique for charness v8.16.0 (minor), part 2 of 2: the debug planner
+  Risk Class fix, lane environment and progress-observation changes, Windows portability
+  repairs, release-gate test repairs, and the v8.16.0 notes. Files are the current
+  tree; git diff v8.15.0..HEAD shows what changed.'
+lens: 'Minto claims and Weinberg layer: does each notes bullet match what the code
+  and tests do, with no overclaim; does the debug planner fix keep a valid prior record
+  with its own subject and still refuse an unknown or prose-first Risk Class; are
+  the Windows and lane-environment changes at the right layer; can each changed test
+  fail when its behavior breaks.'
+parent_receipt_identity: parent-78f5dd7e43f1c8cf69c55f6ecb1227a8f4e46da063a92c7f
+semantic_input:
+  entries:
+  - path: charness-artifacts/release/2026-11-05-v8.16.0-notes.md
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0000-content.bin
+    content_sha256: 703d84fba4e6046355e2ce0b9876c6d053f8437d8ac1e13362ef69d2e76970a3
+    carrier_sha256: c5fde1562502d10396b9b5c520cb20101282382f75094c9221b264b0949b8ea3
+    source: working-tree:charness-artifacts/release/2026-11-05-v8.16.0-notes.md
+    size_bytes: 6344
+    prompt_encoding: utf-8
+  - path: scripts/cli/install_delivery.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0001-content.bin
+    content_sha256: 9c86870f2d3790c6318bc19346ad199104ca8f6ad7947e3d216a3ae23d77d31a
+    carrier_sha256: ec9ae5e3f080c7a3f00e7756cce5d48e92e6481750a03440ee207a4ad62c42eb
+    source: working-tree:scripts/cli/install_delivery.py
+    size_bytes: 8192
+    prompt_encoding: utf-8
+  - path: scripts/review/critique_packet_lib.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0002-content.bin
+    content_sha256: 23ee06d53c96d88028283d0aba7b5ca6731ca157c57000fd60d0a190e33c25a1
+    carrier_sha256: a502ff0d0cf525a059b6e66803edfc56ae4cba7874527e3d5811d34237ed7381
+    source: working-tree:scripts/review/critique_packet_lib.py
+    size_bytes: 21748
+    prompt_encoding: utf-8
+  - path: scripts/runtime_bootstrap.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0003-content.bin
+    content_sha256: 97e89c97e501c7e68c95a0ee1c4bcc9a26a31c796e2d18ec7cc7128dfe546ddd
+    carrier_sha256: 56d77bbea40f6803a75257f3523b6b4d7aa25141f829301fae28d6a120ef8725
+    source: working-tree:scripts/runtime_bootstrap.py
+    size_bytes: 14464
+    prompt_encoding: utf-8
+  - path: scripts/runtime_scratch.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0004-content.bin
+    content_sha256: 0b2572bb6f6efc9d39b66aabcf40794a47b1192503ed5a945ebff9111d165ec8
+    carrier_sha256: d7e19827eb4d509ed1556c3010e4dc7397734358e382c0dbf5ca89fd649003f9
+    source: working-tree:scripts/runtime_scratch.py
+    size_bytes: 21464
+    prompt_encoding: utf-8
+  - path: scripts/runtime_scratch_registry.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0005-content.bin
+    content_sha256: bc7e21c72bd34f3a44e2b829f04f51c75301b8404763dad029c2411421e20fa9
+    carrier_sha256: f085be82bbd7236abc77ab58ac06eaddd9bf3558e3f2df3b00dd9f7d75d045cf
+    source: working-tree:scripts/runtime_scratch_registry.py
+    size_bytes: 15314
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_progress.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0006-content.bin
+    content_sha256: 7424ce7d14d701e46e2df32e49e7b826ef167426d7621455f028c96e4aed33c5
+    carrier_sha256: 6dc793e456cd5b7690efc84aa8f80163d1cb985ac3979b08f7825163e6b48662
+    source: working-tree:scripts/task_run/task_run_progress.py
+    size_bytes: 24331
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_progress_rule.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0007-content.bin
+    content_sha256: 2bd7d994aac9e7d94f9f5235a05b2ed7c506921128d4443c6de249d760a8d3f3
+    carrier_sha256: 75e457c9e771100670981fe7845b9e35c915193c7095bfa722241caa9eb9c0f8
+    source: working-tree:scripts/task_run/task_run_progress_rule.py
+    size_bytes: 20949
+    prompt_encoding: utf-8
+  - path: scripts/worktree/worktree_exec_lib.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0008-content.bin
+    content_sha256: 4be16d1b8f60a8b49e0228923f9555efeddf132884e6441b9df4b0808659422d
+    carrier_sha256: cf672f747b100f3705197ea8c55ee3ac119befa950b99e72b507a9828e41246f
+    source: working-tree:scripts/worktree/worktree_exec_lib.py
+    size_bytes: 3876
+    prompt_encoding: utf-8
+  - path: skills/public/debug/scripts/debug_artifact_declarations.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0009-content.bin
+    content_sha256: 7dbe7c31d39aec6177e4b32aa5d976d45a9d61ae57632891ed6689995e2b2f95
+    carrier_sha256: e4433b5e8a983bc834156baa148de3e4a26e3b7a2c5a70f051c2df8fd6fd26e2
+    source: working-tree:skills/public/debug/scripts/debug_artifact_declarations.py
+    size_bytes: 7407
+    prompt_encoding: utf-8
+  - path: skills/shared/scripts/reviewer_process.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0010-content.bin
+    content_sha256: 39fe59a3645c43cbfcc7379730891b9976f3194a2b6f06ed47ff4e0610e2e99f
+    carrier_sha256: 7d0f6d3e48439c85abfa156615d0939ab6f4defe6f3596f113d5f8abfe79e43e
+    source: working-tree:skills/shared/scripts/reviewer_process.py
+    size_bytes: 3798
+    prompt_encoding: utf-8
+  - path: tests/charness_cli/test_codex_cache_refresh.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0011-content.bin
+    content_sha256: d16b4a9bd0108f776b3dfb8a881079916339c0632fca7a16f48174bb67691dbd
+    carrier_sha256: 4a51ee8222cb2191b23b3552f5d74069c785d024044d562b51d00a4f25ede00d
+    source: working-tree:tests/charness_cli/test_codex_cache_refresh.py
+    size_bytes: 32400
+    prompt_encoding: utf-8
+  - path: tests/charness_cli/test_entry_cov_e4_874.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0012-content.bin
+    content_sha256: 7c02ecb665c8538f78fc796bbe16300bcdca40230c2a920bc1e13a1aa748c585
+    carrier_sha256: 47a98aadd11c1ae1c2fbfe4f5a7b97197698fdefb2f0564ac0eea6e8fd9e13c2
+    source: working-tree:tests/charness_cli/test_entry_cov_e4_874.py
+    size_bytes: 20469
+    prompt_encoding: utf-8
+  - path: tests/charness_cli/test_task_run_implementation_lane.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0013-content.bin
+    content_sha256: f9d0322a5d2c2b4772149263879077f80d16bf9157fac67deb2289c40c16cd70
+    carrier_sha256: c273ad76382ccbb4a00dc14f47913f0f05ec9d6f8502e85b00812406081d79c8
+    source: working-tree:tests/charness_cli/test_task_run_implementation_lane.py
+    size_bytes: 31053
+    prompt_encoding: utf-8
+  - path: tests/charness_cli/test_task_run_muse_stream_886.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0014-content.bin
+    content_sha256: cf5dae33129d6c4cd44ed32460cf66c3fa3ffe25f1a5a2ffc79cf4513a82cfcb
+    carrier_sha256: 6097a8003afc4750c8c26989091a934771478906c0a19c09e25613a901a33ffe
+    source: working-tree:tests/charness_cli/test_task_run_muse_stream_886.py
+    size_bytes: 27541
+    prompt_encoding: utf-8
+  - path: tests/charness_cli/test_worktree_exec.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0015-content.bin
+    content_sha256: ef848809a0039da3cb62879fe5ffa86b1b56e4c11f6a50ee814981027d7debc0
+    carrier_sha256: 149e2b4dc39a2d236b2ded4b364094b1237005fecd9f48fa8ef3edf1f0eb11b0
+    source: working-tree:tests/charness_cli/test_worktree_exec.py
+    size_bytes: 7084
+    prompt_encoding: utf-8
+  - path: tests/coverage_debt/test_batch10.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0016-content.bin
+    content_sha256: 4fe64e1a242f7bd9d9940e133e16b90841ba6f957750c6548591bcc2ccd6ad09
+    carrier_sha256: 9ff649cfd042d058acdcec8dde313a4c4637619548babd358a333da31a39da58
+    source: working-tree:tests/coverage_debt/test_batch10.py
+    size_bytes: 14352
+    prompt_encoding: utf-8
+  - path: tests/quality_gates/fixtures/release_publish_fake_git.sh
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0017-content.bin
+    content_sha256: ea5eeae5d4047114913757e040b634d98a9bd539beddddc88db7512281519fc0
+    carrier_sha256: 9da08cc16ebe477d838fffdf75316620f6fde6237b3c5fd1c221864d437026bf
+    source: working-tree:tests/quality_gates/fixtures/release_publish_fake_git.sh
+    size_bytes: 3707
+    prompt_encoding: utf-8
+  - path: tests/quality_gates/support.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0018-content.bin
+    content_sha256: 1494a33994bbc6726ce95cedabdb3eab0923725b69c8036d22af8acac1e74209
+    carrier_sha256: c3cb5c78cf99213f7589e15c9df37979b35b91c5e008e7384e62fe782f9d76d7
+    source: working-tree:tests/quality_gates/support.py
+    size_bytes: 39285
+    prompt_encoding: utf-8
+  - path: tests/quality_gates/test_chmod_allowlist.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0019-content.bin
+    content_sha256: 321543ed57a5ed4af82c162fcbe2f810ac8013115d608bb248ff705e2710038f
+    carrier_sha256: 3cc82dd52aa0d6b68c0a4c247fcfd2a60d58cae2841edbdef0f3da0c6043e43e
+    source: working-tree:tests/quality_gates/test_chmod_allowlist.py
+    size_bytes: 3664
+    prompt_encoding: utf-8
+  - path: tests/quality_gates/test_quality_runner.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0020-content.bin
+    content_sha256: ac798ecb187d3c506f8489ff2f104c6933cd782e8c20fe4c8d0f09b199beb392
+    carrier_sha256: 51ad06b42d402faec1aa609db08502321e79ae40aca7ebe64a13c86718465373
+    source: working-tree:tests/quality_gates/test_quality_runner.py
+    size_bytes: 42463
+    prompt_encoding: utf-8
+  - path: tests/quality_gates/test_release_publish_fake_git.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0021-content.bin
+    content_sha256: 6615394acf2d05be6e74d0b1ce07226ab10f0a0da7f1cfbc5b7cf728742e4f4e
+    carrier_sha256: 96245028f33070bd7c5258bd7e6f67faefc05a1db72c511b91ee2a2eb816881f
+    source: working-tree:tests/quality_gates/test_release_publish_fake_git.py
+    size_bytes: 3902
+    prompt_encoding: utf-8
+  - path: tests/test_critique_prepare_packet.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0022-content.bin
+    content_sha256: eeb7695e16077fe2eee9622b54d5d774ed5f6ba890aecf5d46f2a40958dc5501
+    carrier_sha256: d23eb5b2cb834a918cdaec12d0c9e4d463557cbfc4bd027140320cf089a5dd5a
+    source: working-tree:tests/test_critique_prepare_packet.py
+    size_bytes: 32357
+    prompt_encoding: utf-8
+  - path: tests/test_debug_risk_class_prose.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0023-content.bin
+    content_sha256: 3cb9042afb764ffc89fe14155496aa0b8108762171a08c2e9a22d6129b5bc040
+    carrier_sha256: c085677e1a88c48a55f2791de310cb1067b0d1eefbc853bb4038a239873444c1
+    source: working-tree:tests/test_debug_risk_class_prose.py
+    size_bytes: 4150
+    prompt_encoding: utf-8
+  - path: tests/test_reviewer_process_shell_line.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0024-content.bin
+    content_sha256: e8433376201aef214e0ee509faf4c78a4a6fdb70883b267cf73d02a93511851e
+    carrier_sha256: 204caedb0005fbb6cc75abe3991137aa6eb9f7fe7f5b94dfa176a5a1308f3afa
+    source: working-tree:tests/test_reviewer_process_shell_line.py
+    size_bytes: 785
+    prompt_encoding: utf-8
+  - path: tests/test_runtime_root_snapshot.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0025-content.bin
+    content_sha256: 72d603e964a0d47dc50c150542b0e1442eafa6c786d666806a972bcccf6a25bc
+    carrier_sha256: 00f9388b7a75575e38dee11f5502baaaeefa62f0f47039d9d9b66d12412c40b0
+    source: working-tree:tests/test_runtime_root_snapshot.py
+    size_bytes: 705
+    prompt_encoding: utf-8
+  - path: tests/test_runtime_scratch.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-rest/semantic-input/0026-content.bin
+    content_sha256: 5aab686556de6fc4425008ca39495b9de57c6a2e8506c435b163f1d37c6d0a95
+    carrier_sha256: 65e81310b62f444d8d382cc54d677091fd8b60f22768b5ebfbe5dc7034f5def4
+    source: working-tree:tests/test_runtime_scratch.py
+    size_bytes: 19770
+    prompt_encoding: utf-8
+  manifest: charness-artifacts/critique/workers/release-8160-rest/semantic-input/manifest.json
+  size_bytes: 431574
+runner_output:
+  status: runner-completed
+  returncode: 1
+runner_stream:
+  consistent: true
+  reason: null
+  runner_stdout_sha256: 27f3fe6de59319f145a38fcf8f4b76aef03c728bab38c0aeabc77124ae0346f8
+  canonical_report_sha256: 27f3fe6de59319f145a38fcf8f4b76aef03c728bab38c0aeabc77124ae0346f8
+boundary_readback:
+  mode: read-only-worker
+  required: false
+goal_lineage:
+  kind: charness.goal-lineage
+  schema_version: 1
+  disposition: not-goal-bound
+  draft: null
+  binding: null
+  goal_run: null
+  work_item: null
+  reason: critique review was run without a Goal Run Work Item identity
+identity_check:
+  status: matched
+  matches: true
+  checks:
+    packet_identity:
+      expected: 36653a6733dc65a54f6170501d603358bd71c6246a666f4b94f7537c5e1d662c
+      actual: 36653a6733dc65a54f6170501d603358bd71c6246a666f4b94f7537c5e1d662c
+      matches: true
+      provenance: 36653a6733dc65a54f6170501d603358bd71c6246a666f4b94f7537c5e1d662c
+    reviewed_input_identity:
+      expected: 801153337b2daf6287e9c12aedaddd6759122fd9e78328fd3df30a7954a28b8b
+      actual: 801153337b2daf6287e9c12aedaddd6759122fd9e78328fd3df30a7954a28b8b
+      matches: true
+      provenance: 801153337b2daf6287e9c12aedaddd6759122fd9e78328fd3df30a7954a28b8b
+    parent_receipt_identity:
+      expected: parent-78f5dd7e43f1c8cf69c55f6ecb1227a8f4e46da063a92c7f
+      actual: parent-78f5dd7e43f1c8cf69c55f6ecb1227a8f4e46da063a92c7f
+      matches: true
+      provenance: parent-78f5dd7e43f1c8cf69c55f6ecb1227a8f4e46da063a92c7f
+  reason: null

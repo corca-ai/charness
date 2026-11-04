@@ -1,0 +1,69 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Fourth follow-up on release-8160-rest (5ffcdce91): the notes now describe
+  each Codex refresh test case wait separately.'
+attempt_id: release-8160-rest-followup4
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 819f8ab0d5597735a217daab122169ed4c9e5f1c2ae93488444a34508495e385
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: charness-artifacts/critique/workers/release-8160-rest-followup4/receipt.json
+ledger_path: charness-artifacts/critique/workers/release-8160-rest-followup4/delivery.json
+producer_run_id: run-release-8160-rest-followup4
+producer_binding:
+  output_file: charness-artifacts/critique/workers/release-8160-rest-followup4/result.json
+  receipt_file: charness-artifacts/critique/workers/release-8160-rest-followup4/receipt.json
+  producer_run_id: run-release-8160-rest-followup4
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: f7c79f163e929c9b31f4b15021b9dd52faf8310498dd0dcb7955cd4ad0bba929
+receipt_output_sha256: f7c79f163e929c9b31f4b15021b9dd52faf8310498dd0dcb7955cd4ad0bba929
+packet_identity: b634d5d19dd2498b2b88500dd0767810d45ccd402a6c1a812f2495e2b7bccc0b
+reviewed_input_identity: 58931872a3677d9c1a061acda1c587607b1a77519dcb30514851016e8e432249
+parent_receipt_identity: parent-3414f01f2e788d159c066e3d14c62ae170608be513c2cbe2
+provenance:
+  scope: 'Fourth follow-up on release-8160-rest (5ffcdce91): the notes now describe
+    each Codex refresh test case wait separately.'
+  packet_identity: b634d5d19dd2498b2b88500dd0767810d45ccd402a6c1a812f2495e2b7bccc0b
+  reviewed_input_identity: 58931872a3677d9c1a061acda1c587607b1a77519dcb30514851016e8e432249
+  parent_receipt_identity: parent-3414f01f2e788d159c066e3d14c62ae170608be513c2cbe2
+  expected_targets_sha256: null
+  attempt_id: release-8160-rest-followup4
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 819f8ab0d5597735a217daab122169ed4c9e5f1c2ae93488444a34508495e385
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

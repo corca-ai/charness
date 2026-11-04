@@ -1,0 +1,127 @@
+# Charness v8.16.0
+
+This release ships the task-run lane work that had not been pushed before, led by the new Claude lane executor and its options, together with a fix to the debug planner.
+
+## What changed
+
+- The debug planner reads a `- Risk Class:` value apart from explanatory prose written after it, such as `none yet; ...`, `external-seam (...)` or `none -- ...`. Before this, the whole line was read as the value, so the prose counted as an unknown class. The planner then sent every new investigation in the repository to `repair-risk-declaration` and named another investigation's record as the file to repair. Now a valid value followed by prose is a valid declaration. A new subject starts its own record, and the earlier record stays with its subject. A line that opens with prose, or whose recognized classes include no forced class next to an unknown one, still routes to repair; a forced class next to an unknown one (`external-seam, bogus`) still interrupts, as before. `validate_debug_artifact.py` is unchanged and stays strict.
+- `charness task run --executor claude` runs a lane with `claude -p`. Sonnet is the default model, and `--claude-model haiku` selects Haiku. Codex stays the default executor. A Claude lane needs Linux bubblewrap. It runs inside a filesystem sandbox: the lane worktree, its private runtime and explicit `--grant-writable` directories are writable, and home configuration, credential files (including `~/.docker`) and shared Git configuration are not. Container daemon sockets (Docker, containerd, Podman, CRI-O) are masked, so a lane cannot drive the host's container daemon. The sandbox does not restrict network egress: a lane can reach any address the host can, including cloud metadata endpoints ([#889](https://github.com/corca-ai/charness/issues/889)). Provider credentials stay in a parent-side proxy. Commits go to private Git storage that the runner imports into the task branch afterwards, unless the caller grants the checkout's Git common directory, in which case the lane uses the shared linked-worktree Git directly. The result, report, branch, hooks, progress and verification contracts are the same as for other executors. `--grant-writable` now accepts Codex and Claude lanes and still refuses Muse. [docs/claude-task-executor.md](https://github.com/corca-ai/charness/blob/v8.16.0/docs/claude-task-executor.md) states the tested boundary and its limits. The real-sandbox tests ran on Linux with bubblewrap on the release machine; they skip where bubblewrap is absent, and CI does not install it.
+- The line that completes a command in a lane's events log now also carries `charness_duration_ms`. For a running lane, `task status <task-id> --commands` also reads the live stdout log, so it shows the current invocation's commands instead of nothing.
+- Lane environments: a lane's `TMPDIR`, `TMP` and `TEMP` are now the lane runtime root, so the npm, XDG, pip, ruff, pytest, coverage and pycache paths under it are writable inside a Muse sandbox. Before this, `npm pack` in a Muse lane failed with EROFS. Go's `GOCACHE`, `GOPATH` and `GOMODCACHE` now sit under the lane's cache home, which is private to the lane. A Codex or Claude caller can point it at a shared cache with `CHARNESS_TASK_RUN_CACHE_HOME`, but only inside a directory already granted with `--grant-writable`; the variable never adds a grant. A Codex lane no longer inherits `writable_roots` from the operator's configuration, so only its explicit runtime and `--add-dir` grants are writable, and read-only reviewers drop the lane-only overrides.
+- The lane progress rule records the lane's final output after the output capture drains, so the last window's progress counts. A failure of that last observation is ignored only when it is a recoverable I/O error.
+- When the Codex app-server exits before answering, the Codex host cache refresh in `charness update` now reports that it exited, instead of a response timeout.
+- Windows: runtime snapshots honour the Windows temporary-directory variables, scratch owner locking falls back to Windows byte-range locks where `flock` is missing, reviewer command lines use Windows argument quoting (spaces and quotes; `cmd.exe` metacharacters such as `&` and `%` are not escaped yet, [#890](https://github.com/corca-ai/charness/issues/890)), critique packet producers named `python3` run with the current Python interpreter, and the scratch inventory reports file sizes and repository paths consistently. Linux unit tests cover the argument quoting, interpreter selection and path normalisation; the byte-range lock fallback has no test, CI runs on Linux, and this release claims no run on a Windows host.
+- Release repairs to the test suite: these tests, whose verdict depended on machine load, now wait on the event they check. `test_codex_cache_refresh_accepts_real_initialize_shape_and_lifecycle_notifications` (and the other Codex app-server refresh tests) inject the reader's clock and wait for the fake's output instead of a `0.5` s deadline; `test_update_from_explicit_checkout_refreshes_surface` (with the other entry spawn tests) waits for the `charness` process to exit instead of a `28` s bound, and no longer launches a host `codex`; `test_worker_timeout_keeps_started_and_non_approval_state` runs the review wrapper in-process with only the worker's own deadline, so the outer runner bound cannot race it.
+
+## Update
+
+Run `charness update`, then run `charness version` to confirm the installed version. No migration is required. A launcher that relied on a Codex lane writing under a `writable_roots` path from the operator's own Codex configuration must now pass that directory with `--grant-writable`.
+
+## Derived claim surfaces
+
+<!-- charness:derived-claims:begin -->
+<!-- Generated from the shipped tree. Hand-edits are refused at publish: the gate re-derives this block and compares. -->
+
+<!-- claim-surface: json-declaring-scripts -->
+
+```yaml
+id: json-declaring-scripts
+question: which repo-owned Python sources declare their own `--json` option
+count: 0
+items: []
+scanned:
+- scripts/**/*.py
+- skills/**/scripts/**/*.py
+- charness
+unscanned:
+- the exported `plugins/charness/**` mirror and `mutants/**`, which are generated
+  copies of these same sources
+- flag names composed at runtime from a variable rather than written as a string literal
+- flags a wrapper forwards without declaring, which no parser in this tree names
+```
+
+<!-- claim-surface: charness-subcommands -->
+
+```yaml
+id: charness-subcommands
+question: which top-level subcommands the `charness` CLI declares
+count: 14
+items:
+- capability
+- catalog
+- doctor
+- goal
+- hooks
+- init
+- reset
+- task
+- tool
+- train
+- uninstall
+- update
+- version
+- worktree
+scanned:
+- charness
+unscanned:
+- nested subcommand groups such as `charness task run`, which are declared on their
+  own subparser
+- subcommands a host adapter adds outside this entrypoint
+```
+
+<!-- claim-surface: public-skills -->
+
+```yaml
+id: public-skills
+question: which public skills this repo ships
+count: 19
+items:
+- achieve
+- announcement
+- create-cli
+- create-skill
+- critique
+- debug
+- gather
+- hitl
+- hotl
+- ideation
+- impl
+- issue
+- narrative
+- prove
+- quality
+- release
+- retro
+- setup
+- spec
+scanned:
+- skills/public/*/SKILL.md
+unscanned:
+- support, profile, and integration skills, which are not part of the public surface
+- skills a consuming repo installs from elsewhere
+```
+
+<!-- claim-surface: repo-shell-gates -->
+
+```yaml
+id: repo-shell-gates
+question: which `check-*.sh` shell gates this repo ships
+count: 8
+items:
+- check-docs.sh
+- check-links-external.sh
+- check-links-internal.sh
+- check-markdown.sh
+- check-python-lint.sh
+- check-rust.sh
+- check-secrets.sh
+- check-shell.sh
+scanned:
+- scripts/**/check-*.sh
+unscanned:
+- Python gates under `scripts/`, which are far more numerous and are not this surface
+- gates a consuming repo wires from its own tree
+```
+
+<!-- charness:derived-claims:end -->

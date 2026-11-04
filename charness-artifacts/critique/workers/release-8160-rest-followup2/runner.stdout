@@ -1,0 +1,75 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Second follow-up on release-8160-rest: a forced-class-plus-unknown-with-prose
+  test added (test_debug_risk_class_prose.py) beside the existing test_debug_plan_interrupts_when_forced_class_shares_line_with_unknown_token;
+  the event-driven timing tests have no test-level deadline by the operator rule that
+  a test verdict never rides on wall time (a broken event path shows as a hung test,
+  not a pass).'
+attempt_id: release-8160-rest-followup2
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 44f679a6d349c2cf70f6f9bdc039a5b9ff458705b02bcf23c6c921c8fd611dd9
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-c1b62e0fb9f12ae5bfcdef395690c5e3/receipt.json
+ledger_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-c1b62e0fb9f12ae5bfcdef395690c5e3/delivery.json
+producer_run_id: run-release-8160-rest-followup2
+producer_binding:
+  output_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-c1b62e0fb9f12ae5bfcdef395690c5e3/result.json
+  receipt_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-c1b62e0fb9f12ae5bfcdef395690c5e3/receipt.json
+  producer_run_id: run-release-8160-rest-followup2
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: 7335bcbebcc6ee2417cf7393c87ae51d119980f8ec37bfd2a821637a233c55c8
+receipt_output_sha256: 7335bcbebcc6ee2417cf7393c87ae51d119980f8ec37bfd2a821637a233c55c8
+packet_identity: a37c9f71cd21242b86b8340c1819b1e79d893ee1e46b90f4503459934767c40b
+reviewed_input_identity: 065c4fb62f6f45bb9194fb16ae93ef616fe8656ff1ddfa27033cf31ce826fe13
+parent_receipt_identity: parent-cf0c085a8ba2161487c7a517fdcbafb49068fc49283aada6
+provenance:
+  scope: 'Second follow-up on release-8160-rest: a forced-class-plus-unknown-with-prose
+    test added (test_debug_risk_class_prose.py) beside the existing test_debug_plan_interrupts_when_forced_class_shares_line_with_unknown_token;
+    the event-driven timing tests have no test-level deadline by the operator rule
+    that a test verdict never rides on wall time (a broken event path shows as a hung
+    test, not a pass).'
+  packet_identity: a37c9f71cd21242b86b8340c1819b1e79d893ee1e46b90f4503459934767c40b
+  reviewed_input_identity: 065c4fb62f6f45bb9194fb16ae93ef616fe8656ff1ddfa27033cf31ce826fe13
+  parent_receipt_identity: parent-cf0c085a8ba2161487c7a517fdcbafb49068fc49283aada6
+  expected_targets_sha256: null
+  attempt_id: release-8160-rest-followup2
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 44f679a6d349c2cf70f6f9bdc039a5b9ff458705b02bcf23c6c921c8fd611dd9
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

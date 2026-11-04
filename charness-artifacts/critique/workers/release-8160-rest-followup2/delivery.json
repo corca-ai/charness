@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8160-rest-followup2",
+      "scope": "Second follow-up on release-8160-rest: a forced-class-plus-unknown-with-prose test added (test_debug_risk_class_prose.py) beside the existing test_debug_plan_interrupts_when_forced_class_shares_line_with_unknown_token; the event-driven timing tests have no test-level deadline by the operator rule that a test verdict never rides on wall time (a broken event path shows as a hung test, not a pass).",
+      "packet_identity": "a37c9f71cd21242b86b8340c1819b1e79d893ee1e46b90f4503459934767c40b",
+      "parent_receipt_identity": "parent-cf0c085a8ba2161487c7a517fdcbafb49068fc49283aada6",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-11-04T20:48:41Z",
+      "history": [
+        {
+          "event_id": "1c4b020ba61644239551c36a8f753972",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-11-04T20:46:50Z",
+          "attempt_id": "release-8160-rest-followup2",
+          "scope": "Second follow-up on release-8160-rest: a forced-class-plus-unknown-with-prose test added (test_debug_risk_class_prose.py) beside the existing test_debug_plan_interrupts_when_forced_class_shares_line_with_unknown_token; the event-driven timing tests have no test-level deadline by the operator rule that a test verdict never rides on wall time (a broken event path shows as a hung test, not a pass).",
+          "packet_identity": "a37c9f71cd21242b86b8340c1819b1e79d893ee1e46b90f4503459934767c40b",
+          "parent_receipt_identity": "parent-cf0c085a8ba2161487c7a517fdcbafb49068fc49283aada6",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "2fd50dd3d4db4e95b7cbde6a95cac23d",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-11-04T20:46:50Z",
+          "attempt_id": "release-8160-rest-followup2",
+          "scope": "Second follow-up on release-8160-rest: a forced-class-plus-unknown-with-prose test added (test_debug_risk_class_prose.py) beside the existing test_debug_plan_interrupts_when_forced_class_shares_line_with_unknown_token; the event-driven timing tests have no test-level deadline by the operator rule that a test verdict never rides on wall time (a broken event path shows as a hung test, not a pass).",
+          "packet_identity": "a37c9f71cd21242b86b8340c1819b1e79d893ee1e46b90f4503459934767c40b",
+          "parent_receipt_identity": "parent-cf0c085a8ba2161487c7a517fdcbafb49068fc49283aada6",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "f6fc009973c74737ac36d6c497d7b1b8",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-11-04T20:48:41Z",
+          "attempt_id": "release-8160-rest-followup2",
+          "scope": "Second follow-up on release-8160-rest: a forced-class-plus-unknown-with-prose test added (test_debug_risk_class_prose.py) beside the existing test_debug_plan_interrupts_when_forced_class_shares_line_with_unknown_token; the event-driven timing tests have no test-level deadline by the operator rule that a test verdict never rides on wall time (a broken event path shows as a hung test, not a pass).",
+          "packet_identity": "a37c9f71cd21242b86b8340c1819b1e79d893ee1e46b90f4503459934767c40b",
+          "parent_receipt_identity": "parent-cf0c085a8ba2161487c7a517fdcbafb49068fc49283aada6",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "7335bcbebcc6ee2417cf7393c87ae51d119980f8ec37bfd2a821637a233c55c8"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "065c4fb62f6f45bb9194fb16ae93ef616fe8656ff1ddfa27033cf31ce826fe13",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "44f679a6d349c2cf70f6f9bdc039a5b9ff458705b02bcf23c6c921c8fd611dd9",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8160-rest-followup2/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8160-rest-followup2/receipt.json",
+      "producer_run_id": "run-release-8160-rest-followup2",
+      "findings_identity": "7335bcbebcc6ee2417cf7393c87ae51d119980f8ec37bfd2a821637a233c55c8"
+    }
+  ]
+}

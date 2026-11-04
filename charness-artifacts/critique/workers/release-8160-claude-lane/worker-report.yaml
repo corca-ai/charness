@@ -1,0 +1,71 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Release critique for charness v8.16.0 (minor), part 1 of 2: the Claude task-run
+  executor and the task-run CLI/runtime changes since tag v8.15.0, plus the v8.16.0
+  notes. Files are the current tree; git diff v8.15.0..HEAD shows what changed.'
+attempt_id: release-8160-claude-lane
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 4cf3b28e12b21dfde1ed0f132564e344456ef4415a916ef3b3fed181faa61d8c
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: charness-artifacts/critique/workers/release-8160-claude-lane/receipt.json
+ledger_path: charness-artifacts/critique/workers/release-8160-claude-lane/delivery.json
+producer_run_id: run-release-8160-claude-lane
+producer_binding:
+  output_file: charness-artifacts/critique/workers/release-8160-claude-lane/result.json
+  receipt_file: charness-artifacts/critique/workers/release-8160-claude-lane/receipt.json
+  producer_run_id: run-release-8160-claude-lane
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: 01149c86360833ccd81af6ad7dc363d52130394dae5f1a0b34e9a9c3165001e2
+receipt_output_sha256: 01149c86360833ccd81af6ad7dc363d52130394dae5f1a0b34e9a9c3165001e2
+packet_identity: 0e81c7573ad9f9f1b57ec6a72b373b9018ac393ceb8707ca7f91f5a48659f0ec
+reviewed_input_identity: 6954404e7e7699bd558350186afc0b8c4681bcd6a50b2d090d073499395c5f2f
+parent_receipt_identity: parent-f31ef2808f22ca4c3dc2105ff0fe167fc6b8d004481f1591
+provenance:
+  scope: 'Release critique for charness v8.16.0 (minor), part 1 of 2: the Claude task-run
+    executor and the task-run CLI/runtime changes since tag v8.15.0, plus the v8.16.0
+    notes. Files are the current tree; git diff v8.15.0..HEAD shows what changed.'
+  packet_identity: 0e81c7573ad9f9f1b57ec6a72b373b9018ac393ceb8707ca7f91f5a48659f0ec
+  reviewed_input_identity: 6954404e7e7699bd558350186afc0b8c4681bcd6a50b2d090d073499395c5f2f
+  parent_receipt_identity: parent-f31ef2808f22ca4c3dc2105ff0fe167fc6b8d004481f1591
+  expected_targets_sha256: null
+  attempt_id: release-8160-claude-lane
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 4cf3b28e12b21dfde1ed0f132564e344456ef4415a916ef3b3fed181faa61d8c
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

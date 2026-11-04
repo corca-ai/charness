@@ -1,0 +1,74 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Gawande operational and boundary safety",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "F-002",
+      "severity": "high",
+      "summary": "The Docker credential omission is repaired, but the host credential masks still leave known package credentials readable.",
+      "evidence": [
+        "The sandbox masks ~/.docker, but its secret directory and file lists do not include ~/.cargo or ~/.pypirc.",
+        "The host root remains read-only and visible; the same-UID child can read unmasked host files such as ~/.pypirc or ~/.cargo/credentials.toml when present.",
+        "The Docker test checks generated bubblewrap arguments; it does not try to read a synthetic host credential inside the real sandbox.",
+        "The docs disclose that masks are limited, but do not identify these known credential paths."
+      ],
+      "action": "Mask known package credential locations or deny host-home reads by default, and add a real-sandbox test that attempts to read a synthetic host credential."
+    },
+    {
+      "id": "F-003",
+      "severity": "medium",
+      "summary": "The listed container sockets are masked, but the broader host Unix-socket boundary remains open.",
+      "evidence": [
+        "The socket list covers Docker, containerd, Podman, and CRI-O paths; the sandbox otherwise preserves the host root with --ro-bind / /.",
+        "Only /run/user/<uid> is replaced wholesale. Other sockets, such as /run/dbus/system_bus_socket when present, remain visible and may accept connections.",
+        "The docs say a process must not reach host Unix sockets, while the release notes specifically disclose masking container daemon sockets."
+      ],
+      "action": "Define and enforce the policy for other host IPC sockets, or narrow the documentation claim and test the remaining reachable socket classes."
+    },
+    {
+      "id": "F-005",
+      "severity": "low",
+      "summary": "The parser help now describes Claude effort and writable grants, but the generated CLI reference was not included for review.",
+      "evidence": [
+        "The inline charness help says Claude records effort as lane metadata and identifies Codex and Claude as supported writable-grant executors.",
+        "docs/cli-reference.md is absent from the selected semantic input, so its regenerated content cannot be confirmed."
+      ],
+      "action": "Include docs/cli-reference.md in a follow-up review before marking the generated reference verified."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "F-001: unrestricted network egress",
+      "bin": "disclosed-known-limit",
+      "disposition": "Not technically mitigated, but the release notes and executor docs explicitly state that egress includes cloud metadata and host TCP services and link issue #889."
+    },
+    {
+      "concern": "F-002: Docker credential visibility",
+      "bin": "partially-repaired",
+      "disposition": "The Docker directory is masked; known package credential locations remain an undisclosed gap."
+    },
+    {
+      "concern": "F-003: host daemon sockets",
+      "bin": "partially-repaired",
+      "disposition": "The named container daemon sockets are masked; other host IPC sockets remain outside the stated coverage."
+    },
+    {
+      "concern": "F-004: bubblewrap tests may skip",
+      "bin": "disclosed-known-limit",
+      "disposition": "The docs and release notes disclose that tests skip without bubblewrap and CI does not install it. The claimed release-machine run is not independently evidenced in this packet."
+    },
+    {
+      "concern": "F-005: CLI help and generated reference",
+      "bin": "partially-repaired",
+      "disposition": "Parser help is updated; generated reference content is unverified because it is not selected input."
+    }
+  ],
+  "next_move": "Close or explicitly narrow the remaining host credential and IPC claims, add real-sandbox coverage for those boundaries, and bind docs/cli-reference.md to verify the generated help reference.",
+  "non_claims": [
+    "This review is static and limited to the five inline semantic inputs; no tests or release CI run were independently observed.",
+    "The documented egress limit remains a technical exposure even though it is disclosed.",
+    "No claim is made that all host credential locations or IPC endpoints have been exhaustively enumerated."
+  ]
+}

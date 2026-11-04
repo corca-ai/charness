@@ -1,0 +1,297 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-11-04T20:46:50Z",
+  "prepared_for": "working tree",
+  "changed_ref": null,
+  "substrate_mode": "working-tree",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Bound review paths for working tree: (narrow follow-up scope)\nExact reviewed-path manifest:\n- charness\n- charness-artifacts/release/2026-11-05-v8.16.0-notes.md\n- docs/claude-task-executor.md\n- docs/cli-reference.md\n- scripts/task_run/task_run_claude_sandbox.py\n- tests/charness_cli/test_task_run_claude_sandbox.py\n\nOwning surfaces:\n- materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/task_run/task_run_claude_sandbox.py\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/release/2026-11-05-v8.16.0-notes.md, docs/claude-task-executor.md, docs/cli-reference.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- operational-evidence-records: Durable issue, quality, and release evidence attachments produced by local planning and closeout workflows.\n  source matches: charness-artifacts/release/2026-11-05-v8.16.0-notes.md\n  verify: python3 scripts/gates/check_release_issue_ledger.py --repo-root . --ledger charness-artifacts/issues/2026-08-20-next-release-ledger.json, python3 scripts/gates/validate_quality_artifact.py --repo-root ., python3 scripts/gates/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- capability-catalog: Deterministic capability inventory, stale-path resolver, and canonical current-pointer artifacts.\n  source matches: charness\n  verify: python3 -m pytest -q tests/test_capability_catalog.py, python3 -m tools.validate_current_pointer_freshness --repo-root ., python3 -m json.tool .agents/surfaces.json\n- repo-python: Repo-owned Python code and tests.\n  source matches: charness, scripts/task_run/task_run_claude_sandbox.py, tests/charness_cli/test_task_run_claude_sandbox.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/task_run/task_run_claude_sandbox.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-6-luna",
+      "reasoning_effort": "xhigh",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "substrate_mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "31a94834b749d7321da303f738b036d14aff6746",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "charness",
+      "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+      "docs/claude-task-executor.md",
+      "docs/cli-reference.md",
+      "scripts/task_run/task_run_claude_sandbox.py",
+      "tests/charness_cli/test_task_run_claude_sandbox.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness",
+        "content_sha256": "21c06a3ad46d653c1946c55b69b285226a38e8f47c81d43e4acd706054e05cf4"
+      },
+      {
+        "path": "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+        "content_sha256": "e4f756f945f38dbd565cc045811b5fa4c91df12cfda1f701f079941596e5c24f"
+      },
+      {
+        "path": "docs/claude-task-executor.md",
+        "content_sha256": "2ae584893810b90b3b9f501c2974ef517c619d0784bf0797d84be682b58cee58"
+      },
+      {
+        "path": "docs/cli-reference.md",
+        "content_sha256": "5f4c04d34b5aab2bf7649be100874e7864c4cb3456b0dc793633f6696f770ff5"
+      },
+      {
+        "path": "scripts/task_run/task_run_claude_sandbox.py",
+        "content_sha256": "ffbe16b9f37c23d689271df0f71237b66a2a5b8a279e874c707edc437419a848"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run_claude_sandbox.py",
+        "content_sha256": "885bb6cd67a5d8fb2b9eca0d8f3fd0f58528ee5b3be86822c0d1bb4116440772"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "c322b6d6ff58dfab66cb7c3806698e9dd654f21fb86cc0b8cadaafc69ac95946"
+  },
+  "follow_up": {
+    "kind": "charness.review_followup_context.v1",
+    "source": "charness-artifacts/critique/workers/release-8160-claude-lane-followup1/result.json",
+    "source_sha256": "2a52171f988059ffcfa5ee2d44b13d6c646f77471e41e49cb17ca6014c0d6562",
+    "prior_attempt_id": "release-8160-claude-lane-followup1",
+    "prior_verdict": "block",
+    "prior_scope": "Follow-up on release-8160-claude-lane F-001..F-005: ~/.docker and daemon-socket masks added (51d2453f2), network egress documented as a known limit with issue #889, bubblewrap CI skip documented, --effort/--grant-writable help updated.",
+    "prior_lens": "Gawande operational and boundary safety",
+    "prior_packet_path": "charness-artifacts/critique/release-8160-claude-lane-followup1-packet.json",
+    "prior_packet_sha256": "a9b9b65c522f5d76482ddda0ed0f9cb9ddee259cf16e4ca1070718a201b2b640",
+    "prior_reviewed_input_identity_sha256": "778de6f15d22d4f9da70feb547c89f004cda4454c53a0836ed2a6d76626a53a0",
+    "selection": "explicit-with-selection-receipt",
+    "selected_paths": [
+      "charness",
+      "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+      "docs/claude-task-executor.md",
+      "docs/cli-reference.md",
+      "scripts/task_run/task_run_claude_sandbox.py",
+      "tests/charness_cli/test_task_run_claude_sandbox.py"
+    ],
+    "prior_reviewed_paths": 5,
+    "comparison": {
+      "prior_paths": 5,
+      "changed_prior_paths": [
+        "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+        "docs/claude-task-executor.md",
+        "scripts/task_run/task_run_claude_sandbox.py"
+      ],
+      "selected_changed_prior_paths": [
+        "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+        "docs/claude-task-executor.md",
+        "scripts/task_run/task_run_claude_sandbox.py"
+      ],
+      "new_paths": [
+        "docs/cli-reference.md"
+      ],
+      "unchanged_selected_paths": [
+        "charness",
+        "tests/charness_cli/test_task_run_claude_sandbox.py"
+      ],
+      "omitted_changed_prior_paths": [],
+      "comparison_identity_sha256": "28a00d9a8f25adda48279c00b1f5b7d2c409bee600e78ac1f494f033a2d92b94",
+      "comparison_identity_paths": [
+        "charness",
+        "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+        "docs/claude-task-executor.md",
+        "scripts/task_run/task_run_claude_sandbox.py",
+        "tests/charness_cli/test_task_run_claude_sandbox.py"
+      ]
+    },
+    "selection_receipt": {
+      "prior_binding": {
+        "status": "verified",
+        "attempt_id": "release-8160-claude-lane-followup1",
+        "packet_sha256": "a9b9b65c522f5d76482ddda0ed0f9cb9ddee259cf16e4ca1070718a201b2b640",
+        "reviewed_input_identity_sha256": "778de6f15d22d4f9da70feb547c89f004cda4454c53a0836ed2a6d76626a53a0",
+        "packet_verification": "canonical-integrity-only",
+        "identity_verification": "recorded-self-digest",
+        "semantic_input": {
+          "status": "verified",
+          "entries": 5
+        },
+        "result_carrier": {
+          "status": "verified",
+          "attempt_id": "release-8160-claude-lane-followup1",
+          "partial_result_sha256": null,
+          "result_sha256": "2a52171f988059ffcfa5ee2d44b13d6c646f77471e41e49cb17ca6014c0d6562",
+          "source_path": null
+        }
+      },
+      "explicit_paths": true,
+      "prior_identity_sha256": "778de6f15d22d4f9da70feb547c89f004cda4454c53a0836ed2a6d76626a53a0",
+      "comparison_identity_sha256": "28a00d9a8f25adda48279c00b1f5b7d2c409bee600e78ac1f494f033a2d92b94",
+      "comparison_identity_paths": [
+        "charness",
+        "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+        "docs/claude-task-executor.md",
+        "scripts/task_run/task_run_claude_sandbox.py",
+        "tests/charness_cli/test_task_run_claude_sandbox.py"
+      ],
+      "selected_changed_prior_paths": [
+        "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+        "docs/claude-task-executor.md",
+        "scripts/task_run/task_run_claude_sandbox.py"
+      ],
+      "new_paths": [
+        "docs/cli-reference.md"
+      ],
+      "unchanged_selected_paths": [
+        "charness",
+        "tests/charness_cli/test_task_run_claude_sandbox.py"
+      ],
+      "omitted_changed_prior_paths": [],
+      "rationale": "Explicit paths were supplied to include newly introduced consumers or intentionally widen the stimulus; selection is not approval."
+    },
+    "prior_findings": [
+      {
+        "id": "F-002",
+        "severity": "high",
+        "summary": "The Docker credential omission is repaired, but the host credential masks still leave known package credentials readable.",
+        "action": "Mask known package credential locations or deny host-home reads by default, and add a real-sandbox test that attempts to read a synthetic host credential.",
+        "evidence": [
+          "The sandbox masks ~/.docker, but its secret directory and file lists do not include ~/.cargo or ~/.pypirc.",
+          "The host root remains read-only and visible; the same-UID child can read unmasked host files such as ~/.pypirc or ~/.cargo/credentials.toml when present.",
+          "The Docker test checks generated bubblewrap arguments; it does not try to read a synthetic host credential inside the real sandbox.",
+          "The docs disclose that masks are limited, but do not identify these known credential paths."
+        ]
+      },
+      {
+        "id": "F-003",
+        "severity": "medium",
+        "summary": "The listed container sockets are masked, but the broader host Unix-socket boundary remains open.",
+        "action": "Define and enforce the policy for other host IPC sockets, or narrow the documentation claim and test the remaining reachable socket classes.",
+        "evidence": [
+          "The socket list covers Docker, containerd, Podman, and CRI-O paths; the sandbox otherwise preserves the host root with --ro-bind / /.",
+          "Only /run/user/<uid> is replaced wholesale. Other sockets, such as /run/dbus/system_bus_socket when present, remain visible and may accept connections.",
+          "The docs say a process must not reach host Unix sockets, while the release notes specifically disclose masking container daemon sockets."
+        ]
+      },
+      {
+        "id": "F-005",
+        "severity": "low",
+        "summary": "The parser help now describes Claude effort and writable grants, but the generated CLI reference was not included for review.",
+        "action": "Include docs/cli-reference.md in a follow-up review before marking the generated reference verified.",
+        "evidence": [
+          "The inline charness help says Claude records effort as lane metadata and identifies Codex and Claude as supported writable-grant executors.",
+          "docs/cli-reference.md is absent from the selected semantic input, so its regenerated content cannot be confirmed."
+        ]
+      }
+    ],
+    "omitted_finding_ids": [],
+    "prior_next_move": "Close or explicitly narrow the remaining host credential and IPC claims, add real-sandbox coverage for those boundaries, and bind docs/cli-reference.md to verify the generated help reference.",
+    "prior_non_claims": [
+      "This review is static and limited to the five inline semantic inputs; no tests or release CI run were independently observed.",
+      "The documented egress limit remains a technical exposure even though it is disclosed.",
+      "No claim is made that all host credential locations or IPC endpoints have been exhaustively enumerated."
+    ],
+    "approval_rule": "This is prior evidence only. Reuse findings as hypotheses; do not treat a prior block, defer, timeout, or partial result as approval. The new reviewer must bind the new packet and current selected paths independently.",
+    "final_reviewed_input_identity_sha256": "c322b6d6ff58dfab66cb7c3806698e9dd654f21fb86cc0b8cadaafc69ac95946",
+    "final_selected_path_count": 6,
+    "context_size_bytes": 7645
+  },
+  "follow_up_scope": {
+    "kind": "charness.follow_up_scope_receipt.v1",
+    "status": "verified",
+    "selected_paths": [
+      "charness",
+      "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+      "docs/claude-task-executor.md",
+      "docs/cli-reference.md",
+      "scripts/task_run/task_run_claude_sandbox.py",
+      "tests/charness_cli/test_task_run_claude_sandbox.py"
+    ],
+    "sections": [
+      {
+        "section_id": "changed-files-and-owning-surfaces",
+        "mode": "selected-paths",
+        "binding": "CHARNESS_CRITIQUE_REVIEWED_PATHS",
+        "path_binding": "exact-path-manifest",
+        "selected_path_count": 6,
+        "path_set_sha256": "9d7fd8d84478096d3e83a9571ac2c2c6513a0438167cf64e9047c2c868c1ba47",
+        "status": "verified",
+        "path_check": "exact-manifest"
+      },
+      {
+        "section_id": "critique-prepare-non-goals",
+        "mode": "static",
+        "binding": "adapter-static-content",
+        "path_binding": null,
+        "selected_path_count": 6,
+        "path_set_sha256": null,
+        "status": "verified",
+        "path_check": "not-applicable"
+      },
+      {
+        "section_id": "reviewer-packet-semantic-question",
+        "mode": "static",
+        "binding": "adapter-static-content",
+        "path_binding": null,
+        "selected_path_count": 6,
+        "path_set_sha256": null,
+        "status": "verified",
+        "path_check": "not-applicable"
+      }
+    ],
+    "contract": "Adapter-declared follow-up scope; selected-path sections must expose every identity-bound path, and static sections must declare that they are not path-bearing."
+  }
+}

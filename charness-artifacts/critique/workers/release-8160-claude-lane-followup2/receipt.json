@@ -1,0 +1,82 @@
+{
+  "attempt_id": "release-8160-claude-lane-followup2",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup2/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-11-04T20:49:45Z",
+  "model_application_state": "unverified-by-provider",
+  "output_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup2/result.json",
+  "output_fresh": true,
+  "output_sha256": "2de08657349e7192ca71ec580441642c237f98342e670f382750b9bb0ba8dd5f",
+  "output_size": 4484,
+  "packet_identity": "c2d28755266293e341b566cd7dd5ebc4d24a60224c0e4794ee89b5de960d7184",
+  "parent_receipt_identity": "parent-b336d2de482545ee223a5d0c4ed8a7bd278bcd630f024d7c",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup2/review-prompt.md",
+  "prompt_sha256": "0d97278d74f044040775936810daea3fba2f5c58cadf7f589832bc9a5874523f",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "requested_model": "gpt-6-luna",
+  "requested_reasoning_effort": "xhigh",
+  "reviewed_input_identity": "c322b6d6ff58dfab66cb7c3806698e9dd654f21fb86cc0b8cadaafc69ac95946",
+  "reviewer_tier": "high-leverage",
+  "run_id": "run-release-8160-claude-lane-followup2",
+  "schema_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup2/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "Second follow-up on release-8160-claude-lane: ~/.pypirc and Cargo credentials added to the masks (31a94834b); the docs and notes now state that home masks are a named list and that host Unix sockets other than container daemons and /run/user/<uid> stay reachable, tracked with network egress in issue #889; docs/cli-reference.md now included.",
+  "started_at": "2026-11-04T20:46:51Z",
+  "status": "succeeded",
+  "stderr_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup2/backend.stderr",
+  "stdout_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup2/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "unsupported_reviewer_fields": [
+    "service_tier=priority",
+    "fork_turns=none"
+  ],
+  "workspace": "/home/hwidong/codes/charness"
+}

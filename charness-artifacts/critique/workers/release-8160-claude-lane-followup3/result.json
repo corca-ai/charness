@@ -1,0 +1,45 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Recheck F-006, F-007, and F-008: repair accuracy and whether docs or notes overstate code behavior.",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "F-006",
+      "severity": "medium",
+      "summary": "The workspace credential protection statement still exceeds the scan's documented limits.",
+      "evidence": [
+        "The docs say, “Credential-shaped workspace files are masked from shell reads as well as denied to file tools.”",
+        "The later caveat names six skipped directory names, but `_credential_files` also uses `os.walk(..., followlinks=False)`, so it does not scan through symlinked directories.",
+        "A matching credential file under a symlinked workspace directory is therefore not masked by this scan."
+      ],
+      "action": "Qualify the claim to files reached by the scan and document the symlink-directory exclusion, or change the scan to cover those paths."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "F-006: skipped workspace trees and filename coverage",
+      "bin": "remaining documentation gap",
+      "disposition": "The named directory skips and known filename scope are documented; symlinked directory traversal is still omitted."
+    },
+    {
+      "concern": "F-007: socket comment describes a broader boundary than the code",
+      "bin": "repaired",
+      "disposition": "The comment now identifies the user runtime directory and listed container daemon sockets, and says other host Unix sockets remain reachable."
+    },
+    {
+      "concern": "F-008: real-sandbox coverage for new home credential masks",
+      "bin": "repaired in selected tests",
+      "disposition": "A bubblewrap-backed parameterized test checks synthetic ~/.pypirc, Cargo credentials, and ~/.docker/config.json; it explicitly skips when bubblewrap is absent."
+    }
+  ],
+  "next_move": "Qualify the workspace masking claim for symlinked directories, or extend the scan to cover them, then review that wording against the code.",
+  "non_claims": [
+    "This is a static review of the four supplied semantic inputs; no tests or release CI were run independently.",
+    "No claim is made about behavior or evidence outside the selected inputs."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "d0d2d8fd8768268f82a0d97113d151f253b65e2baa229d9249d27c857a438dce",
+  "reviewed_input_identity_sha256": "e77ebb60dae5d3cc387bd048e3f080e0d20039b56fa62758db5a753febbe47ce"
+}

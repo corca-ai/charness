@@ -1,0 +1,66 @@
+# Claude task executor
+
+> Status: current
+> Source of truth: [task_run_claude_sandbox.py](../scripts/task_run/task_run_claude_sandbox.py) and [task_run_claude_auth.py](../scripts/task_run/task_run_claude_auth.py)
+> Last verified: 2026-10-25
+
+`charness task run --executor claude --claude-model sonnet --effort medium`
+runs `claude -p` with the selected model. Sonnet is the lane default;
+`--claude-model haiku` selects `claude-haiku-5-5`. The Sonnet family uses the
+Claude CLI’s `sonnet` alias. The selected command model is recorded in
+`executor.model`; effort stays orchestration metadata.
+The default executor remains Codex. The host currently requires Linux bubblewrap.
+Claude accepts validated `--grant-writable` host-state directories. Muse still refuses them.
+
+Claude lanes keep the same result/report, branch, hooks, progress and verification
+contracts. Stream JSON remains in `claude.events.log`; terminal text becomes the
+report, and steers resume the observed session. The process runs with the lane
+worktree as its current directory.
+
+The Claude adapter wraps the entire process in a filesystem sandbox, supplies
+per-invocation permission settings, and isolates home/config/cache state under
+the private execution runtime. The worktree, private runtime and explicit host-state grants are writable.
+Private Git storage allows normal commits and hooks without granting the agent
+writes into the parent repository; the trusted runner imports the task branch
+after execution. When the caller explicitly grants this checkout’s resolved Git
+common directory, the lane instead uses its native linked-worktree Git directory:
+commits and hook attestations are immediately visible in shared Git, and no
+private import runs. Native Git discovers the existing linked `.git`; private mode
+mounts a protected private `gitdir:` pointer over that file only inside the sandbox.
+Claude receives no process-wide Git repository selectors, so foreign cwd and `-C`
+lookups retain their own repository identity. Private preparation and import select
+the private repository for individual Git invocations only. Shared Git configuration remains read-only. Callers must
+explicitly grant any external tool/verification caches their gates use.
+Native tools receive private writable `/tmp` for OS-level locks even when they ignore `TMPDIR`. Known temporary trees containing the worktree, runtime, Git object source and explicit grants retain read-only visibility before writable descendants are restored. Host temporary files remain unwritable. `XDG_RUNTIME_DIR` is a private mode-0700 directory.
+Real home configuration and the listed credential files remain protected,
+including `~/.docker`, `~/.pypirc` and Cargo credentials. The home masks are a
+named list, so a credential file outside it stays readable. Container daemon
+sockets (Docker, containerd, Podman, CRI-O) and `/run/user/<uid>` are masked,
+because a read-only bind does not stop a connect; other host Unix sockets, such
+as the D-Bus system bus, stay reachable.
+The sandbox does not restrict network egress: a lane can reach any address the
+host can, including cloud metadata endpoints and host TCP services
+([#889](https://github.com/corca-ai/charness/issues/889)).
+Real provider credentials stay in a parent-side proxy; the child receives an
+invocation token. Credential-shaped workspace files are masked from shell reads
+as well as denied to file tools. The safety and real-lane evidence record states
+the tested host boundary. The real-sandbox tests skip where bubblewrap is
+absent, and CI does not install it.
+
+Credential masks cover known `.env*`, `.pem`, `.key` and credential filenames,
+not arbitrary secret-bearing content. The API proxy forwards only to the fixed
+Anthropic HTTPS upstream and requires its per-invocation placeholder token.
+
+The trusted importer reads a no-follow bundle byte copy, verifies its prerequisites
+and ancestry, and updates only the current task branch. Hooks stay enabled on
+lane commits inside the sandbox. Host metadata import disables hooks and fsmonitor
+so agent-edited hook files cannot escape the filesystem boundary during import.
+
+The [task-run contract](./agent-task-runs.md) owns completion and retention.
+
+For Claude lanes, the separate Codex preflight uses a private home under the
+retained execution runtime and inherits authentication only. It copies no real
+configuration or sessions. That reviewer-home subtree is masked from Claude,
+including shell reads, after the runtime receives its writable grant. Both
+process environments rebind Claude, Codex, Ceal and XDG state destinations to
+their private home even when the caller exports explicit session directories.

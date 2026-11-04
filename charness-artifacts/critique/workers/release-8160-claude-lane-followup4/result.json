@@ -1,0 +1,23 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Recheck F-006: compare the workspace credential statement with _credential_files and the deny rules.",
+  "verdict": "pass",
+  "target_observations": null,
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "The file-tool deny globs cover .env files, .pem, and .key files, while _credential_files also finds named credentials such as .netrc and credentials.json.",
+      "bin": "non-blocking",
+      "disposition": "Those additional files are masked at the filesystem boundary when reached by the scan. The docs now state that symlinked directories are not traversed and files reached only through them are not masked."
+    }
+  ],
+  "next_move": "Close F-006. The documented symlink-directory limitation matches os.walk(..., followlinks=False).",
+  "non_claims": [
+    "Static review of the supplied semantic inputs only; no tests or sandbox behavior were independently run.",
+    "No claim is made about paths or behavior outside the selected inputs."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "e7d03d5d25da34116cf4798cceb577d3a57e466816c3c61f2207d40f09ca1882",
+  "reviewed_input_identity_sha256": "776b7a6bf137a1b96c7b25d36d9c560f4b4099f26dd25aa64a1f7a6200057f0d"
+}
