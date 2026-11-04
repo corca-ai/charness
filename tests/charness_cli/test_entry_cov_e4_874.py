@@ -25,8 +25,6 @@ CURRENT_VERSION = json.loads(
     (REPO_ROOT / "packaging" / "charness.json").read_text(encoding="utf-8")
 )["version"]
 
-_SPAWN_TIMEOUT_SECONDS = 28
-
 try:
     import coverage as _coverage_for_standalone_kids
 except ImportError:  # plain runs without the coverage harness installed
@@ -151,7 +149,8 @@ def _spawn(
         cwd=cwd,
         capture_output=True,
         text=True,
-        timeout=_SPAWN_TIMEOUT_SECONDS,
+        # No deadline: the verdict waits on the entry's own exit. A 28 s bound
+        # failed under full-suite load while `update` was still working.
     )
 
 

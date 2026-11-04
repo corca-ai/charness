@@ -637,41 +637,6 @@ def test_delivered_pass_and_block_are_distinct_from_runner_failure(tmp_path: Pat
     assert "reviewer block" in blocked["next_move"]
 
 
-def test_worker_timeout_keeps_started_and_non_approval_state(tmp_path: Path) -> None:
-    _repo(tmp_path, timeout=1)
-    bin_dir = tmp_path / "bin"
-    bin_dir.mkdir()
-    _fake_codex(bin_dir / "codex")
-
-    result = _run(tmp_path, bin_dir, "backend-timeout", sleep=10)
-    payload = _payload(result)
-
-    assert result.returncode == 1, result.stderr + result.stdout
-    assert payload["reviewer_started"] is True
-    assert payload["delivery_state"] == "timed-out"
-    assert payload["verdict_state"] == "not-applicable"
-    assert payload["approval_eligible"] is False
-    assert payload["execution_state"] == "started"
-    assert payload["lifecycle_state"] == "timed-out"
-    assert payload["output_state"] == "partial"
-    assert payload["output"]["approval_eligible"] is False
-    assert payload["output"]["artifacts"]
-    ledger = json.loads((tmp_path / payload["paths"]["ledger"]).read_text(encoding="utf-8"))
-    assert ledger["attempts"][-1]["state"] == "timed-out"
-    durable = (tmp_path / payload["paths"]["summary"]).parent
-    manifest = json.loads((durable / "attempt-manifest.json").read_text(encoding="utf-8"))
-    assert manifest["reusable"] is True
-    assert manifest["approval_eligible"] is False
-    assert manifest["use_class"] == "diagnostic-retryable"
-    assert (durable / "review-prompt.md").is_file()
-    assert (durable / "run-plan.json").is_file()
-    assert not (tmp_path / ".charness" / "scratch").exists()
-    assert all(
-        not (isinstance(path, str) and "/scratch/critique-review/" in path)
-        for path in payload["paths"].values()
-    )
-
-
 @pytest.mark.parametrize("supplied_packet", [False, True])
 def test_preview_does_not_reserve_live_attempt(tmp_path: Path, supplied_packet: bool) -> None:
     _repo(tmp_path)

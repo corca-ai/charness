@@ -529,9 +529,34 @@ def test_jsonrpc_response_wait_returns_matching_error_after_unrelated_message(
     assert response["error"] == {"code": -32000, "message": "nope"}
 
 
+
+def _wait_on_app_server_events(monkeypatch: pytest.MonkeyPatch, *, clock=lambda: 0.0) -> None:
+    """Make the response wait a function of the fake's output, never of wall time.
+
+    The reader's deadline and its `select` timeout are its two wall-clock inputs.
+    A frozen clock keeps the deadline in the future and `select` blocks until the
+    fake actually writes, so a slow interpreter start under load cannot turn a
+    response into a timeout. A caller that wants the timeout passes a clock that
+    has already passed the deadline.
+    """
+    import select as real_select
+
+    import scripts.cli.install_delivery as install_delivery
+
+    fake_time = SimpleNamespace(monotonic=clock)
+    monkeypatch.setattr(cli_host_codex_rpc, "time", fake_time)
+    monkeypatch.setattr(install_delivery, "time", fake_time)
+    monkeypatch.setattr(
+        install_delivery,
+        "select",
+        SimpleNamespace(select=lambda read, write, error, _timeout: real_select.select(read, write, error)),
+    )
+
+
 def test_codex_cache_refresh_preserves_matching_error_envelope(tmp_path: Path, monkeypatch) -> None:
     fake_codex = make_fake_codex(tmp_path, fail_plugin_install=True)
     monkeypatch.setenv("PATH", build_test_path(fake_codex.parent))
+    _wait_on_app_server_events(monkeypatch)
     home_root = tmp_path / "home"
     home_root.mkdir()
 
@@ -556,16 +581,15 @@ def test_codex_cache_refresh_accepts_real_initialize_shape_and_lifecycle_notific
     fake_codex = make_fake_codex(tmp_path)
     monkeypatch.setenv("PATH", build_test_path(fake_codex.parent))
     monkeypatch.setenv("CHARNESS_FAKE_CODEX_APP_SERVER_MODE", "real-init-notifications")
+    _wait_on_app_server_events(monkeypatch)
     home_root = tmp_path / "home"
     home_root.mkdir()
 
-    # A success path returns on the response, so the deadline only bounds a hang;
-    # 0.5s failed this case when the fake's interpreter started slowly under load.
     result = cli_host_codex_rpc.refresh_codex_cache_via_app_server(
         home_root=home_root,
         codex_marketplace_path=CLI.parent / ".agents" / "plugins" / "marketplace.json",
         plugin_name="charness",
-        timeout_seconds=60,
+        timeout_seconds=0.5,
     )
 
     assert result["status"] == "attempted"
@@ -592,6 +616,14 @@ def test_codex_cache_refresh_maps_transport_failures_to_existing_envelope(
     monkeypatch.setenv("CHARNESS_FAKE_CODEX_APP_SERVER_MODE", mode)
     home_root = tmp_path / "home"
     home_root.mkdir()
+
+    if mode == "unrelated-stream":
+        # The timeout is the injected signal: the deadline is set at 0 and every
+        # later reading is past it, so the fake's unrelated output cannot win.
+        readings = iter([0.0])
+        _wait_on_app_server_events(monkeypatch, clock=lambda: next(readings, 10.0))
+    elif mode != "eof":
+        _wait_on_app_server_events(monkeypatch)
 
     if mode == "eof":
         # Observe the fake's exit before the response deadline is checked; no
