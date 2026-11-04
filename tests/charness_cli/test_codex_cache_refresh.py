@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import io
 import json
 import os
 import shutil
@@ -485,6 +486,22 @@ def test_jsonrpc_response_wait_reports_malformed_payload_and_eof(
         proc.wait(timeout=2)
 
 
+@pytest.mark.parametrize(
+    ("returncode", "error"),
+    [(0, "exited before returning a response"), (None, "timed out")],
+)
+def test_jsonrpc_select_timeout_distinguishes_exit_from_live_child(
+    monkeypatch: pytest.MonkeyPatch, returncode: int | None, error: str
+) -> None:
+    import scripts.cli.install_delivery as install_delivery
+
+    stream = SimpleNamespace(stdout=object(), stderr=io.StringIO(""), poll=lambda: returncode)
+    monkeypatch.setattr(install_delivery, "time", SimpleNamespace(monotonic=lambda: 0.0))
+    monkeypatch.setattr(install_delivery, "select", SimpleNamespace(select=lambda *_args: ([], [], [])))
+    with pytest.raises(_TreeCharnessError, match=error):
+        install_delivery.read_jsonrpc_line_before(stream, deadline=1.0)
+
+
 def test_jsonrpc_response_wait_returns_matching_error_after_unrelated_message(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -573,6 +590,17 @@ def test_codex_cache_refresh_maps_transport_failures_to_existing_envelope(
     monkeypatch.setenv("CHARNESS_FAKE_CODEX_APP_SERVER_MODE", mode)
     home_root = tmp_path / "home"
     home_root.mkdir()
+
+    if mode == "eof":
+        # Observe the fake's exit before the response deadline is checked; no
+        # wall-clock assumption about child startup is needed for this case.
+        wait_for_response = cli_host_codex_rpc.wait_for_jsonrpc_response
+
+        def wait_after_exit(proc, *, expected_id, deadline):
+            proc.wait()
+            return wait_for_response(proc, expected_id=expected_id, deadline=0.0)
+
+        monkeypatch.setattr(cli_host_codex_rpc, "wait_for_jsonrpc_response", wait_after_exit)
 
     result = cli_host_codex_rpc.refresh_codex_cache_via_app_server(
         home_root=home_root,

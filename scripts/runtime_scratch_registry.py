@@ -45,7 +45,7 @@ def _tree_inventory(root: Path, *, max_entries: int) -> tuple[int, int, bool]:
                 if entry.is_dir(follow_symlinks=False):
                     stack.append(Path(entry.path))
                 elif entry.is_file(follow_symlinks=False):
-                    size += entry.stat(follow_symlinks=False).st_size
+                    size += os.stat(entry.path, follow_symlinks=False).st_size
             except OSError:
                 truncated = True
     return entries, size, truncated
@@ -406,10 +406,10 @@ def _restore_hold_out_paths(
             source.parent.mkdir(parents=True, exist_ok=True)
             shutil.move(str(staged), str(source))
             entry["state"] = "restored"
-            restored.append(str(source.relative_to(repo_root)))
+            restored.append(source.relative_to(repo_root).as_posix())
         else:
             entry["state"] = "already-restored" if source_present else "not-moved"
-            untouched.append(str(source.relative_to(repo_root)))
+            untouched.append(source.relative_to(repo_root).as_posix())
     owner["hold_out_paths"] = raw_entries
     return {
         "status": "restored",

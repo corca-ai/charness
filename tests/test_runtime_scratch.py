@@ -442,6 +442,7 @@ def test_gc_is_dry_run_by_default_and_removes_only_expired_scratch(tmp_path: Pat
     assert not path.exists()
 
 
+@pytest.mark.skipif(os.name == "nt", reason="asserts POSIX permission bits")
 def test_closing_an_owner_keeps_a_hardlinked_survivor_executable(tmp_path: Path) -> None:
     """Cleanup unlinks its own names; a hardlinked survivor keeps mode and bytes (#881)."""
     repo, runtime = _paths(tmp_path)
@@ -459,6 +460,7 @@ def test_closing_an_owner_keeps_a_hardlinked_survivor_executable(tmp_path: Path)
     assert survivor.stat().st_mode & 0o777 == 0o755
 
 
+@pytest.mark.skipif(os.name == "nt", reason="asserts POSIX permission bits")
 def test_windows_branch_chmods_files_before_unlink(tmp_path: Path, monkeypatch) -> None:
     """Windows cannot unlink a read-only file, so only there files gain write bits."""
     survivor = tmp_path / "survivor"

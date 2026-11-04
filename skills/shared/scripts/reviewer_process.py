@@ -3,9 +3,11 @@
 
 from __future__ import annotations
 
+import os
 import shlex
 import shutil
 import signal
+import subprocess
 import sys
 from pathlib import Path
 
@@ -31,6 +33,19 @@ class ReviewerProcessError(ValueError):
         self.exit_code = exit_code
 
 
+def shell_command_line(
+    command: list[str], stdin_path: Path, *, windows: bool = os.name == "nt"
+) -> str:
+    """One shell line that runs ``command`` reading ``stdin_path``, quoted for the platform shell.
+
+    POSIX ``sh`` takes ``shlex`` words; Windows ``cmd.exe`` takes double-quoted
+    words and has no ``exec``.
+    """
+    if windows:
+        return f"{subprocess.list2cmdline(command)} < {subprocess.list2cmdline([str(stdin_path)])}"
+    return f"exec {shlex.join(command)} < {shlex.quote(str(stdin_path))}"
+
+
 def run_bounded_process(
     command: list[str],
     *,
@@ -48,9 +63,8 @@ def run_bounded_process(
         )
 
     # The guard owns the process group and timeout lifecycle. Shell redirection
-    # supplies the same file-backed stdin contract that the old Popen call had;
-    # shlex keeps every adapter-provided argument one shell word.
-    command_line = f"exec {shlex.join(command)} < {shlex.quote(str(stdin_path))}"
+    # supplies the same file-backed stdin contract that the old Popen call had.
+    command_line = shell_command_line(command, stdin_path)
     previous: dict[int, object] = {}
 
     def interrupt(_signum: int, _frame: object) -> None:

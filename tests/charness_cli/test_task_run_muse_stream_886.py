@@ -100,11 +100,8 @@ def _fake_muse(
     return executable, argv_file
 
 
-def test_muse_json_progress_reaches_receipt_with_terminal_report(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_muse_json_progress_reaches_receipt_with_terminal_report(tmp_path: Path) -> None:
     """argv, split-chunk phases, terminal delivery, and scoped-diff observation."""
-    monkeypatch.setenv(prog.PROGRESS_POLL_ENV, "0.05")
     repo = _repo(tmp_path)
     report = "CONTRACT-READ\nEDITING\nTESTING\nShared-primitive candidates: none\n"
     events = [
@@ -121,7 +118,6 @@ def test_muse_json_progress_reaches_receipt_with_terminal_report(
         tmp_path,
         events=events,
         edit="VALUE = 2\n",
-        sleeps=[0.0, 0.3, 0.0, 0.3, 0.3, 0.3, 0.0],
     )
     payload = _run(repo, tmp_path, executable, executor="muse", effort="xhigh", timeout_seconds=120)
 

@@ -90,3 +90,23 @@ def test_fake_git_after_mode_normalizes_real_git_failure(tmp_path: Path) -> None
 
     assert result.returncode == 1
     assert "forced branch push error" not in result.stderr
+
+
+def test_fake_git_delegates_through_a_path_resolving_wrapper(tmp_path: Path) -> None:
+    fake_dir = tmp_path / "fake"
+    wrapper_dir = tmp_path / "wrapper"
+    real_dir = tmp_path / "real"
+    for directory in (fake_dir, wrapper_dir, real_dir):
+        directory.mkdir()
+    wrapper = wrapper_dir / "git"
+    _write_exec(wrapper, '#!/usr/bin/env bash\nPATH="${PATH#*:}" exec git "$@"\n')
+    marker = tmp_path / "called"
+    _write_exec(real_dir / "git", f'#!/usr/bin/env bash\nprintf reached > {str(marker)!r}\n')
+    _install_fake_git(fake_dir, real_git=str(wrapper))
+    env = _fake_git_env(tmp_path / "git-log.json")
+    env["PATH"] = os.pathsep.join((str(fake_dir), str(wrapper_dir), str(real_dir), env["PATH"]))
+
+    result = subprocess.run([fake_dir / "git", "status"], env=env, capture_output=True, timeout=30)
+
+    assert result.returncode == 0
+    assert marker.read_text(encoding="utf-8") == "reached"

@@ -232,6 +232,43 @@ def _drive(watch: prog.LaneProgressWatch) -> list:
     return emitted
 
 
+def test_watch_completion_reads_last_output_without_a_poll(tmp_path: Path) -> None:
+    watch = _watch(tmp_path)
+    _drive(watch)
+    watch._clock = lambda: 1.0
+    watch._stderr_log.write_text("CONTRACT-READ\nEDITING\nTESTING\n", encoding="utf-8")
+
+    watch.observe_completion()
+
+    assert watch.receipt()["last_phases"] == ["CONTRACT-READ", "EDITING", "TESTING"]
+    assert watch.stop_reason is None
+
+
+def test_watch_completion_survives_progress_output_oserror(tmp_path: Path) -> None:
+    watch = _watch(tmp_path)
+    watch._started_at = 0.0
+    watch._clock = lambda: 1.0
+
+    def broken_output(_phases, _elapsed):
+        raise BrokenPipeError("progress output closed")
+
+    watch._emit = broken_output
+    watch._stderr_log.write_text("CONTRACT-READ\n", encoding="utf-8")
+    watch.observe_completion()
+    assert watch.receipt()["last_phases"] == ["CONTRACT-READ"]
+
+
+def test_watch_completion_exposes_unexpected_errors(tmp_path: Path) -> None:
+    watch = _watch(tmp_path)
+
+    def broken_clock():
+        raise ValueError("invalid clock")
+
+    watch._clock = broken_clock
+    with pytest.raises(ValueError, match="invalid clock"):
+        watch.observe_completion()
+
+
 def test_watch_tick_relays_phases_then_stops_on_spent_budget(
     tmp_path: Path,
 ) -> None:
@@ -864,6 +901,7 @@ def test_execute_codex_records_progress_stop_from_the_lane_watch(
         stop_reason="require-change lane produced no EDITING",
         start=lambda **_kwargs: None,
         stop=lambda: None,
+        observe_completion=lambda: None,
     )
     result = task_run_execution._execute_codex(
         ["codex"],

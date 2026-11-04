@@ -2,6 +2,16 @@
 set -u
 
 REAL_GIT=__REAL_GIT__
+# A forwarding git wrapper may resolve `git` through PATH again. Exclude this
+# test double so delegation reaches the wrapper's next executable, not itself.
+fake_dir="$(cd "$(dirname "$0")" && pwd -P)"
+clean_path=''
+IFS=: read -r -a path_entries <<< "$PATH"
+for entry in "${path_entries[@]}"; do
+  [[ "$entry" == "$fake_dir" ]] && continue
+  clean_path="${clean_path:+$clean_path:}$entry"
+done
+export PATH="$clean_path"
 log_path="${FAKE_GIT_LOG:?FAKE_GIT_LOG is required}"
 args=("$@")
 

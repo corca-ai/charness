@@ -565,9 +565,12 @@ def test_real_entry_path_inserts_foreign_checkout_lib_root(tmp_path: Path) -> No
 
 
 def test_load_train_lib_inserts_missing_repo_root(monkeypatch) -> None:
+    from scripts.task_run import task_run_train
+
     repo = Path(__file__).resolve().parents[2]
-    # The loaded module resolves to this checkout, so dropping the checkout
-    # from the path takes the fallback insert; the import below re-adds it.
+    # This test owns the insertion, not the separate checkout-resolution policy.
+    monkeypatch.setattr(cli_process, "_resolve_worktree_lib_root", lambda _args: repo)
+    monkeypatch.setattr(cli_process._bootstrap, "EMBEDDED_REPO_ROOT", None)
     monkeypatch.setattr(
         sys,
         "path",
@@ -577,7 +580,7 @@ def test_load_train_lib_inserts_missing_repo_root(monkeypatch) -> None:
 
     lib = cli_process._load_train_lib(argparse.Namespace())
 
-    assert lib is not None
+    assert lib is task_run_train
     assert sys.path[0] == str(repo)
 
 

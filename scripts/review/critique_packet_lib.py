@@ -12,6 +12,7 @@ from __future__ import annotations
 import json
 import os
 import shlex
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -129,8 +130,11 @@ def _run_command(
     else:
         env.pop(changed_ref_env_var, None)
     try:
+        argv = shlex.split(command)
+        if os.name == "nt" and argv and argv[0] == "python3":
+            argv[0] = sys.executable
         result = run_monitored_phase(
-            shlex.split(command),
+            argv,
             cwd=repo_root,
             phase="critique-packet-producer",
             timeout_seconds=PRODUCER_TIMEOUT_SECONDS,

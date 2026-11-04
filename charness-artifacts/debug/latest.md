@@ -1,1 +1,1 @@
-2026-10-25-claude-git-discovery.md
+2026-10-31-prepush-pytest-env-followup-windows-portability-46ed5b18.md
