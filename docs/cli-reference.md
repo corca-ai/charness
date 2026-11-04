@@ -333,10 +333,11 @@ options:
 usage: charness task run [-h] [--repo-root REPO_ROOT] [--lane LANE]
                          [--path PATH] [--branch BRANCH] [--base BASE] --scope
                          SCOPE (--prompt PROMPT | --prompt-file PROMPT_FILE)
-                         [--executor EXECUTOR] --effort EFFORT
-                         [--task-id TASK_ID] [--prepare] [--require-change]
-                         [--skip-prepare] [--allow-no-change] [--report-only]
-                         [--self-review] [--critical-lane]
+                         [--executor EXECUTOR] [--claude-model CLAUDE_MODEL]
+                         --effort EFFORT [--task-id TASK_ID] [--prepare]
+                         [--require-change] [--skip-prepare]
+                         [--allow-no-change] [--report-only] [--self-review]
+                         [--critical-lane]
                          [--acceptance-skeleton ACCEPTANCE_SKELETON]
                          [--premise-check ID PREMISE DECISION]
                          [--timeout-seconds TIMEOUT_SECONDS]
@@ -384,6 +385,9 @@ options:
                         codex,muse); usage-limit failures fall through in
                         order. Default: codex. Effort must fit every listed
                         executor.
+  --claude-model CLAUDE_MODEL
+                        Claude lane model family (default: sonnet); applies
+                        only to Claude in the executor order.
   --effort EFFORT       Orchestrator-selected reasoning effort: medium, xhigh,
                         or max for codex; medium, high, xhigh, or max for
                         muse.

@@ -1,7 +1,7 @@
 # Claude task executor
 
 > Status: current
-> Source of truth: `scripts/task_run/task_run_claude_sandbox.py` and `task_run_claude_auth.py`
+> Source of truth: [task_run_claude_sandbox.py](../scripts/task_run/task_run_claude_sandbox.py) and [task_run_claude_auth.py](../scripts/task_run/task_run_claude_auth.py)
 > Last verified: 2026-10-25
 
 `charness task run --executor claude --claude-model sonnet --effort medium`
@@ -11,7 +11,6 @@ Claude CLI’s `sonnet` alias. The selected command model is recorded in
 `executor.model`; effort stays orchestration metadata.
 The default executor remains Codex. The host currently requires Linux bubblewrap.
 Claude accepts validated `--grant-writable` host-state directories. Muse still refuses them.
-
 
 Claude lanes keep the same result/report, branch, hooks, progress and verification
 contracts. Stream JSON remains in `claude.events.log`; terminal text becomes the

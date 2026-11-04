@@ -559,11 +559,13 @@ def test_codex_cache_refresh_accepts_real_initialize_shape_and_lifecycle_notific
     home_root = tmp_path / "home"
     home_root.mkdir()
 
+    # A success path returns on the response, so the deadline only bounds a hang;
+    # 0.5s failed this case when the fake's interpreter started slowly under load.
     result = cli_host_codex_rpc.refresh_codex_cache_via_app_server(
         home_root=home_root,
         codex_marketplace_path=CLI.parent / ".agents" / "plugins" / "marketplace.json",
         plugin_name="charness",
-        timeout_seconds=0.5,
+        timeout_seconds=60,
     )
 
     assert result["status"] == "attempted"

@@ -28,7 +28,19 @@ import time
 from datetime import datetime, timezone
 from typing import Any, BinaryIO, Callable, Iterable, Mapping
 
-from scripts.task_run import task_run_claude_events as _claude_events
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is not None and str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.task_run import task_run_claude_events as _claude_events  # noqa: E402
 
 RECEIVED_AT_FIELD = "charness_received_at"
 DURATION_MS_FIELD = "charness_duration_ms"

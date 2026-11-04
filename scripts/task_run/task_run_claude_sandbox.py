@@ -17,11 +17,25 @@ import tempfile
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-from scripts.cli.bootstrap import managed_checkout_root
-from scripts.core.subprocess_guard import run_process
-from scripts.task_run.task_run_claude_auth import claude_auth_proxy as claude_auth_proxy
-from scripts.task_run.task_run_claude_review import reviewer_home
-from scripts.task_run.task_run_contract import TASK_CLAUDE_MODEL, TaskRunError
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is not None and str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
+from scripts.cli.bootstrap import managed_checkout_root  # noqa: E402
+from scripts.core.subprocess_guard import run_process  # noqa: E402
+from scripts.task_run.task_run_claude_auth import (  # noqa: E402
+    claude_auth_proxy as claude_auth_proxy,
+)
+from scripts.task_run.task_run_claude_review import reviewer_home  # noqa: E402
+from scripts.task_run.task_run_contract import TASK_CLAUDE_MODEL, TaskRunError  # noqa: E402
 
 _SECRET_DIRECTORIES = (".claude", ".codex", ".ceal", ".ssh", ".aws", ".azure", ".kube", ".gnupg", ".config", ".local/state/ceal")
 _SECRET_FILES = (".claude.json", ".netrc", ".npmrc", ".git-credentials", ".bashrc", ".bash_profile", ".profile", ".zshrc", ".zshenv", ".zprofile")
@@ -255,7 +269,7 @@ def _credential_files(worktree: Path) -> list[Path]:
     return sorted(paths)
 
 
-def sandbox_prefix(worktree: Path, execution_runtime_path: Path, *,
+def sandbox_prefix(worktree: Path, execution_runtime_path: Path, *,  # noqa: C901 - one ordered bwrap argv; split tracked in #888
                    writable_dirs: Sequence[Path] = ()) -> list[str]:
     """Return the OS boundary shared by Claude and the adversarial safety probe."""
     bwrap = shutil.which("bwrap")

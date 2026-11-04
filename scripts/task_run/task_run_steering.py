@@ -7,6 +7,18 @@ import uuid
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+
+def _load_repo_runtime_bootstrap():
+    pathlib, sys = __import__("pathlib"), __import__("sys")
+    marker = ("scripts", "adapter_lib.py")
+    parents = pathlib.Path(__file__).resolve().parents
+    root = next((p for p in parents if p.joinpath(*marker).is_file()), None)
+    if root is not None and str(root) not in sys.path:
+        sys.path.insert(0, str(root))
+
+
+_load_repo_runtime_bootstrap()
+
 STEER_ENVELOPE_KIND = "charness.task_steer.v1"
 STEER_QUEUE_FILENAME = "steer.queue.jsonl"
 

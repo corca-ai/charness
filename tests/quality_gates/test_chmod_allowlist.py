@@ -36,6 +36,9 @@ REVIEWED_CHMODS = {
     ("skills/public/critique/scripts/semantic_review_input.py", None): (
         "owned review-carrier hardening (0444/0555)"
     ),
+    ("scripts/task_run/task_run_claude_review.py", "private_review_environment"): (
+        "owned private reviewer home directory (0700); never unlink-adjacent"
+    ),
 }
 
 
