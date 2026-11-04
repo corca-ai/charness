@@ -48,7 +48,9 @@ the tested host boundary. The real-sandbox tests skip where bubblewrap is
 absent, and CI does not install it.
 
 Credential masks cover known `.env*`, `.pem`, `.key` and credential filenames,
-not arbitrary secret-bearing content. The API proxy forwards only to the fixed
+not arbitrary secret-bearing content. The workspace scan skips `.git`,
+`node_modules`, `.cache`, `.venv`, `venv` and `__pycache__`, so a credential
+file under those trees is not masked. The API proxy forwards only to the fixed
 Anthropic HTTPS upstream and requires its per-invocation placeholder token.
 
 The trusted importer reads a no-follow bundle byte copy, verifies its prerequisites

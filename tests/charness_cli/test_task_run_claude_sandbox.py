@@ -438,3 +438,25 @@ def test_lane_cannot_connect_to_the_host_docker_socket(tmp_path: Path) -> None:
     result = run_process([*sandbox.sandbox_prefix(lane, runtime), "--", sys.executable, "-c", script], cwd=lane)
     assert result.returncode == 0, result.stderr
     assert result.stdout.startswith("refused"), result.stdout
+
+
+@pytest.mark.boundary_contract(reason="The real OS sandbox must hide listed home credential files from a lane")
+@pytest.mark.parametrize("name", [".pypirc", ".cargo/credentials.toml", ".docker/config.json"])
+def test_listed_home_credentials_are_unreadable_in_a_real_lane(monkeypatch, tmp_path: Path, name: str) -> None:
+    if not shutil.which("bwrap"):
+        pytest.skip("bubblewrap not installed")
+    home, lane, runtime = tmp_path / "home", tmp_path / "lane", tmp_path / "runtime"
+    lane.mkdir()
+    runtime.mkdir()
+    secret = home / name
+    secret.parent.mkdir(parents=True)
+    secret.write_text("synthetic-credential-sentinel", encoding="utf-8")
+    monkeypatch.setattr(sandbox.Path, "home", classmethod(lambda _cls: home))
+    code = ("from pathlib import Path\n"
+            f"path = Path({str(secret)!r})\n"
+            "try:\n value = path.read_text()\n"
+            "except OSError:\n value = ''\n"
+            "assert 'synthetic-credential-sentinel' not in value, value\n")
+    result = run_process([*sandbox.sandbox_prefix(lane, runtime), "--", sys.executable, "-c", code], cwd=lane)
+    assert result.returncode == 0, result.stderr
+    assert secret.read_text(encoding="utf-8") == "synthetic-credential-sentinel"

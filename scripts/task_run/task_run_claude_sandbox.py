@@ -317,7 +317,8 @@ def sandbox_prefix(worktree: Path, execution_runtime_path: Path, *,  # noqa: C90
         path = home / name
         if path.exists():
             command.extend(("--ro-bind", str(mask), str(path)))
-    # A process must not reach host Unix sockets (SSH agents, daemon APIs).
+    # Mask the user socket directory (SSH agents, session buses) and the container
+    # daemons below; other host Unix sockets stay reachable (#889).
     for path in (Path("/run/user") / str(os.getuid()),):
         if path.exists():
             command.extend(("--tmpfs", str(path), "--remount-ro", str(path)))
