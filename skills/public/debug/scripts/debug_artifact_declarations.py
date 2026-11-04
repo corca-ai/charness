@@ -22,6 +22,7 @@ planner refuse instead of guessing.
 """
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 
@@ -86,6 +87,32 @@ def parse_field(text: str, label: str) -> str | None:
     return None
 
 
+_RISK_VALUE_RE = re.compile(r"[a-z][a-z-]*(?:\s*,\s*[a-z][a-z-]*)*")
+_PROSE_BOUNDARY_RE = re.compile(r"\s|[(;:.–—]")
+
+
+def risk_value(raw_value: str) -> str:
+    """The `Risk Class` value with any trailing explanatory prose cut off.
+
+    Authors write `- Risk Class: none yet; provider-seam note: ...` or
+    `external-seam (runner disk state)`. Reading the whole line as the value made
+    the prose an "unknown class", routed every later run in the repo to
+    `repair-risk-declaration`, and pointed that run at another subject's record.
+
+    The value is the leading comma-separated run of class-shaped tokens, and it ends
+    only at whitespace or a prose separator, so `none, bogus (prose)` still yields an
+    unknown `bogus` and a line that opens with prose yields no value at all.
+    """
+    stripped = raw_value.strip()
+    match = _RISK_VALUE_RE.match(stripped)
+    if match is None:
+        return stripped
+    rest = stripped[match.end() :]
+    if rest and not _PROSE_BOUNDARY_RE.match(rest):
+        return stripped
+    return match.group(0)
+
+
 def _recovered_risk_classes(raw_value: str, risk_interrupt_lib: Any) -> tuple[str, ...]:
     """Recognized risk classes from a `Risk Class` line the strict parser rejected."""
     parts = tuple(part.strip() for part in raw_value.split(",") if part.strip())
@@ -101,7 +128,8 @@ def risk_summary(path: Path, risk_interrupt_lib: Any) -> dict[str, Any]:
             "risk_scope_established": True,
         }
     text = path.read_text(encoding="utf-8")
-    risk_class_raw = parse_field(text, "Risk Class")
+    risk_class_line = parse_field(text, "Risk Class")
+    risk_class_raw = None if risk_class_line is None else risk_value(risk_class_line)
     next_step = parse_field(text, "Next Step")
     generalization_pressure = parse_field(text, "Generalization Pressure")
     try:
