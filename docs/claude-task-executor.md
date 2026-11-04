@@ -2,7 +2,7 @@
 
 > Status: current
 > Source of truth: [task_run_claude_sandbox.py](../scripts/task_run/task_run_claude_sandbox.py) and [task_run_claude_auth.py](../scripts/task_run/task_run_claude_auth.py)
-> Last verified: 2026-10-25
+> Last verified: 2026-11-05
 
 `charness task run --executor claude --claude-model sonnet --effort medium`
 runs `claude -p` with the selected model. Sonnet is the lane default;
@@ -34,18 +34,21 @@ explicitly grant any external tool/verification caches their gates use.
 Native tools receive private writable `/tmp` for OS-level locks even when they ignore `TMPDIR`. Known temporary trees containing the worktree, runtime, Git object source and explicit grants retain read-only visibility before writable descendants are restored. Host temporary files remain unwritable. `XDG_RUNTIME_DIR` is a private mode-0700 directory.
 Real home configuration and the listed credential files remain protected,
 including `~/.docker`, `~/.pypirc` and Cargo credentials. The home masks are a
-named list, so a credential file outside it stays readable. Container daemon
+named list of directories and files plus home `.env*` files, so a credential
+file outside them stays readable. Container daemon
 sockets (Docker, containerd, Podman, CRI-O) and `/run/user/<uid>` are masked,
-because a read-only bind does not stop a connect; other host Unix sockets, such
-as the D-Bus system bus, stay reachable.
+because a read-only bind does not stop a connect. Other host Unix sockets, such
+as the D-Bus system bus, stay reachable unless they sit under `/run/user/<uid>`
+or under `/tmp` outside the temporary trees restored for the lane.
 The sandbox does not restrict network egress: a lane can reach any address the
 host can, including cloud metadata endpoints and host TCP services
 ([#889](https://github.com/corca-ai/charness/issues/889)).
-Real provider credentials stay in a parent-side proxy; the child receives an
-invocation token. Credential-shaped workspace files are masked from shell reads
-as well as denied to file tools. The safety and real-lane evidence record states
-the tested host boundary. The real-sandbox tests skip where bubblewrap is
-absent, and CI does not install it.
+Real provider credentials, including an OAuth token read from
+`~/.claude/.credentials.json`, stay in a parent-side proxy; the child receives
+an invocation token. Credential-shaped workspace files are masked from shell reads
+as well as denied to file tools. The [safety and real-lane evidence record](../charness-artifacts/impl/2026-10-25-claude-executor-pilot.md) states
+the tested host boundary. The real-sandbox tests need Linux with bubblewrap,
+and CI does not run them.
 
 Credential masks cover known `.env*`, `.pem`, `.key` and credential filenames,
 not arbitrary secret-bearing content. The workspace scan skips `.git`,
