@@ -101,3 +101,15 @@ def test_new_subject_leaves_another_subjects_valid_prose_record_alone(
     owner = run_plan(repo, subject="orphan-cache-sweep")
     assert owner["mode"] == "continue-existing-artifact"
     assert owner["next_action"]["write_artifact_path"] == foreign
+
+
+def test_a_forced_class_beside_an_unknown_one_still_interrupts_with_prose(tmp_path: Path) -> None:
+    """The prose split must not drop the recovered forced class the planner relies on."""
+    repo = tmp_path / "repo"
+    write_forced_risk_artifact(repo, resolution="open", risk_class="external-seam, bogus (seen on the host)")
+
+    payload = run_plan(repo)
+
+    assert payload["artifact"]["risk_classes"] == ["external-seam"]
+    assert "bogus" in payload["artifact"]["risk_parse_error"]
+    assert payload["mode"] == "risk-interrupt"

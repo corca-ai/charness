@@ -42,7 +42,7 @@ _SECRET_DIRECTORIES = (".claude", ".codex", ".ceal", ".ssh", ".aws", ".azure", "
 # their group; a read-only root bind does not stop connect(). Mask each one.
 _HOST_DAEMON_SOCKETS = ("/run/docker.sock", "/var/run/docker.sock", "/run/containerd/containerd.sock",
                         "/run/podman/podman.sock", "/run/crio/crio.sock")
-_SECRET_FILES = (".claude.json", ".netrc", ".npmrc", ".git-credentials", ".bashrc", ".bash_profile", ".profile", ".zshrc", ".zshenv", ".zprofile")
+_SECRET_FILES = (".claude.json", ".netrc", ".npmrc", ".pypirc", ".cargo/credentials", ".cargo/credentials.toml", ".git-credentials", ".bashrc", ".bash_profile", ".profile", ".zshrc", ".zshenv", ".zprofile")
 _GIT_ENV_KEYS = ("GIT_DIR", "GIT_COMMON_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES")
 
 
