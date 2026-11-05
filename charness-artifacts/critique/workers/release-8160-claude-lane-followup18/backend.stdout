@@ -1,0 +1,30 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Recheck R-001 and R-002 against the supplied code and tests, and check the related notes and documentation claims.",
+  "verdict": "pass",
+  "target_observations": null,
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "R-001: cleanup may fail or be bypassed by an abrupt runner stop.",
+      "bin": "resolved",
+      "disposition": "The wording now matches the finally-block cleanup attempt and explicitly states the crash and unlink-failure cases. Tests cover cleanup after review failure and partial-copy setup failure; they do not exercise unlink failure."
+    },
+    {
+      "concern": "R-002: the planner might not interrupt a new investigation for an open forced-risk record with explanatory prose.",
+      "bin": "resolved",
+      "disposition": "The parser recognizes the prose-suffixed class, and the planner routes active forced risk to interrupt-to-spec without conditioning on the new subject. Tests cover open forced risk with a new subject and prose-suffixed external-seam risk separately."
+    },
+    {
+      "concern": "The exact combination of a new subject and an open external-seam value with parenthetical prose lacks one direct test.",
+      "bin": "counterweight",
+      "disposition": "No code mismatch found: the separate planner and parser tests exercise those behaviors, though not that exact combination in a single case."
+    }
+  ],
+  "next_move": "No correction to the reviewed wording is indicated by this packet.",
+  "non_claims": [
+    "Tests were not executed; this review assessed the supplied code and test contents.",
+    "The selected tests do not directly attempt a cross-lane read while the auth copy still exists; the supplied sandbox code leaves other lane runtimes unmasked.",
+    "The exact new-subject plus parenthetical external-seam case is not tested as one combined scenario."
+  ]
+}

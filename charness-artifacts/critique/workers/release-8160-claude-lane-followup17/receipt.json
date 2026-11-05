@@ -1,0 +1,82 @@
+{
+  "attempt_id": "release-8160-claude-lane-followup17",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup17/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-11-05T00:45:55Z",
+  "model_application_state": "unverified-by-provider",
+  "output_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup17/result.json",
+  "output_fresh": true,
+  "output_sha256": "9edf33cd1cf422f7950bb1798b53e7d88bc142457e479ee339cb1b9b1ef76eac",
+  "output_size": 3895,
+  "packet_identity": "ae9d5a4cb879a1171cf350c0fda1e65d3cd8f77ae9d7d84570da5949aad973df",
+  "parent_receipt_identity": "parent-671845fe2cc5e8aaffca2e12e1800106309570f3b713a613",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup17/review-prompt.md",
+  "prompt_sha256": "3024ae62a72dd6b4ccbafb1387db087a4cedcd72ea66935956ca854b26aba4e2",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "requested_model": "gpt-6-luna",
+  "requested_reasoning_effort": "xhigh",
+  "reviewed_input_identity": "2c4f7ce66a561a3a02994c3ec13a989b05223cff97b153094bf6297466a3eaa7",
+  "reviewer_tier": "high-leverage",
+  "run_id": "run-release-8160-claude-lane-followup17",
+  "schema_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup17/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "Recheck the fourth claims-round wording: notes and docs now say the runner deletes the preflight auth.json copy when the review ends, including when the review fails; until then another Claude lane can read it, and if the runner is killed or crashes during the preflight the copy stays in the lane runtime until that runtime is removed (#891). Also changed in the notes: --grant-writable already accepted Codex lanes and is refused when the executor list includes Muse; an open earlier debug record declaring a forced class such as external-seam (...) still interrupts new investigations; the progress watch records one final observation after the output capture drains without enforcing the live stop rules.",
+  "started_at": "2026-11-05T00:42:29Z",
+  "status": "succeeded",
+  "stderr_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup17/backend.stderr",
+  "stdout_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup17/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "unsupported_reviewer_fields": [
+    "service_tier=priority",
+    "fork_turns=none"
+  ],
+  "workspace": "/home/hwidong/codes/charness"
+}

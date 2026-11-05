@@ -1,0 +1,62 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Check changed wording against supplied code and tests, including cleanup paths and readers of the auth copy.",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R-001",
+      "severity": "medium",
+      "summary": "The auth-copy cleanup is attempted in a finally block, but the wording states deletion as guaranteed. If unlink fails, the copy remains.",
+      "evidence": [
+        "scripts/task_run/task_run_brief_critique.py calls discard_review_auth in finally, covering setup and review failures.",
+        "scripts/task_run/task_run_claude_review.py implements discard_review_auth with unlink(missing_ok=True), which can raise OSError.",
+        "tests/charness_cli/test_task_run_claude_review.py covers review failure and partial-copy failure, but not cleanup failure."
+      ],
+      "action": "Qualify the claim to say cleanup is attempted and disclose that an unlink failure can leave the copy in the runtime."
+    },
+    {
+      "id": "R-002",
+      "severity": "defer",
+      "summary": "The supplied debug helpers identify an open forced-risk declaration and mark its interrupt route active, but the packet omits the planner consumer and behavioral tests needed to verify that a new investigation is actually interrupted.",
+      "evidence": [
+        "skills/public/debug/scripts/debug_artifact_declarations.py parses `external-seam (...)` as a forced class.",
+        "skills/public/debug/scripts/debug_artifact_state.py keeps unresolved forced risk active in _effective_routing.",
+        "The selected paths include neither the planner that consumes this route nor tests for the new-investigation behavior."
+      ],
+      "action": "Include the planner consumer and its behavioral tests in a follow-up review, or narrow the wording to the route the supplied helpers establish."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "The runner cleans the copy after review exceptions and partial-copy setup errors.",
+      "bin": "supported",
+      "disposition": "The finally block covers both operations, and selected tests exercise both failure cases."
+    },
+    {
+      "concern": "Another Claude lane can read the copy before cleanup.",
+      "bin": "supported, with test limitation",
+      "disposition": "The sandbox masks its own reviewer-home subtree, not other runtimes; the selected tests do not directly demonstrate a concurrent read before cleanup."
+    },
+    {
+      "concern": "--grant-writable accepts Codex and refuses executor lists containing Muse.",
+      "bin": "supported",
+      "disposition": "resolve_granted_writable permits codex/claude entries and rejects any other listed executor; the selected tests do not directly exercise Muse refusal."
+    },
+    {
+      "concern": "The progress watch records a final observation without applying live stop actions.",
+      "bin": "supported",
+      "disposition": "observe_completion calls _poll and ignores its returned reason; it catches OSError while other errors propagate."
+    }
+  ],
+  "next_move": "Qualify the auth cleanup guarantee and review the debug planner consumer and behavior tests before accepting the changed claims.",
+  "non_claims": [
+    "No tests were executed; review was limited to the supplied semantic payload.",
+    "The transient cross-runtime read was assessed from sandbox mount construction, not demonstrated by a selected test.",
+    "The selected input does not establish the runtime retention policy or prove cleanup when unlink itself fails."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "ae9d5a4cb879a1171cf350c0fda1e65d3cd8f77ae9d7d84570da5949aad973df",
+  "reviewed_input_identity_sha256": "2c4f7ce66a561a3a02994c3ec13a989b05223cff97b153094bf6297466a3eaa7"
+}

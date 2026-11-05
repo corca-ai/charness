@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8160-claude-lane-followup11",
+      "scope": "Recheck R-002: the notes and docs now say other host Unix sockets stay reachable unless they sit under a masked path: /run/user/<uid>, a masked home directory, or /tmp outside the top-level directories (docs: temporary trees) that hold the lane paths.",
+      "packet_identity": "afa41b4d82eab3af526a8aa18ce0fe322701f65c5d0f414dfea00a63c396585b",
+      "parent_receipt_identity": "parent-39b285a3e952524a0766c198fb0d9977c1b12b6d87e12b79",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-11-04T23:06:08Z",
+      "history": [
+        {
+          "event_id": "a584377c80a344218eb99ecd86227a7f",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-11-04T23:03:59Z",
+          "attempt_id": "release-8160-claude-lane-followup11",
+          "scope": "Recheck R-002: the notes and docs now say other host Unix sockets stay reachable unless they sit under a masked path: /run/user/<uid>, a masked home directory, or /tmp outside the top-level directories (docs: temporary trees) that hold the lane paths.",
+          "packet_identity": "afa41b4d82eab3af526a8aa18ce0fe322701f65c5d0f414dfea00a63c396585b",
+          "parent_receipt_identity": "parent-39b285a3e952524a0766c198fb0d9977c1b12b6d87e12b79",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "e511ea54836d442ea9b4873242eddc1e",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-11-04T23:03:59Z",
+          "attempt_id": "release-8160-claude-lane-followup11",
+          "scope": "Recheck R-002: the notes and docs now say other host Unix sockets stay reachable unless they sit under a masked path: /run/user/<uid>, a masked home directory, or /tmp outside the top-level directories (docs: temporary trees) that hold the lane paths.",
+          "packet_identity": "afa41b4d82eab3af526a8aa18ce0fe322701f65c5d0f414dfea00a63c396585b",
+          "parent_receipt_identity": "parent-39b285a3e952524a0766c198fb0d9977c1b12b6d87e12b79",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "5e0196379e5443c88bf8fc3d2ffe76fb",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-11-04T23:06:08Z",
+          "attempt_id": "release-8160-claude-lane-followup11",
+          "scope": "Recheck R-002: the notes and docs now say other host Unix sockets stay reachable unless they sit under a masked path: /run/user/<uid>, a masked home directory, or /tmp outside the top-level directories (docs: temporary trees) that hold the lane paths.",
+          "packet_identity": "afa41b4d82eab3af526a8aa18ce0fe322701f65c5d0f414dfea00a63c396585b",
+          "parent_receipt_identity": "parent-39b285a3e952524a0766c198fb0d9977c1b12b6d87e12b79",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "7098e3700b69fcd7c70c84485e7aca5b23f32e1a46f1d4d9c18284a10083e43b"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "ad0dad8f087c67eb7a20d18456085e924fcda413b01046dbabbb5ec539fe3890",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "5e231b5470fd3d77db65e937ea605ce3b851391bd30a14d594a1dcd5b48fb813",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup11/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup11/receipt.json",
+      "producer_run_id": "run-release-8160-claude-lane-followup11",
+      "findings_identity": "7098e3700b69fcd7c70c84485e7aca5b23f32e1a46f1d4d9c18284a10083e43b"
+    }
+  ]
+}

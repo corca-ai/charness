@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8160-claude-lane-followup9",
+      "scope": "Recheck the second claims-round repairs: the notes now say only /run/docker.sock has a real-lane test and no test pins the other masked socket paths or the /run/user/<uid> mask; the docs name the five masked daemon socket paths; notes and docs say abstract-namespace Unix sockets stay reachable because the lane shares the host network namespace, DISPLAY and XAUTHORITY pass through when set, and the real home .Xauthority is not masked; test_task_run_cache_custody.py now skips only the sandboxed probe of the claude cases where bubblewrap is absent.",
+      "packet_identity": "5bc9807035bdccad20deab0ef121e2f631b559ab3e55f939de470bf48bb634c6",
+      "parent_receipt_identity": "parent-0e7f0a7afa4e2dca1749e115f62f1fcc17780180bf642adf",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-11-04T23:01:03Z",
+      "history": [
+        {
+          "event_id": "b54372cdcf8d4150b3cba46dc685eb1f",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-11-04T22:59:14Z",
+          "attempt_id": "release-8160-claude-lane-followup9",
+          "scope": "Recheck the second claims-round repairs: the notes now say only /run/docker.sock has a real-lane test and no test pins the other masked socket paths or the /run/user/<uid> mask; the docs name the five masked daemon socket paths; notes and docs say abstract-namespace Unix sockets stay reachable because the lane shares the host network namespace, DISPLAY and XAUTHORITY pass through when set, and the real home .Xauthority is not masked; test_task_run_cache_custody.py now skips only the sandboxed probe of the claude cases where bubblewrap is absent.",
+          "packet_identity": "5bc9807035bdccad20deab0ef121e2f631b559ab3e55f939de470bf48bb634c6",
+          "parent_receipt_identity": "parent-0e7f0a7afa4e2dca1749e115f62f1fcc17780180bf642adf",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "ddd435c76cfb44b09c40781d894b9531",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-11-04T22:59:14Z",
+          "attempt_id": "release-8160-claude-lane-followup9",
+          "scope": "Recheck the second claims-round repairs: the notes now say only /run/docker.sock has a real-lane test and no test pins the other masked socket paths or the /run/user/<uid> mask; the docs name the five masked daemon socket paths; notes and docs say abstract-namespace Unix sockets stay reachable because the lane shares the host network namespace, DISPLAY and XAUTHORITY pass through when set, and the real home .Xauthority is not masked; test_task_run_cache_custody.py now skips only the sandboxed probe of the claude cases where bubblewrap is absent.",
+          "packet_identity": "5bc9807035bdccad20deab0ef121e2f631b559ab3e55f939de470bf48bb634c6",
+          "parent_receipt_identity": "parent-0e7f0a7afa4e2dca1749e115f62f1fcc17780180bf642adf",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "78ea2b210e7f4fdc8760246c3ed471bf",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-11-04T23:01:03Z",
+          "attempt_id": "release-8160-claude-lane-followup9",
+          "scope": "Recheck the second claims-round repairs: the notes now say only /run/docker.sock has a real-lane test and no test pins the other masked socket paths or the /run/user/<uid> mask; the docs name the five masked daemon socket paths; notes and docs say abstract-namespace Unix sockets stay reachable because the lane shares the host network namespace, DISPLAY and XAUTHORITY pass through when set, and the real home .Xauthority is not masked; test_task_run_cache_custody.py now skips only the sandboxed probe of the claude cases where bubblewrap is absent.",
+          "packet_identity": "5bc9807035bdccad20deab0ef121e2f631b559ab3e55f939de470bf48bb634c6",
+          "parent_receipt_identity": "parent-0e7f0a7afa4e2dca1749e115f62f1fcc17780180bf642adf",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "63dc176f05d230f293dfc079a291e4acd5ffdb6b23b4237e562e47311cfc1be6"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "701047a56272d2deb41c91513d954bc4283357ce1082a9c91567c8b06756520c",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "342e658f694a497f6ad799f345f7b13406f70d1d20ae2596ee1a16a0a18e66e8",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup9/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup9/receipt.json",
+      "producer_run_id": "run-release-8160-claude-lane-followup9",
+      "findings_identity": "63dc176f05d230f293dfc079a291e4acd5ffdb6b23b4237e562e47311cfc1be6"
+    }
+  ]
+}

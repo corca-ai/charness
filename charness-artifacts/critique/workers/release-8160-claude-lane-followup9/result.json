@@ -1,0 +1,44 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Check the second claims-round repairs against the selected sandbox code and tests.",
+  "verdict": "pass",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R-001",
+      "severity": "low",
+      "summary": "The notes describe the unit-test fixture as a stand-in socket, but it is a regular file named daemon.sock.",
+      "evidence": [
+        "In test_sandbox_masks_docker_credentials_and_host_daemon_sockets, daemon.write_text(...) creates a regular file; the test checks that sandbox_prefix emits a --ro-bind for its path.",
+        "The test does not create or bind an AF_UNIX socket."
+      ],
+      "action": "Change the wording to “stand-in .sock path” or use an actual AF_UNIX socket fixture."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "The notes and docs list five daemon paths, while tests do not pin the other four paths or the /run/user/<uid> mask.",
+      "bin": "acknowledged test limitation",
+      "disposition": "The notes disclose this; the paths and user-directory mask match sandbox_prefix."
+    },
+    {
+      "concern": "Abstract-namespace sockets, DISPLAY, XAUTHORITY, and the real home .Xauthority lack dedicated coverage in the selected tests.",
+      "bin": "code-supported, not test-proven",
+      "disposition": "The claims match the selected code: bwrap does not unshare the network namespace, the environment setup preserves DISPLAY and XAUTHORITY, and .Xauthority is not among the masked paths. The text does not say these behaviors have dedicated tests."
+    },
+    {
+      "concern": "The bubblewrap guard could hide environment assertions in the Claude cache cases.",
+      "bin": "not a blocker",
+      "disposition": "The cache and Go-path assertions run before pytest.skip; only the sandboxed write/read probe is skipped when bubblewrap is absent."
+    }
+  ],
+  "next_move": "Optionally clarify “stand-in socket” as “stand-in .sock path”; no other correction is indicated by this bounded review.",
+  "non_claims": [
+    "This review assessed the identity-bound inline payload and did not execute tests or sandbox behavior.",
+    "Coverage statements are limited to the selected test files; release-note claims outside the requested task-run boundary were not assessed."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "5bc9807035bdccad20deab0ef121e2f631b559ab3e55f939de470bf48bb634c6",
+  "reviewed_input_identity_sha256": "701047a56272d2deb41c91513d954bc4283357ce1082a9c91567c8b06756520c"
+}

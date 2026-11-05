@@ -1,0 +1,75 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Recheck R-001: _run_brief_critique now runs private_review_environment inside
+  the same try block as the review, so the finally block deletes the copied auth.json
+  after a failed or partial copy as well as after a failed or finished review; a new
+  test interrupts the copy with an OSError after writing part of it and checks the
+  copy is gone and the review never ran.'
+attempt_id: release-8160-claude-lane-followup16
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 28bd71d1b0c0de37f6d68bcd857b096be0c82000dbaaa65af958b41a2c654f9c
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: charness-artifacts/critique/workers/release-8160-claude-lane-followup16/receipt.json
+ledger_path: charness-artifacts/critique/workers/release-8160-claude-lane-followup16/delivery.json
+producer_run_id: run-release-8160-claude-lane-followup16
+producer_binding:
+  output_file: charness-artifacts/critique/workers/release-8160-claude-lane-followup16/result.json
+  receipt_file: charness-artifacts/critique/workers/release-8160-claude-lane-followup16/receipt.json
+  producer_run_id: run-release-8160-claude-lane-followup16
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 1c06d8decc38414b564101d61070d035125a1a8c5920c56c33dfd8bf3a7547fc
+receipt_output_sha256: 1c06d8decc38414b564101d61070d035125a1a8c5920c56c33dfd8bf3a7547fc
+packet_identity: 0c52bf738f6f5a0e7e592f6c3392cb026ffc211dd95cf21ca739b80a7e8426e3
+reviewed_input_identity: d6490fa016818f72a2d94c6a577f5c81d1115a4bdf7f407066b5cacf82c0c191
+parent_receipt_identity: parent-99f538fd391ed316401dabcd0f456a4de5b9db5343205e4d
+provenance:
+  scope: 'Recheck R-001: _run_brief_critique now runs private_review_environment inside
+    the same try block as the review, so the finally block deletes the copied auth.json
+    after a failed or partial copy as well as after a failed or finished review; a
+    new test interrupts the copy with an OSError after writing part of it and checks
+    the copy is gone and the review never ran.'
+  packet_identity: 0c52bf738f6f5a0e7e592f6c3392cb026ffc211dd95cf21ca739b80a7e8426e3
+  reviewed_input_identity: d6490fa016818f72a2d94c6a577f5c81d1115a4bdf7f407066b5cacf82c0c191
+  parent_receipt_identity: parent-99f538fd391ed316401dabcd0f456a4de5b9db5343205e4d
+  expected_targets_sha256: null
+  attempt_id: release-8160-claude-lane-followup16
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 28bd71d1b0c0de37f6d68bcd857b096be0c82000dbaaa65af958b41a2c654f9c
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

@@ -1,0 +1,85 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Review the third claims-round repair. Code: task_run_brief_critique._run_brief_critique
+  now deletes the copied preflight auth.json (task_run_claude_review.discard_review_auth)
+  in a finally block when the Codex preflight review ends; tests check the copy exists
+  during the review, is gone afterwards and after a failed review, and that another
+  Claude lane sandbox cannot read a finished preflight copy under /tmp and /var/tmp
+  layouts. Notes and docs now disclose that while a preflight is running another Claude
+  lane can read its copy (#891), that with private Git storage live status counts
+  no lane commits until the import, that a Claude lane TMPDIR is <runtime>/claude/tmp,
+  that the progress watch records the final output, and that --grant-writable refuses
+  /, the home directory, the repo root and their ancestors.'
+attempt_id: release-8160-claude-lane-followup15
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 6c0387c461ec93f3ba3ab3e93ec704214b37446f762dc9e64b734ff1f61e346f
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-d30661615d9ec7a48584bf4975621bb3/receipt.json
+ledger_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-d30661615d9ec7a48584bf4975621bb3/delivery.json
+producer_run_id: run-release-8160-claude-lane-followup15
+producer_binding:
+  output_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-d30661615d9ec7a48584bf4975621bb3/result.json
+  receipt_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-d30661615d9ec7a48584bf4975621bb3/receipt.json
+  producer_run_id: run-release-8160-claude-lane-followup15
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: 9ac70505f364571eb2a02da56f1a94d35c6eb460882e41ed2d018f94d1ce898b
+receipt_output_sha256: 9ac70505f364571eb2a02da56f1a94d35c6eb460882e41ed2d018f94d1ce898b
+packet_identity: c19c32f86ba7d2027eea9433488d5986c1bbb94764cdbe7dbbc2e9d2cdf1f3db
+reviewed_input_identity: 0433c287f0940cf56d635a573a30c2752e35926c9f34c7b9c0bd65f2a0a320ab
+parent_receipt_identity: parent-f55018d57001dbaac51c51c920807d20218f958d9fc6a3ce
+provenance:
+  scope: 'Review the third claims-round repair. Code: task_run_brief_critique._run_brief_critique
+    now deletes the copied preflight auth.json (task_run_claude_review.discard_review_auth)
+    in a finally block when the Codex preflight review ends; tests check the copy
+    exists during the review, is gone afterwards and after a failed review, and that
+    another Claude lane sandbox cannot read a finished preflight copy under /tmp and
+    /var/tmp layouts. Notes and docs now disclose that while a preflight is running
+    another Claude lane can read its copy (#891), that with private Git storage live
+    status counts no lane commits until the import, that a Claude lane TMPDIR is <runtime>/claude/tmp,
+    that the progress watch records the final output, and that --grant-writable refuses
+    /, the home directory, the repo root and their ancestors.'
+  packet_identity: c19c32f86ba7d2027eea9433488d5986c1bbb94764cdbe7dbbc2e9d2cdf1f3db
+  reviewed_input_identity: 0433c287f0940cf56d635a573a30c2752e35926c9f34c7b9c0bd65f2a0a320ab
+  parent_receipt_identity: parent-f55018d57001dbaac51c51c920807d20218f958d9fc6a3ce
+  expected_targets_sha256: null
+  attempt_id: release-8160-claude-lane-followup15
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 6c0387c461ec93f3ba3ab3e93ec704214b37446f762dc9e64b734ff1f61e346f
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

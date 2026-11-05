@@ -1,0 +1,71 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Recheck R-001: the notes now say a unit test checks the masking step with
+  a stand-in file at a socket path, and no test pins the other masked paths or the
+  /run/user/<uid> mask.'
+attempt_id: release-8160-claude-lane-followup10
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 779e3e11563c57e2500c7e83f9d8414ed6902fa7156074be8a79028473f9fea2
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-4ec6f16c5ae4319509912e54e3c09c54/receipt.json
+ledger_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-4ec6f16c5ae4319509912e54e3c09c54/delivery.json
+producer_run_id: run-release-8160-claude-lane-followup10
+producer_binding:
+  output_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-4ec6f16c5ae4319509912e54e3c09c54/result.json
+  receipt_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-4ec6f16c5ae4319509912e54e3c09c54/receipt.json
+  producer_run_id: run-release-8160-claude-lane-followup10
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: a1eddc6a07a87641d39a83126efd26cf196ed9966aa37097f7a2b9410bb67ea1
+receipt_output_sha256: a1eddc6a07a87641d39a83126efd26cf196ed9966aa37097f7a2b9410bb67ea1
+packet_identity: 208892a664d408dd4c32c9d5944fb13cf87ed6d44ef046c4216b99c775217af2
+reviewed_input_identity: 2d85dd4ffece95532a13916a0b14676d8637b8504d1d1a346f6c64b4759636a5
+parent_receipt_identity: parent-27a86884ab224fdbb4aad72205c3b984dcd0f79f010b5f4d
+provenance:
+  scope: 'Recheck R-001: the notes now say a unit test checks the masking step with
+    a stand-in file at a socket path, and no test pins the other masked paths or the
+    /run/user/<uid> mask.'
+  packet_identity: 208892a664d408dd4c32c9d5944fb13cf87ed6d44ef046c4216b99c775217af2
+  reviewed_input_identity: 2d85dd4ffece95532a13916a0b14676d8637b8504d1d1a346f6c64b4759636a5
+  parent_receipt_identity: parent-27a86884ab224fdbb4aad72205c3b984dcd0f79f010b5f4d
+  expected_targets_sha256: null
+  attempt_id: release-8160-claude-lane-followup10
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 779e3e11563c57e2500c7e83f9d8414ed6902fa7156074be8a79028473f9fea2
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

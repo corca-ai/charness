@@ -1,0 +1,45 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Preflight auth-copy cleanup and claim accuracy",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R-001",
+      "severity": "high",
+      "summary": "The copied auth file can survive a failure during preflight environment setup.",
+      "evidence": [
+        "In `_run_brief_critique`, `private_review_environment(...)` runs before the `try/finally`; the `finally` only covers `_execute_codex` and later paths.",
+        "`private_review_environment` opens the destination auth file before `shutil.copyfileobj`; an I/O error during the copy can leave a partial or complete file behind without reaching `discard_review_auth`.",
+        "The failure test raises from the mocked `_execute_codex`, so it does not cover an exception during environment setup."
+      ],
+      "action": "Put private environment setup under the cleanup `try/finally` and add a setup-failure test that leaves a destination file before raising."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Auth deletion might break a normal or failed Codex preflight.",
+      "bin": "not-blocking",
+      "disposition": "The `finally` runs after `_execute_codex` returns or raises, and the tests assert the copy exists during review and is gone after success and an execution exception."
+    },
+    {
+      "concern": "Another Claude lane may read a finished preflight copy under `/tmp` or `/var/tmp`.",
+      "bin": "not-blocking",
+      "disposition": "After the tested success path the copy is deleted; the cross-lane probes fail to read its path in both layouts. The code and docs also disclose that another lane can read it while the preflight is running."
+    },
+    {
+      "concern": "Changed notes and docs overstate other listed behaviors.",
+      "bin": "not-blocking",
+      "disposition": "The private-Git status caveat, Claude TMPDIR location, final-output observation, and writable-grant exclusions match the supplied implementations."
+    }
+  ],
+  "next_move": "Close the environment-setup cleanup gap and review that path before accepting the claim that the auth copy is deleted on every preflight exit path.",
+  "non_claims": [
+    "I reviewed the supplied semantic payload; I did not execute tests or bubblewrap probes.",
+    "The selected cross-lane tests establish unreadability after completion in their layouts, not direct live cross-lane access during a running preflight."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "c19c32f86ba7d2027eea9433488d5986c1bbb94764cdbe7dbbc2e9d2cdf1f3db",
+  "reviewed_input_identity_sha256": "0433c287f0940cf56d635a573a30c2752e35926c9f34c7b9c0bd65f2a0a320ab"
+}

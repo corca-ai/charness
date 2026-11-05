@@ -1,0 +1,19 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Recheck R-001: auth-copy cleanup and claim accuracy",
+  "verdict": "pass",
+  "target_observations": null,
+  "findings": [],
+  "counterweight_triage": [
+    {
+      "concern": "R-001: setup failure during a partial auth copy could leave the file behind.",
+      "bin": "resolved",
+      "disposition": "Environment setup and review execution are both inside the try/finally. The added test raises after writing part of the copy, verifies the review did not run, and confirms the copy was removed."
+    }
+  ],
+  "next_move": "Accept R-001 as closed. The release notes and executor documentation say the copy is deleted when the preflight ends; that matches the cleanup path and the covered review-failure and partial-copy-failure cases.",
+  "non_claims": [
+    "This review assessed the supplied semantic payload and did not execute tests.",
+    "Cleanup depends on the unlink succeeding; the payload does not establish behavior if deletion itself fails or the process is terminated outside normal Python cleanup."
+  ]
+}

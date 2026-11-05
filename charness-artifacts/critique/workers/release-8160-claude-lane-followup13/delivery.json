@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8160-claude-lane-followup13",
+      "scope": "Recheck R-003: the docs now say masked workspace credential files read as empty for shell reads and file tools, and the file-tool rules also deny reading .env, .env.*, *.pem and *.key files. Also changed: the docs say the October pilot record predates the socket and added credential masks; the notes list a private /tmp among the writable paths.",
+      "packet_identity": "72bb0d757bea51da14a71dcf6b7fb63211f56654d25708f1f4f4f68c4dabb241",
+      "parent_receipt_identity": "parent-1fd8ab3f7f653990dfc613a90d77dad3d4309eb6fe636f05",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-11-04T23:12:12Z",
+      "history": [
+        {
+          "event_id": "b1e55040d70548389894b1d422584dc7",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-11-04T23:10:43Z",
+          "attempt_id": "release-8160-claude-lane-followup13",
+          "scope": "Recheck R-003: the docs now say masked workspace credential files read as empty for shell reads and file tools, and the file-tool rules also deny reading .env, .env.*, *.pem and *.key files. Also changed: the docs say the October pilot record predates the socket and added credential masks; the notes list a private /tmp among the writable paths.",
+          "packet_identity": "72bb0d757bea51da14a71dcf6b7fb63211f56654d25708f1f4f4f68c4dabb241",
+          "parent_receipt_identity": "parent-1fd8ab3f7f653990dfc613a90d77dad3d4309eb6fe636f05",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "5ab84463ff7c4a1a92ee4092bd4777db",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-11-04T23:10:43Z",
+          "attempt_id": "release-8160-claude-lane-followup13",
+          "scope": "Recheck R-003: the docs now say masked workspace credential files read as empty for shell reads and file tools, and the file-tool rules also deny reading .env, .env.*, *.pem and *.key files. Also changed: the docs say the October pilot record predates the socket and added credential masks; the notes list a private /tmp among the writable paths.",
+          "packet_identity": "72bb0d757bea51da14a71dcf6b7fb63211f56654d25708f1f4f4f68c4dabb241",
+          "parent_receipt_identity": "parent-1fd8ab3f7f653990dfc613a90d77dad3d4309eb6fe636f05",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "bc57fdde79b747ccbadfe98d7486c5fd",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-11-04T23:12:12Z",
+          "attempt_id": "release-8160-claude-lane-followup13",
+          "scope": "Recheck R-003: the docs now say masked workspace credential files read as empty for shell reads and file tools, and the file-tool rules also deny reading .env, .env.*, *.pem and *.key files. Also changed: the docs say the October pilot record predates the socket and added credential masks; the notes list a private /tmp among the writable paths.",
+          "packet_identity": "72bb0d757bea51da14a71dcf6b7fb63211f56654d25708f1f4f4f68c4dabb241",
+          "parent_receipt_identity": "parent-1fd8ab3f7f653990dfc613a90d77dad3d4309eb6fe636f05",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "fc699bbc826dfd474fb5ef4f73ea886e79c1f7ff6d922261fb61f91b16a9e335"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "444341c2e503ef5586f858cc27b1e3ddaf0da68384a1b78f0e030bfe2f609bbf",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "ca51c04be0d07f6a7b3e8b8b70f994a87b5c62dcdb89dc397b5233c2588b921c",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup13/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup13/receipt.json",
+      "producer_run_id": "run-release-8160-claude-lane-followup13",
+      "findings_identity": "fc699bbc826dfd474fb5ef4f73ea886e79c1f7ff6d922261fb61f91b16a9e335"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Recheck R-001 and inspect related claims in the notes and docs against the selected sandbox code and tests.",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R-002",
+      "severity": "low",
+      "summary": "The notes and docs give an incomplete list of exceptions to other host Unix sockets staying reachable.",
+      "evidence": [
+        "Both the notes and docs say such sockets stay reachable unless they are under /run/user/<uid> or under /tmp outside restored temporary trees.",
+        "sandbox_prefix also masks existing home directories such as ~/.ssh and ~/.config with read-only tmpfs mounts, so a host Unix socket under one of those directories would not stay reachable."
+      ],
+      "action": "Qualify both reachability claims to include sockets under other masked home paths."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "R-001: the unit-test fixture was described as a stand-in socket.",
+      "bin": "resolved",
+      "disposition": "The notes now accurately call it a stand-in file at a socket path; the test creates a regular file and checks the emitted --ro-bind. The notes also correctly say no test pins the other daemon paths or /run/user/<uid> mask."
+    },
+    {
+      "concern": "Other host Unix sockets are described as reachable except under /run/user/<uid> and certain /tmp paths.",
+      "bin": "confirmed issue",
+      "disposition": "The code masks additional home paths, including ~/.ssh and ~/.config."
+    }
+  ],
+  "next_move": "Revise the notes and docs to include other masked home paths among the exceptions to socket reachability.",
+  "non_claims": [
+    "This review assessed the supplied identity-bound content and did not execute tests or sandbox behavior.",
+    "Coverage observations are limited to the selected files."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "208892a664d408dd4c32c9d5944fb13cf87ed6d44ef046c4216b99c775217af2",
+  "reviewed_input_identity_sha256": "2d85dd4ffece95532a13916a0b14676d8637b8504d1d1a346f6c64b4759636a5"
+}

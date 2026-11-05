@@ -1,0 +1,68 @@
+{
+  "schema_version": "charness.reviewer_delivery.v1",
+  "approval_rule": "only findings-received with matching provenance is approval-eligible",
+  "attempts": [
+    {
+      "attempt_id": "release-8160-claude-lane-followup15",
+      "scope": "Review the third claims-round repair. Code: task_run_brief_critique._run_brief_critique now deletes the copied preflight auth.json (task_run_claude_review.discard_review_auth) in a finally block when the Codex preflight review ends; tests check the copy exists during the review, is gone afterwards and after a failed review, and that another Claude lane sandbox cannot read a finished preflight copy under /tmp and /var/tmp layouts. Notes and docs now disclose that while a preflight is running another Claude lane can read its copy (#891), that with private Git storage live status counts no lane commits until the import, that a Claude lane TMPDIR is <runtime>/claude/tmp, that the progress watch records the final output, and that --grant-writable refuses /, the home directory, the repo root and their ancestors.",
+      "packet_identity": "c19c32f86ba7d2027eea9433488d5986c1bbb94764cdbe7dbbc2e9d2cdf1f3db",
+      "parent_receipt_identity": "parent-f55018d57001dbaac51c51c920807d20218f958d9fc6a3ce",
+      "boundary_mode": "read-only-worker",
+      "state": "findings-received",
+      "observed_signal": "findings received in parent context",
+      "terminal": true,
+      "recorded_at": "2026-11-05T00:04:53Z",
+      "history": [
+        {
+          "event_id": "63615617d0da42e1af5ce9a96d5c0cb6",
+          "state": "spawn-accepted",
+          "signal": "spawn accepted; parent delivery not yet proven",
+          "terminal": false,
+          "recorded_at": "2026-11-05T00:02:47Z",
+          "attempt_id": "release-8160-claude-lane-followup15",
+          "scope": "Review the third claims-round repair. Code: task_run_brief_critique._run_brief_critique now deletes the copied preflight auth.json (task_run_claude_review.discard_review_auth) in a finally block when the Codex preflight review ends; tests check the copy exists during the review, is gone afterwards and after a failed review, and that another Claude lane sandbox cannot read a finished preflight copy under /tmp and /var/tmp layouts. Notes and docs now disclose that while a preflight is running another Claude lane can read its copy (#891), that with private Git storage live status counts no lane commits until the import, that a Claude lane TMPDIR is <runtime>/claude/tmp, that the progress watch records the final output, and that --grant-writable refuses /, the home directory, the repo root and their ancestors.",
+          "packet_identity": "c19c32f86ba7d2027eea9433488d5986c1bbb94764cdbe7dbbc2e9d2cdf1f3db",
+          "parent_receipt_identity": "parent-f55018d57001dbaac51c51c920807d20218f958d9fc6a3ce",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "0cfea9df3fd94c2b8b384e62682e5716",
+          "state": "running",
+          "signal": "reviewer worker process launched",
+          "terminal": false,
+          "recorded_at": "2026-11-05T00:02:47Z",
+          "attempt_id": "release-8160-claude-lane-followup15",
+          "scope": "Review the third claims-round repair. Code: task_run_brief_critique._run_brief_critique now deletes the copied preflight auth.json (task_run_claude_review.discard_review_auth) in a finally block when the Codex preflight review ends; tests check the copy exists during the review, is gone afterwards and after a failed review, and that another Claude lane sandbox cannot read a finished preflight copy under /tmp and /var/tmp layouts. Notes and docs now disclose that while a preflight is running another Claude lane can read its copy (#891), that with private Git storage live status counts no lane commits until the import, that a Claude lane TMPDIR is <runtime>/claude/tmp, that the progress watch records the final output, and that --grant-writable refuses /, the home directory, the repo root and their ancestors.",
+          "packet_identity": "c19c32f86ba7d2027eea9433488d5986c1bbb94764cdbe7dbbc2e9d2cdf1f3db",
+          "parent_receipt_identity": "parent-f55018d57001dbaac51c51c920807d20218f958d9fc6a3ce",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f"
+        },
+        {
+          "event_id": "8269302fcaeb4855a5ce6380e59f1577",
+          "state": "findings-received",
+          "signal": "findings received in parent context",
+          "terminal": true,
+          "recorded_at": "2026-11-05T00:04:53Z",
+          "attempt_id": "release-8160-claude-lane-followup15",
+          "scope": "Review the third claims-round repair. Code: task_run_brief_critique._run_brief_critique now deletes the copied preflight auth.json (task_run_claude_review.discard_review_auth) in a finally block when the Codex preflight review ends; tests check the copy exists during the review, is gone afterwards and after a failed review, and that another Claude lane sandbox cannot read a finished preflight copy under /tmp and /var/tmp layouts. Notes and docs now disclose that while a preflight is running another Claude lane can read its copy (#891), that with private Git storage live status counts no lane commits until the import, that a Claude lane TMPDIR is <runtime>/claude/tmp, that the progress watch records the final output, and that --grant-writable refuses /, the home directory, the repo root and their ancestors.",
+          "packet_identity": "c19c32f86ba7d2027eea9433488d5986c1bbb94764cdbe7dbbc2e9d2cdf1f3db",
+          "parent_receipt_identity": "parent-f55018d57001dbaac51c51c920807d20218f958d9fc6a3ce",
+          "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+          "findings_identity": "9ac70505f364571eb2a02da56f1a94d35c6eb460882e41ed2d018f94d1ce898b"
+        }
+      ],
+      "observations": [],
+      "retry_count": 0,
+      "reviewed_input_identity": "0433c287f0940cf56d635a573a30c2752e35926c9f34c7b9c0bd65f2a0a320ab",
+      "execution_mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "prompt_sha256": "6c0387c461ec93f3ba3ab3e93ec704214b37446f762dc9e64b734ff1f61e346f",
+      "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+      "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+      "output_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup15/result.json",
+      "receipt_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup15/receipt.json",
+      "producer_run_id": "run-release-8160-claude-lane-followup15",
+      "findings_identity": "9ac70505f364571eb2a02da56f1a94d35c6eb460882e41ed2d018f94d1ce898b"
+    }
+  ]
+}

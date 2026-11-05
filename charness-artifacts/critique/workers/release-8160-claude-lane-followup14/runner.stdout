@@ -1,0 +1,73 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Recheck R-003: the docs now separate the outcomes: credential-shaped workspace
+  files found when the sandbox starts are masked, so a shell read sees an empty file;
+  the file-tool rules deny reading .env, .env.*, *.pem and *.key files, and file tools
+  see the other masked names as empty files.'
+attempt_id: release-8160-claude-lane-followup14
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 8b836086170ae24ab2f033333589bd7d45de512d5c3c4c1f00e5e8492b29c607
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-9d89fc99ed52a39d7fa67518cca762fa/receipt.json
+ledger_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-9d89fc99ed52a39d7fa67518cca762fa/delivery.json
+producer_run_id: run-release-8160-claude-lane-followup14
+producer_binding:
+  output_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-9d89fc99ed52a39d7fa67518cca762fa/result.json
+  receipt_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-9d89fc99ed52a39d7fa67518cca762fa/receipt.json
+  producer_run_id: run-release-8160-claude-lane-followup14
+delivery_state: findings-received
+approval_eligible: true
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: pass
+receipt_provenance_ok: true
+findings_identity: 3ce3045ef252f59b5a07ddfce7a4d6497a352d91175be78c45a0a39abea02352
+receipt_output_sha256: 3ce3045ef252f59b5a07ddfce7a4d6497a352d91175be78c45a0a39abea02352
+packet_identity: 6b51a9a5169d62501b5ceaa131230a03ea00ec49443d67e9b8866e735734592f
+reviewed_input_identity: 053e999284bc9d024c06a5f31423b2606b53c7e5347ea09a2d550884989e0f84
+parent_receipt_identity: parent-dc514746645792cd3e61e640ffde6542493dbbc23fe6c213
+provenance:
+  scope: 'Recheck R-003: the docs now separate the outcomes: credential-shaped workspace
+    files found when the sandbox starts are masked, so a shell read sees an empty
+    file; the file-tool rules deny reading .env, .env.*, *.pem and *.key files, and
+    file tools see the other masked names as empty files.'
+  packet_identity: 6b51a9a5169d62501b5ceaa131230a03ea00ec49443d67e9b8866e735734592f
+  reviewed_input_identity: 053e999284bc9d024c06a5f31423b2606b53c7e5347ea09a2d550884989e0f84
+  parent_receipt_identity: parent-dc514746645792cd3e61e640ffde6542493dbbc23fe6c213
+  expected_targets_sha256: null
+  attempt_id: release-8160-claude-lane-followup14
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 8b836086170ae24ab2f033333589bd7d45de512d5c3c4c1f00e5e8492b29c607
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: typed worker receipt and matching delivery ledger permit approval
+partial_output_reason: worker did not preserve partial output bytes

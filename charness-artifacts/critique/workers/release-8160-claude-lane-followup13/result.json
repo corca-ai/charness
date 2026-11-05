@@ -1,0 +1,46 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Recheck R-003 against credential masking, file-tool rules, and changed claims",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R-003",
+      "severity": "low",
+      "summary": "The revised sentence still conflates the OS-level empty-file mask with the file-tool result for denied patterns.",
+      "evidence": [
+        "docs/claude-task-executor.md says credential-shaped workspace files are masked “so shell reads and file tools see an empty file,” then says file-tool rules deny `.env`, `.env.*`, `*.pem` and `*.key` files.",
+        "In `_settings`, `Read(worktree/**)` is allowed while those four patterns are denied; a file tool matching a deny rule is denied rather than reading the masked file as empty.",
+        "`_credential_files` discovers the named files and `sandbox_prefix` bind-mounts `empty-credential` over them. The selected tests check a shell read of `.env`, but do not assert the file-tool deny rules or their outcomes."
+      ],
+      "action": "State that OS masking makes shell reads return empty content; separately state that file tools deny the four patterns and otherwise encounter the empty masked content when permitted. Add focused assertions for the deny patterns if the doc intends to claim tested file-tool behavior."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "The masks cover the credential filenames and extensions discovered by `_credential_files`, including names without matching file-tool deny rules.",
+      "bin": "supported by source",
+      "disposition": "No separate finding: `sandbox_prefix` masks every discovered path, while the docs limit the file-tool denial claim to the four configured patterns."
+    },
+    {
+      "concern": "The release notes list a private `/tmp` among writable paths.",
+      "bin": "supported by source and selected test",
+      "disposition": "No finding: `sandbox_prefix` creates a private tmpfs at `/tmp`; the selected real-sandbox test writes there and checks the host path remains absent."
+    },
+    {
+      "concern": "The docs say the October pilot record predates the socket and credential masks.",
+      "bin": "insufficient evidence",
+      "disposition": "The cited pilot record and history showing when masks were added are not in the selected input; the current source establishes the masks exist, not their chronology."
+    }
+  ],
+  "next_move": "Clarify the distinction between OS masking and file-tool denial, then add or identify evidence for the file-tool behavior and the pilot chronology claim.",
+  "non_claims": [
+    "Static review of the supplied semantic input only; no tests or sandbox behavior were executed.",
+    "The selected paths do not include CI configuration, so the release-note statement that CI does not run the real-sandbox tests was not independently checked.",
+    "The October pilot chronology could not be independently verified because the referenced pilot record and change history were not selected."
+  ],
+  "capability_non_claims": [],
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "packet_sha256": "72bb0d757bea51da14a71dcf6b7fb63211f56654d25708f1f4f4f68c4dabb241",
+  "reviewed_input_identity_sha256": "444341c2e503ef5586f858cc27b1e3ddaf0da68384a1b78f0e030bfe2f609bbf"
+}

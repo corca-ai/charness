@@ -1,0 +1,82 @@
+{
+  "attempt_id": "release-8160-claude-lane-followup10",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup10/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-11-04T23:03:08Z",
+  "model_application_state": "unverified-by-provider",
+  "output_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup10/result.json",
+  "output_fresh": true,
+  "output_sha256": "a1eddc6a07a87641d39a83126efd26cf196ed9966aa37097f7a2b9410bb67ea1",
+  "output_size": 2209,
+  "packet_identity": "208892a664d408dd4c32c9d5944fb13cf87ed6d44ef046c4216b99c775217af2",
+  "parent_receipt_identity": "parent-27a86884ab224fdbb4aad72205c3b984dcd0f79f010b5f4d",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup10/review-prompt.md",
+  "prompt_sha256": "779e3e11563c57e2500c7e83f9d8414ed6902fa7156074be8a79028473f9fea2",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "requested_model": "gpt-6-luna",
+  "requested_reasoning_effort": "xhigh",
+  "reviewed_input_identity": "2d85dd4ffece95532a13916a0b14676d8637b8504d1d1a346f6c64b4759636a5",
+  "reviewer_tier": "high-leverage",
+  "run_id": "run-release-8160-claude-lane-followup10",
+  "schema_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup10/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "Recheck R-001: the notes now say a unit test checks the masking step with a stand-in file at a socket path, and no test pins the other masked paths or the /run/user/<uid> mask.",
+  "started_at": "2026-11-04T23:01:56Z",
+  "status": "succeeded",
+  "stderr_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup10/backend.stderr",
+  "stdout_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup10/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "unsupported_reviewer_fields": [
+    "service_tier=priority",
+    "fork_turns=none"
+  ],
+  "workspace": "/home/hwidong/codes/charness"
+}

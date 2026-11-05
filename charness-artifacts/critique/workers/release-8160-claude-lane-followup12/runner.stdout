@@ -1,0 +1,73 @@
+schema_version: charness.reviewer_worker_report.v1
+execution_mode: file-backed-worker
+backend: codex_exec
+reviewer_tier: high-leverage
+requested_model: gpt-6-luna
+requested_reasoning_effort: xhigh
+unsupported_reviewer_fields:
+- service_tier=priority
+- fork_turns=none
+model_application_state: unverified-by-provider
+capability_status: ready
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_collection_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+capability_non_claims: []
+capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+scope: 'Recheck R-002: the notes and docs now state the rule generally: other host
+  Unix sockets stay reachable unless they sit at or under a path the sandbox masks,
+  with /run/user/<uid>, a masked home path and /tmp outside the lane trees given as
+  examples (such as), not as a complete list.'
+attempt_id: release-8160-claude-lane-followup12
+boundary_mode: read-only-worker
+boundary_fingerprint: null
+prompt_sha256: 080f8928a55a6426031ebfc7004bf398ffb8f382821aa4cc18b6638ea4d5fb46
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+receipt_schema_version: charness.reviewer_worker.v1
+receipt_status: succeeded
+receipt_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-a9a031bd3c87284d05fbf44edbe883c9/receipt.json
+ledger_path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-a9a031bd3c87284d05fbf44edbe883c9/delivery.json
+producer_run_id: run-release-8160-claude-lane-followup12
+producer_binding:
+  output_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-a9a031bd3c87284d05fbf44edbe883c9/result.json
+  receipt_file: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-a9a031bd3c87284d05fbf44edbe883c9/receipt.json
+  producer_run_id: run-release-8160-claude-lane-followup12
+delivery_state: findings-received
+approval_eligible: false
+provenance_ok: true
+receipt_ok: true
+ledger_ok: true
+result_schema_ok: true
+coverage_ok: null
+expected_targets: null
+expected_targets_sha256: null
+collection_ready: true
+partial_output: null
+partial_output_ok: false
+review_verdict: block
+receipt_provenance_ok: true
+findings_identity: 0328bff54542d02c2d9a805ed67296da98b08e0196f1fc6de65760e90281b187
+receipt_output_sha256: 0328bff54542d02c2d9a805ed67296da98b08e0196f1fc6de65760e90281b187
+packet_identity: 93ae99fc67f6fa7ea023a2b09a3f098128d972ce2db533d3ce197ae8a4b33e7c
+reviewed_input_identity: 7ddc032cf471747cbea5632484c88ffe4233f818106cc63d2d130727f476c4cc
+parent_receipt_identity: parent-a75007c9d92b297e245e3e014d413bbe27c13a09d0f4a5d1
+provenance:
+  scope: 'Recheck R-002: the notes and docs now state the rule generally: other host
+    Unix sockets stay reachable unless they sit at or under a path the sandbox masks,
+    with /run/user/<uid>, a masked home path and /tmp outside the lane trees given
+    as examples (such as), not as a complete list.'
+  packet_identity: 93ae99fc67f6fa7ea023a2b09a3f098128d972ce2db533d3ce197ae8a4b33e7c
+  reviewed_input_identity: 7ddc032cf471747cbea5632484c88ffe4233f818106cc63d2d130727f476c4cc
+  parent_receipt_identity: parent-a75007c9d92b297e245e3e014d413bbe27c13a09d0f4a5d1
+  expected_targets_sha256: null
+  attempt_id: release-8160-claude-lane-followup12
+  boundary_mode: read-only-worker
+  boundary_fingerprint: null
+  execution_mode: file-backed-worker
+  backend: codex_exec
+  prompt_sha256: 080f8928a55a6426031ebfc7004bf398ffb8f382821aa4cc18b6638ea4d5fb46
+  schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+  capability_launch_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+  capability_non_claims_sha256: 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+reason: 'typed reviewer verdict is not pass: ''block'''
+partial_output_reason: worker did not preserve partial output bytes

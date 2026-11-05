@@ -1,0 +1,82 @@
+{
+  "attempt_id": "release-8160-claude-lane-followup14",
+  "backend": "codex_exec",
+  "boundary_fingerprint": null,
+  "boundary_mode": "read-only-worker",
+  "capability_collection_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup14/capability.json",
+  "capability_launch_envelope_sha256": "28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f",
+  "capability_non_claims": [],
+  "capability_non_claims_provenance": "runner-joined-from-launch-envelope",
+  "capability_non_claims_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "capability_status": "ready",
+  "effective_capabilities": {
+    "configuration_identity": "charness-run-review-v1",
+    "external_effects": {
+      "observation": "host",
+      "state": "denied"
+    },
+    "external_reads": {
+      "entries": [],
+      "observation": "host",
+      "state": "unproved"
+    },
+    "filesystem": {
+      "observation": "host",
+      "write": "denied"
+    },
+    "host_selection_source": "charness-derived-read-only-default",
+    "sandbox": {
+      "label": "read-only",
+      "source": "charness-derived"
+    }
+  },
+  "execution_mode": "file-backed-worker",
+  "exit_code": 0,
+  "finished_at": "2026-11-04T23:14:53Z",
+  "model_application_state": "unverified-by-provider",
+  "output_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup14/result.json",
+  "output_fresh": true,
+  "output_sha256": "3ce3045ef252f59b5a07ddfce7a4d6497a352d91175be78c45a0a39abea02352",
+  "output_size": 1766,
+  "packet_identity": "6b51a9a5169d62501b5ceaa131230a03ea00ec49443d67e9b8866e735734592f",
+  "parent_receipt_identity": "parent-dc514746645792cd3e61e640ffde6542493dbbc23fe6c213",
+  "preflight": [],
+  "prompt_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup14/review-prompt.md",
+  "prompt_sha256": "8b836086170ae24ab2f033333589bd7d45de512d5c3c4c1f00e5e8492b29c607",
+  "requested_capabilities": {
+    "external_effects": {
+      "entries": [],
+      "policy": "deny-all"
+    },
+    "external_reads": [],
+    "filesystem": {
+      "read_roots": [
+        "/home/hwidong/codes/charness"
+      ],
+      "write_policy": "deny-all",
+      "write_roots": []
+    }
+  },
+  "requested_model": "gpt-6-luna",
+  "requested_reasoning_effort": "xhigh",
+  "reviewed_input_identity": "053e999284bc9d024c06a5f31423b2606b53c7e5347ea09a2d550884989e0f84",
+  "reviewer_tier": "high-leverage",
+  "run_id": "run-release-8160-claude-lane-followup14",
+  "schema_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup14/bounded-review-result.schema.json",
+  "schema_sha256": "67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304",
+  "schema_version": "charness.reviewer_worker.v1",
+  "scope": "Recheck R-003: the docs now separate the outcomes: credential-shaped workspace files found when the sandbox starts are masked, so a shell read sees an empty file; the file-tool rules deny reading .env, .env.*, *.pem and *.key files, and file tools see the other masked names as empty files.",
+  "started_at": "2026-11-04T23:12:51Z",
+  "status": "succeeded",
+  "stderr_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup14/backend.stderr",
+  "stdout_file": "charness-artifacts/critique/workers/release-8160-claude-lane-followup14/backend.stdout",
+  "terminal": true,
+  "timeout_seconds": 900.0,
+  "unsupported_reviewer_fields": [
+    "service_tier=priority",
+    "fork_turns=none"
+  ],
+  "workspace": "/home/hwidong/codes/charness"
+}

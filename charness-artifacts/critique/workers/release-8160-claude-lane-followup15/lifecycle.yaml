@@ -1,0 +1,313 @@
+schema_version: charness.reviewer_lifecycle.v1
+status: runner-completed
+execution_state: terminal
+lifecycle_state: terminal
+reviewer_started: true
+delivery_state: findings-received
+verdict_state: block
+review_verdict: block
+classification: unclassified
+approval_eligible: false
+output:
+  state: terminal
+  approval_eligible: false
+  schema_version: charness.reviewer_worker_report.v1
+  findings_identity: 9ac70505f364571eb2a02da56f1a94d35c6eb460882e41ed2d018f94d1ce898b
+  partial_artifacts:
+  - reason: no identity-matching bounded-review object was found in the bounded log
+      windows
+    scan_limit_bytes: 67108864
+    sources:
+    - bytes: 5262
+      key: runner.stdout
+      path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-d30661615d9ec7a48584bf4975621bb3/runner.stdout
+      scanned_bytes: 5262
+      windowed: false
+    - bytes: 953
+      key: runner.stderr
+      path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-d30661615d9ec7a48584bf4975621bb3/runner.stderr
+      scanned_bytes: 953
+      windowed: false
+    - bytes: 2235
+      key: backend.stdout
+      path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-d30661615d9ec7a48584bf4975621bb3/backend.stdout
+      scanned_bytes: 2235
+      windowed: false
+    - bytes: 243570
+      key: backend.stderr
+      path: /home/hwidong/.cache/tmp/charness/runtime/811b9f8f8a808bfa/scratch/critique-review/review-d30661615d9ec7a48584bf4975621bb3/backend.stderr
+      scanned_bytes: 243570
+      windowed: false
+    status: unavailable
+output_state: terminal
+failure_identity: f20453d0fc3f630569f4514736a52437b7cc4fb63cd75badefa28c2dcf77e89c
+next_move: inspect the delivered findings; this is a reviewer block, not a runner
+  failure
+runner_returncode: 1
+runner_status: runner-completed
+boundary_mode: read-only-worker
+boundary_ok: true
+boundary_reason: null
+paths:
+  packet: charness-artifacts/critique/release-8160-claude-lane-followup15-packet.json
+  schema: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/bounded-review-result.schema.json
+  capability: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/capability.json
+  prompt: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/review-prompt.md
+  plan: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/run-plan.json
+  ledger: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/delivery.json
+  output: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/result.json
+  receipt: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/receipt.json
+  report: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/worker-report.yaml
+  runner_stdout: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/runner.stdout
+  runner_stderr: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/runner.stderr
+  backend_stdout: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/backend.stdout
+  backend_stderr: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/backend.stderr
+  summary: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/lifecycle.yaml
+  semantic-input/0000-content.bin: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0000-content.bin
+  semantic-input/0001-content.bin: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0001-content.bin
+  semantic-input/0002-content.bin: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0002-content.bin
+  semantic-input/0003-content.bin: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0003-content.bin
+  semantic-input/0004-content.bin: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0004-content.bin
+  semantic-input/0005-content.bin: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0005-content.bin
+  semantic-input/0006-content.bin: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0006-content.bin
+  semantic-input/0007-content.bin: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0007-content.bin
+  semantic-input/0008-content.bin: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0008-content.bin
+  semantic-input/0009-content.bin: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0009-content.bin
+  semantic-input/0010-content.bin: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0010-content.bin
+  semantic-input/0011-content.bin: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0011-content.bin
+  semantic-input/0012-content.bin: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0012-content.bin
+  semantic-input/0013-content.bin: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0013-content.bin
+  semantic-input/0014-content.bin: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0014-content.bin
+  semantic-input/0015-content.bin: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0015-content.bin
+  semantic-input/manifest.json: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/manifest.json
+  review-prompt.md: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/review-prompt.md
+  run-plan.json: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/run-plan.json
+  bounded-review-result.schema.json: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/bounded-review-result.schema.json
+  capability.json: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/capability.json
+  receipt.json: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/receipt.json
+  delivery.json: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/delivery.json
+  result.json: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/result.json
+  runner.stdout: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/runner.stdout
+  runner.stderr: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/runner.stderr
+  backend.stdout: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/backend.stdout
+  backend.stderr: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/backend.stderr
+  worker-report.yaml: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/worker-report.yaml
+  attempt-manifest.json: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/attempt-manifest.json
+  durable_report: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/worker-report.yaml
+identities:
+  attempt_id: release-8160-claude-lane-followup15
+  scope: 'Review the third claims-round repair. Code: task_run_brief_critique._run_brief_critique
+    now deletes the copied preflight auth.json (task_run_claude_review.discard_review_auth)
+    in a finally block when the Codex preflight review ends; tests check the copy
+    exists during the review, is gone afterwards and after a failed review, and that
+    another Claude lane sandbox cannot read a finished preflight copy under /tmp and
+    /var/tmp layouts. Notes and docs now disclose that while a preflight is running
+    another Claude lane can read its copy (#891), that with private Git storage live
+    status counts no lane commits until the import, that a Claude lane TMPDIR is <runtime>/claude/tmp,
+    that the progress watch records the final output, and that --grant-writable refuses
+    /, the home directory, the repo root and their ancestors.'
+  packet_identity: c19c32f86ba7d2027eea9433488d5986c1bbb94764cdbe7dbbc2e9d2cdf1f3db
+  reviewed_input_identity: 0433c287f0940cf56d635a573a30c2752e35926c9f34c7b9c0bd65f2a0a320ab
+  parent_receipt_identity: parent-f55018d57001dbaac51c51c920807d20218f958d9fc6a3ce
+  findings_identity: 9ac70505f364571eb2a02da56f1a94d35c6eb460882e41ed2d018f94d1ce898b
+ok: true
+carrier_ok: true
+packet_verification:
+  ok: true
+  status: current
+  reason: current
+  reason_code: current
+  expected_kind: charness.critique_prepare_packet
+  packet_path: charness-artifacts/critique/release-8160-claude-lane-followup15-packet.json
+  packet_sha256: c19c32f86ba7d2027eea9433488d5986c1bbb94764cdbe7dbbc2e9d2cdf1f3db
+  identity_sha256: 0433c287f0940cf56d635a573a30c2752e35926c9f34c7b9c0bd65f2a0a320ab
+capability_envelope_sha256: 28cb0f1d3d601800661d75b180c688ec47fe1f164ccfd593c22bae8fd3d2715f
+schema_sha256: 67288fc99eab9333366dfd0e07094b5b9dfec0f91f95b4e4cdc8a508a41c0304
+backend: codex_exec
+timeout_seconds: 900
+scope: 'Review the third claims-round repair. Code: task_run_brief_critique._run_brief_critique
+  now deletes the copied preflight auth.json (task_run_claude_review.discard_review_auth)
+  in a finally block when the Codex preflight review ends; tests check the copy exists
+  during the review, is gone afterwards and after a failed review, and that another
+  Claude lane sandbox cannot read a finished preflight copy under /tmp and /var/tmp
+  layouts. Notes and docs now disclose that while a preflight is running another Claude
+  lane can read its copy (#891), that with private Git storage live status counts
+  no lane commits until the import, that a Claude lane TMPDIR is <runtime>/claude/tmp,
+  that the progress watch records the final output, and that --grant-writable refuses
+  /, the home directory, the repo root and their ancestors.'
+lens: Does the fix delete the copy on every exit path without breaking the preflight;
+  can any Claude lane still read a finished preflight copy; is any changed sentence
+  in the notes and docs claiming more or less than the code and tests do
+parent_receipt_identity: parent-f55018d57001dbaac51c51c920807d20218f958d9fc6a3ce
+semantic_input:
+  entries:
+  - path: charness-artifacts/release/2026-11-05-v8.16.0-notes.md
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0000-content.bin
+    content_sha256: 059f6668dac833420fed1fb5b31d65702722aeb0a7a5e9644db6be4558e11545
+    carrier_sha256: 0441005606461c0bae49fb5a4816e27afa95cc51c877727ca1e146dbb5a8fa25
+    source: working-tree:charness-artifacts/release/2026-11-05-v8.16.0-notes.md
+    size_bytes: 10644
+    prompt_encoding: utf-8
+  - path: docs/claude-task-executor.md
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0001-content.bin
+    content_sha256: 9f803392fe91ed00386fac323b5ad627c3db3b9b2a7380d6a47493007956a0cd
+    carrier_sha256: e4c01d09d509a4e0616d267e4544f729c3935751f383c61b093a44211edbfbb9
+    source: working-tree:docs/claude-task-executor.md
+    size_bytes: 6260
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_brief_critique.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0002-content.bin
+    content_sha256: fa2a30ac39b9a00b9c38973de1a63d7eab508bb22768976eb3edea4be10fda5f
+    carrier_sha256: 9abb48e50f4e1020968af83c0a65ce6a692fd4e6fdcbdd2cba2ebe781cf83438
+    source: working-tree:scripts/task_run/task_run_brief_critique.py
+    size_bytes: 6117
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_claude_auth.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0003-content.bin
+    content_sha256: f9c4a4c45c2308ad96876bdbb116bbb3fd5c7c66639a03a3526e1d4fdae7bbc4
+    carrier_sha256: 7578291d3540885d25edba7e0cecc5d3024900a0aa8be280deae67139c2bd553
+    source: working-tree:scripts/task_run/task_run_claude_auth.py
+    size_bytes: 4537
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_claude_review.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0004-content.bin
+    content_sha256: b63980215b2b0dc05ec928e0e9a1688f9bb1f4b65203c41ece2104152b2d499d
+    carrier_sha256: 240378e913bbe62161e4fd18f96f9364a9dc6cdccf8b7c4ca2901d1db8c76a9c
+    source: working-tree:scripts/task_run/task_run_claude_review.py
+    size_bytes: 2620
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_claude_sandbox.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0005-content.bin
+    content_sha256: a57ea1edad8aac7644874cd5b9ea6402e7525084bca3a8e2457a9df054db8db1
+    carrier_sha256: 73186a56f9b13942a2401fb68f2b374eb3db7d4ee3557e23579bb1c50e9c5cb5
+    source: working-tree:scripts/task_run/task_run_claude_sandbox.py
+    size_bytes: 21590
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_execution.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0006-content.bin
+    content_sha256: c5544f3bf16fff611fdb0aa8e87f671999b2f96bb8160e24d6bb915c20d732ba
+    carrier_sha256: f0a1bcabc46e504b4ecfa7301de7526d30ae8332844cdf52ea249c8b2903e168
+    source: working-tree:scripts/task_run/task_run_execution.py
+    size_bytes: 21974
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_lane_options.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0007-content.bin
+    content_sha256: 1067f0cbf2762f24ec02a201654f66bd6303dfabbca27b02161ddb37ab6ff8d1
+    carrier_sha256: a94c54d45f21ded4380d1c0818eec16a6f3dbf8019ea586bcd335e8713439458
+    source: working-tree:scripts/task_run/task_run_lane_options.py
+    size_bytes: 6666
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_lane_runner.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0008-content.bin
+    content_sha256: 5f192aadb5d6924eb74bccc2cadb1f5d2156389df8332cf9582cc553c02f55fe
+    carrier_sha256: f7fa4d92f82d0cb87ac0d5dd43f774fd98a46cbb980c3b8714f7d387b448eafb
+    source: working-tree:scripts/task_run/task_run_lane_runner.py
+    size_bytes: 18393
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_lane_signals.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0009-content.bin
+    content_sha256: 85346f24e32dd098cc283581433e1d2837e840568b07789771860553ddb0f0cb
+    carrier_sha256: 41ef7a242af89f327692ecf9dcfa186434a21b9621c36beb78a83c58295a9c44
+    source: working-tree:scripts/task_run/task_run_lane_signals.py
+    size_bytes: 7562
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_progress.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0010-content.bin
+    content_sha256: 7424ce7d14d701e46e2df32e49e7b826ef167426d7621455f028c96e4aed33c5
+    carrier_sha256: 6dc793e456cd5b7690efc84aa8f80163d1cb985ac3979b08f7825163e6b48662
+    source: working-tree:scripts/task_run/task_run_progress.py
+    size_bytes: 24331
+    prompt_encoding: utf-8
+  - path: scripts/task_run/task_run_runtime.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0011-content.bin
+    content_sha256: b4684321aef384ac92f9c50f30f5044b0a49a8dd0c89afa1e0c1a0953a66e2f9
+    carrier_sha256: 6f81a459a72c5d3838a8fb7260c45a17f9a763fcbbc78a524ed0e3d646fc7887
+    source: working-tree:scripts/task_run/task_run_runtime.py
+    size_bytes: 17220
+    prompt_encoding: utf-8
+  - path: scripts/worktree/worktree_exec_lib.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0012-content.bin
+    content_sha256: 4be16d1b8f60a8b49e0228923f9555efeddf132884e6441b9df4b0808659422d
+    carrier_sha256: cf672f747b100f3705197ea8c55ee3ac119befa950b99e72b507a9828e41246f
+    source: working-tree:scripts/worktree/worktree_exec_lib.py
+    size_bytes: 3876
+    prompt_encoding: utf-8
+  - path: tests/charness_cli/test_task_run_cache_custody.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0013-content.bin
+    content_sha256: 0a1a47888755540312a30f70e0abf58bd0b848b5d0df4ebe74c015a38d556064
+    carrier_sha256: 323d31c8da3d27c3cdf13a1c7675129c26ee41d4d4f83a85c270dd4f7e0934b8
+    source: working-tree:tests/charness_cli/test_task_run_cache_custody.py
+    size_bytes: 2712
+    prompt_encoding: utf-8
+  - path: tests/charness_cli/test_task_run_claude_review.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0014-content.bin
+    content_sha256: d2658bc5c517d9a379af994968ba5d660b8ed3d773e4d87cd383aff2904dfd10
+    carrier_sha256: 8db65d164638389a59ea036abf8b2b075e1d54de580c81a3c1245ce02ae651c8
+    source: working-tree:tests/charness_cli/test_task_run_claude_review.py
+    size_bytes: 10357
+    prompt_encoding: utf-8
+  - path: tests/charness_cli/test_task_run_claude_sandbox.py
+    disposition: present
+    carrier_path: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/0015-content.bin
+    content_sha256: 9998d48a46a0c6172e87a9b875d841b602c2ebbdfbf79eb7f7c64b628a2d594c
+    carrier_sha256: 9b8302847301e89e5c77c4edd9c6a431d3fc911019f92614f475a404062ef02b
+    source: working-tree:tests/charness_cli/test_task_run_claude_sandbox.py
+    size_bytes: 23366
+    prompt_encoding: utf-8
+  manifest: charness-artifacts/critique/workers/release-8160-claude-lane-followup15/semantic-input/manifest.json
+  size_bytes: 188225
+runner_output:
+  status: runner-completed
+  returncode: 1
+runner_stream:
+  consistent: true
+  reason: null
+  runner_stdout_sha256: 921633a99cc06c9059ffb86a001797453f5bab7af6a7438f72c842d159d0bdea
+  canonical_report_sha256: 921633a99cc06c9059ffb86a001797453f5bab7af6a7438f72c842d159d0bdea
+boundary_readback:
+  mode: read-only-worker
+  required: false
+goal_lineage:
+  kind: charness.goal-lineage
+  schema_version: 1
+  disposition: not-goal-bound
+  draft: null
+  binding: null
+  goal_run: null
+  work_item: null
+  reason: critique review was run without a Goal Run Work Item identity
+identity_check:
+  status: matched
+  matches: true
+  checks:
+    packet_identity:
+      expected: c19c32f86ba7d2027eea9433488d5986c1bbb94764cdbe7dbbc2e9d2cdf1f3db
+      actual: c19c32f86ba7d2027eea9433488d5986c1bbb94764cdbe7dbbc2e9d2cdf1f3db
+      matches: true
+      provenance: c19c32f86ba7d2027eea9433488d5986c1bbb94764cdbe7dbbc2e9d2cdf1f3db
+    reviewed_input_identity:
+      expected: 0433c287f0940cf56d635a573a30c2752e35926c9f34c7b9c0bd65f2a0a320ab
+      actual: 0433c287f0940cf56d635a573a30c2752e35926c9f34c7b9c0bd65f2a0a320ab
+      matches: true
+      provenance: 0433c287f0940cf56d635a573a30c2752e35926c9f34c7b9c0bd65f2a0a320ab
+    parent_receipt_identity:
+      expected: parent-f55018d57001dbaac51c51c920807d20218f958d9fc6a3ce
+      actual: parent-f55018d57001dbaac51c51c920807d20218f958d9fc6a3ce
+      matches: true
+      provenance: parent-f55018d57001dbaac51c51c920807d20218f958d9fc6a3ce
+  reason: null

@@ -1,0 +1,400 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-11-05T00:42:28Z",
+  "prepared_for": "working tree",
+  "changed_ref": null,
+  "substrate_mode": "working-tree",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/review/render_critique_section_changed_surfaces.py",
+      "content": "Bound review paths for working tree: (narrow follow-up scope)\nExact reviewed-path manifest:\n- charness-artifacts/release/2026-11-05-v8.16.0-notes.md\n- docs/claude-task-executor.md\n- scripts/core/subprocess_guard.py\n- scripts/task_run/task_run_brief_critique.py\n- scripts/task_run/task_run_claude_auth.py\n- scripts/task_run/task_run_claude_review.py\n- scripts/task_run/task_run_claude_sandbox.py\n- scripts/task_run/task_run_execution.py\n- scripts/task_run/task_run_lane_options.py\n- scripts/task_run/task_run_lane_runner.py\n- scripts/task_run/task_run_lane_signals.py\n- scripts/task_run/task_run_progress.py\n- scripts/task_run/task_run_runtime.py\n- scripts/worktree/worktree_exec_lib.py\n- skills/public/debug/scripts/debug_artifact_declarations.py\n- skills/public/debug/scripts/debug_artifact_state.py\n- tests/charness_cli/test_task_run_cache_custody.py\n- tests/charness_cli/test_task_run_claude_review.py\n- tests/charness_cli/test_task_run_claude_sandbox.py\n\nOwning surfaces:\n- materialized-plugin-export: Materialized plugin export and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/core/subprocess_guard.py, scripts/task_run/task_run_brief_critique.py, scripts/task_run/task_run_claude_auth.py, scripts/task_run/task_run_claude_review.py, scripts/task_run/task_run_claude_sandbox.py, scripts/task_run/task_run_execution.py, scripts/task_run/task_run_lane_options.py, scripts/task_run/task_run_lane_runner.py, scripts/task_run/task_run_lane_signals.py, scripts/task_run/task_run_progress.py, scripts/task_run/task_run_runtime.py, scripts/worktree/worktree_exec_lib.py, skills/public/debug/scripts/debug_artifact_declarations.py, skills/public/debug/scripts/debug_artifact_state.py\n  sync: python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/plugin_export/validate_packaging.py --repo-root ., python3 -m tools.validate_packaging_committed --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/release/2026-11-05-v8.16.0-notes.md, docs/claude-task-executor.md\n  verify: ./scripts/check-docs.sh, ./scripts/check-secrets.sh\n- operational-evidence-records: Durable issue, quality, and release evidence attachments produced by local planning and closeout workflows.\n  source matches: charness-artifacts/release/2026-11-05-v8.16.0-notes.md\n  verify: python3 scripts/gates/check_release_issue_ledger.py --repo-root . --ledger charness-artifacts/issues/2026-08-20-next-release-ledger.json, python3 scripts/gates/validate_quality_artifact.py --repo-root ., python3 scripts/gates/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/debug/scripts/debug_artifact_declarations.py, skills/public/debug/scripts/debug_artifact_state.py\n  verify: python3 -m tools.validate_skills --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/gates/check_skill_ownership_overlap.py --repo-root ., python3 scripts/gates/validate_skill_ergonomics.py --repo-root .\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/debug/scripts/debug_artifact_declarations.py, skills/public/debug/scripts/debug_artifact_state.py\n  verify: python3 -m tools.validate_public_skill_validation --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/debug/scripts/debug_artifact_declarations.py, skills/public/debug/scripts/debug_artifact_state.py\n  verify: python3 -m tools.validate_public_skill_dogfood --repo-root .\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/core/subprocess_guard.py, scripts/task_run/task_run_brief_critique.py, scripts/task_run/task_run_claude_auth.py, scripts/task_run/task_run_claude_review.py, scripts/task_run/task_run_claude_sandbox.py, scripts/task_run/task_run_execution.py, scripts/task_run/task_run_lane_options.py, scripts/task_run/task_run_lane_runner.py, scripts/task_run/task_run_lane_signals.py, scripts/task_run/task_run_progress.py, scripts/task_run/task_run_runtime.py, scripts/worktree/worktree_exec_lib.py, tests/charness_cli/test_task_run_cache_custody.py, tests/charness_cli/test_task_run_claude_review.py, tests/charness_cli/test_task_run_claude_sandbox.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/gates/check_code_lengths.py --repo-root . --require-git-file-listing, python3 -m tools.validate_attention_state_visibility --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/gates/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/gates/check_subprocess_form.py --repo-root . --require-git-file-listing, ./scripts/check-shell.sh, python3 scripts/gates_support/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/core/subprocess_guard.py, scripts/task_run/task_run_brief_critique.py, scripts/task_run/task_run_claude_auth.py, scripts/task_run/task_run_claude_review.py, scripts/task_run/task_run_claude_sandbox.py, scripts/task_run/task_run_execution.py, scripts/task_run/task_run_lane_options.py, scripts/task_run/task_run_lane_runner.py, scripts/task_run/task_run_lane_signals.py, scripts/task_run/task_run_progress.py, scripts/task_run/task_run_runtime.py, scripts/worktree/worktree_exec_lib.py, skills/public/debug/scripts/debug_artifact_declarations.py, skills/public/debug/scripts/debug_artifact_state.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/plugin_export/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "scope_status": "populated",
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-6-luna",
+      "reasoning_effort": "xhigh",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "reviewer_runner": {
+      "mode": "file-backed-worker",
+      "backend": "codex_exec",
+      "timeout_seconds": 900
+    },
+    "execution_mode": "file-backed-worker",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed. Consume the worker receipt and delivery ledger; do not infer approval from a file or exit code."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "substrate_mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "4fd2f44a3a12f023ea9aeabed0e1270c9e92eccd",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+      "docs/claude-task-executor.md",
+      "scripts/core/subprocess_guard.py",
+      "scripts/task_run/task_run_brief_critique.py",
+      "scripts/task_run/task_run_claude_auth.py",
+      "scripts/task_run/task_run_claude_review.py",
+      "scripts/task_run/task_run_claude_sandbox.py",
+      "scripts/task_run/task_run_execution.py",
+      "scripts/task_run/task_run_lane_options.py",
+      "scripts/task_run/task_run_lane_runner.py",
+      "scripts/task_run/task_run_lane_signals.py",
+      "scripts/task_run/task_run_progress.py",
+      "scripts/task_run/task_run_runtime.py",
+      "scripts/worktree/worktree_exec_lib.py",
+      "skills/public/debug/scripts/debug_artifact_declarations.py",
+      "skills/public/debug/scripts/debug_artifact_state.py",
+      "tests/charness_cli/test_task_run_cache_custody.py",
+      "tests/charness_cli/test_task_run_claude_review.py",
+      "tests/charness_cli/test_task_run_claude_sandbox.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+        "content_sha256": "937e6a58278b0384a4e45b4a56fca4e1a552778ab3dd79a4c736c10973031b74"
+      },
+      {
+        "path": "docs/claude-task-executor.md",
+        "content_sha256": "4283227512abae8f861002ade1c288d2dadfb84d54454ad9bdb1590993832821"
+      },
+      {
+        "path": "scripts/core/subprocess_guard.py",
+        "content_sha256": "36492f8180d8f94f84dc837321b0ba646fad231deba6bfab2ec43bf423b41505"
+      },
+      {
+        "path": "scripts/task_run/task_run_brief_critique.py",
+        "content_sha256": "4c2206ca5272e3dd9d59a3dfc3f5bb5a3443e2a6cfb6ddfddb0e90a85289d7a8"
+      },
+      {
+        "path": "scripts/task_run/task_run_claude_auth.py",
+        "content_sha256": "f9c4a4c45c2308ad96876bdbb116bbb3fd5c7c66639a03a3526e1d4fdae7bbc4"
+      },
+      {
+        "path": "scripts/task_run/task_run_claude_review.py",
+        "content_sha256": "b63980215b2b0dc05ec928e0e9a1688f9bb1f4b65203c41ece2104152b2d499d"
+      },
+      {
+        "path": "scripts/task_run/task_run_claude_sandbox.py",
+        "content_sha256": "a57ea1edad8aac7644874cd5b9ea6402e7525084bca3a8e2457a9df054db8db1"
+      },
+      {
+        "path": "scripts/task_run/task_run_execution.py",
+        "content_sha256": "c5544f3bf16fff611fdb0aa8e87f671999b2f96bb8160e24d6bb915c20d732ba"
+      },
+      {
+        "path": "scripts/task_run/task_run_lane_options.py",
+        "content_sha256": "1067f0cbf2762f24ec02a201654f66bd6303dfabbca27b02161ddb37ab6ff8d1"
+      },
+      {
+        "path": "scripts/task_run/task_run_lane_runner.py",
+        "content_sha256": "5f192aadb5d6924eb74bccc2cadb1f5d2156389df8332cf9582cc553c02f55fe"
+      },
+      {
+        "path": "scripts/task_run/task_run_lane_signals.py",
+        "content_sha256": "85346f24e32dd098cc283581433e1d2837e840568b07789771860553ddb0f0cb"
+      },
+      {
+        "path": "scripts/task_run/task_run_progress.py",
+        "content_sha256": "7424ce7d14d701e46e2df32e49e7b826ef167426d7621455f028c96e4aed33c5"
+      },
+      {
+        "path": "scripts/task_run/task_run_runtime.py",
+        "content_sha256": "b4684321aef384ac92f9c50f30f5044b0a49a8dd0c89afa1e0c1a0953a66e2f9"
+      },
+      {
+        "path": "scripts/worktree/worktree_exec_lib.py",
+        "content_sha256": "4be16d1b8f60a8b49e0228923f9555efeddf132884e6441b9df4b0808659422d"
+      },
+      {
+        "path": "skills/public/debug/scripts/debug_artifact_declarations.py",
+        "content_sha256": "7dbe7c31d39aec6177e4b32aa5d976d45a9d61ae57632891ed6689995e2b2f95"
+      },
+      {
+        "path": "skills/public/debug/scripts/debug_artifact_state.py",
+        "content_sha256": "669d331ab4ea924f85c2310da522183ff8b358d2ad6b5a38a4c8fcfd26c46d40"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run_cache_custody.py",
+        "content_sha256": "0a1a47888755540312a30f70e0abf58bd0b848b5d0df4ebe74c015a38d556064"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run_claude_review.py",
+        "content_sha256": "d1c123511e5e46683975be2468cb7d7130b19e0c499ca7d87ae3f0b63de17a5d"
+      },
+      {
+        "path": "tests/charness_cli/test_task_run_claude_sandbox.py",
+        "content_sha256": "9998d48a46a0c6172e87a9b875d841b602c2ebbdfbf79eb7f7c64b628a2d594c"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "2c4f7ce66a561a3a02994c3ec13a989b05223cff97b153094bf6297466a3eaa7"
+  },
+  "follow_up": {
+    "kind": "charness.review_followup_context.v1",
+    "source": "charness-artifacts/critique/workers/release-8160-claude-lane-followup16/result.json",
+    "source_sha256": "1c06d8decc38414b564101d61070d035125a1a8c5920c56c33dfd8bf3a7547fc",
+    "prior_attempt_id": "release-8160-claude-lane-followup16",
+    "prior_verdict": "pass",
+    "prior_scope": "Recheck R-001: _run_brief_critique now runs private_review_environment inside the same try block as the review, so the finally block deletes the copied auth.json after a failed or partial copy as well as after a failed or finished review; a new test interrupts the copy with an OSError after writing part of it and checks the copy is gone and the review never ran.",
+    "prior_lens": "Recheck R-001: auth-copy cleanup and claim accuracy",
+    "prior_packet_path": "charness-artifacts/critique/release-8160-claude-lane-followup16-packet.json",
+    "prior_packet_sha256": "0c52bf738f6f5a0e7e592f6c3392cb026ffc211dd95cf21ca739b80a7e8426e3",
+    "prior_reviewed_input_identity_sha256": "d6490fa016818f72a2d94c6a577f5c81d1115a4bdf7f407066b5cacf82c0c191",
+    "selection": "explicit-with-selection-receipt",
+    "selected_paths": [
+      "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+      "docs/claude-task-executor.md",
+      "scripts/core/subprocess_guard.py",
+      "scripts/task_run/task_run_brief_critique.py",
+      "scripts/task_run/task_run_claude_auth.py",
+      "scripts/task_run/task_run_claude_review.py",
+      "scripts/task_run/task_run_claude_sandbox.py",
+      "scripts/task_run/task_run_execution.py",
+      "scripts/task_run/task_run_lane_options.py",
+      "scripts/task_run/task_run_lane_runner.py",
+      "scripts/task_run/task_run_lane_signals.py",
+      "scripts/task_run/task_run_progress.py",
+      "scripts/task_run/task_run_runtime.py",
+      "scripts/worktree/worktree_exec_lib.py",
+      "skills/public/debug/scripts/debug_artifact_declarations.py",
+      "skills/public/debug/scripts/debug_artifact_state.py",
+      "tests/charness_cli/test_task_run_cache_custody.py",
+      "tests/charness_cli/test_task_run_claude_review.py",
+      "tests/charness_cli/test_task_run_claude_sandbox.py"
+    ],
+    "prior_reviewed_paths": 16,
+    "comparison": {
+      "prior_paths": 16,
+      "changed_prior_paths": [
+        "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+        "docs/claude-task-executor.md"
+      ],
+      "selected_changed_prior_paths": [
+        "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+        "docs/claude-task-executor.md"
+      ],
+      "new_paths": [
+        "scripts/core/subprocess_guard.py",
+        "skills/public/debug/scripts/debug_artifact_declarations.py",
+        "skills/public/debug/scripts/debug_artifact_state.py"
+      ],
+      "unchanged_selected_paths": [
+        "scripts/task_run/task_run_brief_critique.py",
+        "scripts/task_run/task_run_claude_auth.py",
+        "scripts/task_run/task_run_claude_review.py",
+        "scripts/task_run/task_run_claude_sandbox.py",
+        "scripts/task_run/task_run_execution.py",
+        "scripts/task_run/task_run_lane_options.py",
+        "scripts/task_run/task_run_lane_runner.py",
+        "scripts/task_run/task_run_lane_signals.py",
+        "scripts/task_run/task_run_progress.py",
+        "scripts/task_run/task_run_runtime.py",
+        "scripts/worktree/worktree_exec_lib.py",
+        "tests/charness_cli/test_task_run_cache_custody.py",
+        "tests/charness_cli/test_task_run_claude_review.py",
+        "tests/charness_cli/test_task_run_claude_sandbox.py"
+      ],
+      "omitted_changed_prior_paths": [],
+      "comparison_identity_sha256": "3715e8d4ec2dbc45b15a7d5b2f375fd98c75bd1d2b29b4130023fdf25263436e",
+      "comparison_identity_paths": [
+        "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+        "docs/claude-task-executor.md",
+        "scripts/task_run/task_run_brief_critique.py",
+        "scripts/task_run/task_run_claude_auth.py",
+        "scripts/task_run/task_run_claude_review.py",
+        "scripts/task_run/task_run_claude_sandbox.py",
+        "scripts/task_run/task_run_execution.py",
+        "scripts/task_run/task_run_lane_options.py",
+        "scripts/task_run/task_run_lane_runner.py",
+        "scripts/task_run/task_run_lane_signals.py",
+        "scripts/task_run/task_run_progress.py",
+        "scripts/task_run/task_run_runtime.py",
+        "scripts/worktree/worktree_exec_lib.py",
+        "tests/charness_cli/test_task_run_cache_custody.py",
+        "tests/charness_cli/test_task_run_claude_review.py",
+        "tests/charness_cli/test_task_run_claude_sandbox.py"
+      ]
+    },
+    "selection_receipt": {
+      "prior_binding": {
+        "status": "verified",
+        "attempt_id": "release-8160-claude-lane-followup16",
+        "packet_sha256": "0c52bf738f6f5a0e7e592f6c3392cb026ffc211dd95cf21ca739b80a7e8426e3",
+        "reviewed_input_identity_sha256": "d6490fa016818f72a2d94c6a577f5c81d1115a4bdf7f407066b5cacf82c0c191",
+        "packet_verification": "canonical-integrity-only",
+        "identity_verification": "recorded-self-digest",
+        "semantic_input": {
+          "status": "verified",
+          "entries": 16
+        },
+        "result_carrier": {
+          "status": "verified",
+          "attempt_id": "release-8160-claude-lane-followup16",
+          "partial_result_sha256": null,
+          "result_sha256": "1c06d8decc38414b564101d61070d035125a1a8c5920c56c33dfd8bf3a7547fc",
+          "source_path": null
+        }
+      },
+      "explicit_paths": true,
+      "prior_identity_sha256": "d6490fa016818f72a2d94c6a577f5c81d1115a4bdf7f407066b5cacf82c0c191",
+      "comparison_identity_sha256": "3715e8d4ec2dbc45b15a7d5b2f375fd98c75bd1d2b29b4130023fdf25263436e",
+      "comparison_identity_paths": [
+        "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+        "docs/claude-task-executor.md",
+        "scripts/task_run/task_run_brief_critique.py",
+        "scripts/task_run/task_run_claude_auth.py",
+        "scripts/task_run/task_run_claude_review.py",
+        "scripts/task_run/task_run_claude_sandbox.py",
+        "scripts/task_run/task_run_execution.py",
+        "scripts/task_run/task_run_lane_options.py",
+        "scripts/task_run/task_run_lane_runner.py",
+        "scripts/task_run/task_run_lane_signals.py",
+        "scripts/task_run/task_run_progress.py",
+        "scripts/task_run/task_run_runtime.py",
+        "scripts/worktree/worktree_exec_lib.py",
+        "tests/charness_cli/test_task_run_cache_custody.py",
+        "tests/charness_cli/test_task_run_claude_review.py",
+        "tests/charness_cli/test_task_run_claude_sandbox.py"
+      ],
+      "selected_changed_prior_paths": [
+        "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+        "docs/claude-task-executor.md"
+      ],
+      "new_paths": [
+        "scripts/core/subprocess_guard.py",
+        "skills/public/debug/scripts/debug_artifact_declarations.py",
+        "skills/public/debug/scripts/debug_artifact_state.py"
+      ],
+      "unchanged_selected_paths": [
+        "scripts/task_run/task_run_brief_critique.py",
+        "scripts/task_run/task_run_claude_auth.py",
+        "scripts/task_run/task_run_claude_review.py",
+        "scripts/task_run/task_run_claude_sandbox.py",
+        "scripts/task_run/task_run_execution.py",
+        "scripts/task_run/task_run_lane_options.py",
+        "scripts/task_run/task_run_lane_runner.py",
+        "scripts/task_run/task_run_lane_signals.py",
+        "scripts/task_run/task_run_progress.py",
+        "scripts/task_run/task_run_runtime.py",
+        "scripts/worktree/worktree_exec_lib.py",
+        "tests/charness_cli/test_task_run_cache_custody.py",
+        "tests/charness_cli/test_task_run_claude_review.py",
+        "tests/charness_cli/test_task_run_claude_sandbox.py"
+      ],
+      "omitted_changed_prior_paths": [],
+      "rationale": "Explicit paths were supplied to include newly introduced consumers or intentionally widen the stimulus; selection is not approval."
+    },
+    "prior_findings": [],
+    "omitted_finding_ids": [],
+    "prior_next_move": "Accept R-001 as closed. The release notes and executor documentation say the copy is deleted when the preflight ends; that matches the cleanup path and the covered review-failure and partial-copy-failure cases.",
+    "prior_non_claims": [
+      "This review assessed the supplied semantic payload and did not execute tests.",
+      "Cleanup depends on the unlink succeeding; the payload does not establish behavior if deletion itself fails or the process is terminated outside normal Python cleanup."
+    ],
+    "approval_rule": "This is prior evidence only. Reuse findings as hypotheses; do not treat a prior block, defer, timeout, or partial result as approval. The new reviewer must bind the new packet and current selected paths independently.",
+    "final_reviewed_input_identity_sha256": "2c4f7ce66a561a3a02994c3ec13a989b05223cff97b153094bf6297466a3eaa7",
+    "final_selected_path_count": 19,
+    "context_size_bytes": 8667
+  },
+  "follow_up_scope": {
+    "kind": "charness.follow_up_scope_receipt.v1",
+    "status": "verified",
+    "selected_paths": [
+      "charness-artifacts/release/2026-11-05-v8.16.0-notes.md",
+      "docs/claude-task-executor.md",
+      "scripts/core/subprocess_guard.py",
+      "scripts/task_run/task_run_brief_critique.py",
+      "scripts/task_run/task_run_claude_auth.py",
+      "scripts/task_run/task_run_claude_review.py",
+      "scripts/task_run/task_run_claude_sandbox.py",
+      "scripts/task_run/task_run_execution.py",
+      "scripts/task_run/task_run_lane_options.py",
+      "scripts/task_run/task_run_lane_runner.py",
+      "scripts/task_run/task_run_lane_signals.py",
+      "scripts/task_run/task_run_progress.py",
+      "scripts/task_run/task_run_runtime.py",
+      "scripts/worktree/worktree_exec_lib.py",
+      "skills/public/debug/scripts/debug_artifact_declarations.py",
+      "skills/public/debug/scripts/debug_artifact_state.py",
+      "tests/charness_cli/test_task_run_cache_custody.py",
+      "tests/charness_cli/test_task_run_claude_review.py",
+      "tests/charness_cli/test_task_run_claude_sandbox.py"
+    ],
+    "sections": [
+      {
+        "section_id": "changed-files-and-owning-surfaces",
+        "mode": "selected-paths",
+        "binding": "CHARNESS_CRITIQUE_REVIEWED_PATHS",
+        "path_binding": "exact-path-manifest",
+        "selected_path_count": 19,
+        "path_set_sha256": "594539c0f96c62b8bd6cb38b4b06246e4a703cc9858906a2716d5aec6fbd5d9e",
+        "status": "verified",
+        "path_check": "exact-manifest"
+      },
+      {
+        "section_id": "critique-prepare-non-goals",
+        "mode": "static",
+        "binding": "adapter-static-content",
+        "path_binding": null,
+        "selected_path_count": 19,
+        "path_set_sha256": null,
+        "status": "verified",
+        "path_check": "not-applicable"
+      },
+      {
+        "section_id": "reviewer-packet-semantic-question",
+        "mode": "static",
+        "binding": "adapter-static-content",
+        "path_binding": null,
+        "selected_path_count": 19,
+        "path_set_sha256": null,
+        "status": "verified",
+        "path_check": "not-applicable"
+      }
+    ],
+    "contract": "Adapter-declared follow-up scope; selected-path sections must expose every identity-bound path, and static sections must declare that they are not path-bearing."
+  }
+}

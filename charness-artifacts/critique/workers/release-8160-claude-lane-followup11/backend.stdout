@@ -1,0 +1,30 @@
+{
+  "kind": "charness.bounded_review.v1",
+  "lens": "Recheck R-002 against sandbox_prefix and other claims in the selected notes and docs.",
+  "verdict": "block",
+  "target_observations": null,
+  "findings": [
+    {
+      "id": "R-002",
+      "severity": "low",
+      "summary": "The socket-reachability exceptions omit exact home-file masks.",
+      "evidence": [
+        "The notes and docs say other host Unix sockets stay reachable unless under /run/user/<uid>, a masked home directory, or excluded /tmp trees.",
+        "sandbox_prefix also masks existing home paths individually from _SECRET_FILES, including .netrc, .npmrc, and .claude.json. A socket at one of those exact paths is not under a masked home directory, but the sandbox masks that path."
+      ],
+      "action": "Qualify both claims to include masked home files as well as masked home directories."
+    }
+  ],
+  "counterweight_triage": [
+    {
+      "concern": "Prior R-002: sockets under other masked home paths were missing from the exceptions.",
+      "bin": "partially-addressed",
+      "disposition": "The new wording covers masked home directories, but omits exact home-file masks."
+    }
+  ],
+  "next_move": "Add masked home files to the socket-reachability exceptions, then recheck the claims.",
+  "non_claims": [
+    "Assessment is limited to the supplied semantic input; tests and sandbox behavior were not executed.",
+    "The notes accurately disclose that tests do not pin the other listed daemon socket paths or the /run/user/<uid> mask."
+  ]
+}
