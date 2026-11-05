@@ -13,7 +13,8 @@ The default executor remains Codex. The host currently requires Linux bubblewrap
 Claude accepts validated `--grant-writable` host-state directories. Muse still refuses them.
 
 Claude lanes keep the same result/report, branch, hooks, progress and verification
-contracts. Stream JSON remains in `claude.events.log`; terminal text becomes the
+contracts, except that with private Git storage, live status counts no lane
+commits until the import. Stream JSON remains in `claude.events.log`; terminal text becomes the
 report, and steers resume the observed session. The process runs with the lane
 worktree as its current directory.
 
@@ -35,19 +36,28 @@ Native tools receive private writable `/tmp` for OS-level locks even when they i
 Real home configuration and the listed credential files remain protected,
 including `~/.docker`, `~/.pypirc` and Cargo credentials. The home masks are a
 named list of directories and files plus home `.env*` files, so a credential
-file outside them stays readable. Container daemon
-sockets (Docker, containerd, Podman, CRI-O) and `/run/user/<uid>` are masked,
-because a read-only bind does not stop a connect. Other host Unix sockets, such
-as the D-Bus system bus, stay reachable unless they sit under `/run/user/<uid>`
-or under `/tmp` outside the temporary trees restored for the lane.
+file outside them stays readable. The sandbox masks `/run/user/<uid>` and
+these container daemon socket paths when they exist, because a read-only bind
+does not stop a connect: `/run/docker.sock`, `/var/run/docker.sock`,
+`/run/containerd/containerd.sock`, `/run/podman/podman.sock` and
+`/run/crio/crio.sock`. Other host Unix sockets, such as the D-Bus system bus or
+a daemon socket at another path, stay reachable unless they sit at or under a
+path the sandbox masks, such as `/run/user/<uid>`, a masked home path, or `/tmp`
+outside the temporary trees restored for the lane. Abstract-namespace Unix sockets, such as an X server's abstract display
+socket where one exists, also stay reachable, because the sandbox shares the
+host network namespace; `DISPLAY` and `XAUTHORITY` pass through when set, and
+the real home's `.Xauthority` is not masked.
 The sandbox does not restrict network egress: a lane can reach any address the
 host can, including cloud metadata endpoints and host TCP services
 ([#889](https://github.com/corca-ai/charness/issues/889)).
 Real provider credentials, including an OAuth token read from
 `~/.claude/.credentials.json`, stay in a parent-side proxy; the child receives
-an invocation token. Credential-shaped workspace files are masked from shell reads
-as well as denied to file tools. The [safety and real-lane evidence record](../charness-artifacts/impl/2026-10-25-claude-executor-pilot.md) states
-the tested host boundary. The real-sandbox tests need Linux with bubblewrap,
+an invocation token. Credential-shaped workspace files found when the sandbox
+starts are masked, so a shell read sees an empty file. The file-tool rules deny
+reading `.env`, `.env.*`, `*.pem` and `*.key` files; file tools see the other
+masked names as empty files. The [safety and real-lane evidence record](../charness-artifacts/impl/2026-10-25-claude-executor-pilot.md) states
+the host boundary tested in the October pilot, before the daemon-socket masks and
+the `~/.docker`, `~/.pypirc` and Cargo credential masks were added. The real-sandbox tests need Linux with bubblewrap,
 and CI does not run them.
 
 Credential masks cover known `.env*`, `.pem`, `.key` and credential filenames,
@@ -65,7 +75,13 @@ The [task-run contract](./agent-task-runs.md) owns completion and retention.
 
 For Claude lanes, the separate Codex preflight uses a private home under the
 retained execution runtime and inherits authentication only. It copies no real
-configuration or sessions. That reviewer-home subtree is masked from Claude,
-including shell reads, after the runtime receives its writable grant. Both
+configuration or sessions. That reviewer-home subtree is masked from this lane's
+Claude, including shell reads, after the runtime receives its writable grant.
+When the preflight review ends, including when it fails, the runner deletes
+the copied `auth.json`. Until then, another Claude lane can read the copy,
+because the sandbox does not mask other lanes' runtimes. If the runner is killed
+or crashes during the preflight, or the deletion itself fails, the copy stays in
+the runtime until the runtime is removed
+([#891](https://github.com/corca-ai/charness/issues/891)). Both
 process environments rebind Claude, Codex, Ceal and XDG state destinations to
 their private home even when the caller exports explicit session directories.
