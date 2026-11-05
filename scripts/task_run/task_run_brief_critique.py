@@ -108,24 +108,31 @@ def _run_brief_critique(
         "codex",
     )
     lane_executor, lane_executable = _lane_executor_facts(payload, resolved)
-    if lane_executor == "claude" or "claude" in resolved.get("executor_order", ()):
-        from scripts.task_run.task_run_claude_review import private_review_environment
+    private_home = lane_executor == "claude" or "claude" in resolved.get("executor_order", ())
+    try:
+        if private_home:
+            from scripts.task_run.task_run_claude_review import private_review_environment
 
-        configured_env = private_review_environment(configured_env, execution_root)
-    outcome = execution._execute_codex(
-        command,
-        prompt=_brief_critique_prompt(
-            prompt,
-            premise_checks,
-            lane_executor=lane_executor,
-            lane_executable=lane_executable,
-        ),
-        target_path=target,
-        configured_env=configured_env,
-        stdout_log=stdout_log,
-        stderr_log=stderr_log,
-        timeout_seconds=BRIEF_CRITIQUE_TIMEOUT_SECONDS,
-    )
+            configured_env = private_review_environment(configured_env, execution_root)
+        outcome = execution._execute_codex(
+            command,
+            prompt=_brief_critique_prompt(
+                prompt,
+                premise_checks,
+                lane_executor=lane_executor,
+                lane_executable=lane_executable,
+            ),
+            target_path=target,
+            configured_env=configured_env,
+            stdout_log=stdout_log,
+            stderr_log=stderr_log,
+            timeout_seconds=BRIEF_CRITIQUE_TIMEOUT_SECONDS,
+        )
+    finally:
+        if private_home:
+            from scripts.task_run.task_run_claude_review import discard_review_auth
+
+            discard_review_auth(execution_root)
     try:
         parsed = json.loads(stdout_log.read_text(encoding="utf-8"))
     except (OSError, ValueError):

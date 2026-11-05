@@ -13,6 +13,15 @@ def reviewer_home(execution_runtime: Path) -> Path:
     return execution_runtime.resolve() / "brief-critique-home"
 
 
+def discard_review_auth(execution_runtime: Path) -> None:
+    """Delete the copied Codex credential once the preflight review has ended.
+
+    Another Claude lane can read this runtime, so the copy must not outlive the
+    review that needs it.
+    """
+    (reviewer_home(execution_runtime) / ".codex" / "auth.json").unlink(missing_ok=True)
+
+
 def private_review_environment(env: Mapping[str, str], execution_runtime: Path) -> dict[str, str]:
     """Keep reviewer sessions/config writes away from the operator's real home.
 
